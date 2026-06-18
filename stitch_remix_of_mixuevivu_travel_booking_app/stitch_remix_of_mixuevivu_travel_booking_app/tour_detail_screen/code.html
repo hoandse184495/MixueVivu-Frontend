@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>MixueVivu - Bali Tropical Paradise</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-high": "#e6e8ea",
+                    "on-tertiary": "#ffffff",
+                    "on-tertiary-fixed": "#2d1600",
+                    "background": "#f7f9fb",
+                    "surface-variant": "#e0e3e5",
+                    "surface-dim": "#d8dadc",
+                    "on-primary-container": "#fefcff",
+                    "on-secondary-fixed-variant": "#005137",
+                    "tertiary-fixed-dim": "#ffb874",
+                    "tertiary-container": "#ac6300",
+                    "on-primary-fixed-variant": "#004493",
+                    "tertiary-fixed": "#ffdcbf",
+                    "error": "#ba1a1a",
+                    "on-secondary": "#ffffff",
+                    "tertiary": "#894d00",
+                    "outline-variant": "#c1c6d7",
+                    "primary-container": "#0070eb",
+                    "inverse-primary": "#adc6ff",
+                    "on-primary-fixed": "#001a41",
+                    "on-secondary-container": "#00714e",
+                    "on-error-container": "#93000a",
+                    "inverse-surface": "#2d3133",
+                    "primary": "#0058bc",
+                    "secondary": "#006c4b",
+                    "on-surface-variant": "#414755",
+                    "on-error": "#ffffff",
+                    "surface-bright": "#f7f9fb",
+                    "primary-fixed-dim": "#adc6ff",
+                    "secondary-fixed": "#68fcbf",
+                    "on-surface": "#191c1e",
+                    "surface-container-low": "#f2f4f6",
+                    "error-container": "#ffdad6",
+                    "surface-container": "#eceef0",
+                    "on-tertiary-container": "#fffbff",
+                    "surface-container-highest": "#e0e3e5",
+                    "surface": "#f7f9fb",
+                    "on-background": "#191c1e",
+                    "primary-fixed": "#d8e2ff",
+                    "on-primary": "#ffffff",
+                    "secondary-container": "#64f9bc",
+                    "surface-tint": "#005bc1",
+                    "outline": "#717786",
+                    "inverse-on-surface": "#eff1f3",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-fixed-variant": "#6a3b00",
+                    "on-secondary-fixed": "#002114",
+                    "secondary-fixed-dim": "#45dfa4"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "12px",
+                    "2xl": "16px",
+                    "3xl": "24px",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "container-padding-desktop": "40px",
+                    "base": "8px",
+                    "stack-md": "24px",
+                    "stack-lg": "48px",
+                    "container-padding-mobile": "20px",
+                    "stack-sm": "12px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Plus Jakarta Sans"],
+                    "headline-lg": ["Plus Jakarta Sans"],
+                    "headline-lg-mobile": ["Plus Jakarta Sans"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "body-md": ["Plus Jakarta Sans"],
+                    "label-md": ["Plus Jakarta Sans"],
+                    "label-sm": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .filled-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        /* Custom scrollbar for better UI feel */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #e0e3e5; border-radius: 10px; }
+        
+        .hero-gradient {
+            background: linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 25%, rgba(0,0,0,0) 70%, rgba(0,0,0,0.6) 100%);
+        }
+        
+        .glass-pill {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        .itinerary-line::before {
+            content: '';
+            position: absolute;
+            left: 11px;
+            top: 24px;
+            bottom: -24px;
+            width: 2px;
+            background: repeating-linear-gradient(to bottom, #0058bc 0%, #0058bc 50%, transparent 50%, transparent 100%);
+            background-size: 2px 8px;
+        }
+        .itinerary-line:last-child::before {
+            display: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md antialiased selection:bg-primary-fixed">
+<!-- Top Navigation Bar (Hidden on this specific detail screen to prioritize content) -->
+<!-- Applying "Automatic Suppression" as per Shell Visibility rules for sub-pages -->
+<main class="pb-32">
+<!-- Hero Section -->
+<section class="relative w-full h-[442px] md:h-[530px] overflow-hidden">
+<img alt="Bali Tropical Paradise" class="w-full h-full object-cover" data-alt="A breathtaking view of Ubud, Bali, showcasing lush tropical jungles and a traditional stone temple reflecting a peaceful spiritual heritage. The lighting is warm and golden during a soft sunrise, creating a serene and breezy vacation-ready atmosphere. The overall aesthetic is clean and modern, highlighting the vibrant greens of the forest and the rich textures of the Balinese architecture under a high-key sky." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8DaEP44swhCLUKuL4pudNHwPcI_B1AUQRB5_i9xganfsGy5vuEmaLKVuacEQINjmNXOSE_APuHIeP9eljYoxy5seyOcEezlwlFNOulh-wwxPtCvn-w-uk-96Lb9cvwws8imcV1NbEwFzM7NUKWmYW0NYKUyKC_B9BYn6fFxv6-lNoVL67HnZHrUgWVSaLUKRzi8jKVYng17j4dvigrRYQSohxmCD4Be_o1Gm96Z1_nQFIdgioNIbjPN1nF97Ezq8kDs-byaAb7GI"/>
+<div class="absolute inset-0 hero-gradient"></div>
+<!-- Hero Header Actions -->
+<div class="absolute top-0 left-0 w-full flex justify-between items-center p-container-padding-mobile md:px-container-padding-desktop mt-safe">
+<button class="w-10 h-10 glass-pill rounded-full flex items-center justify-center text-white active:scale-90 transition-transform">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<button class="w-10 h-10 glass-pill rounded-full flex items-center justify-center text-white active:scale-90 transition-transform">
+<span class="material-symbols-outlined">favorite</span>
+</button>
+</div>
+<!-- Image Pagination Indicator (Atmospheric micro-interaction) -->
+<div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+<div class="w-2 h-2 rounded-full bg-white"></div>
+<div class="w-2 h-2 rounded-full bg-white/40"></div>
+<div class="w-2 h-2 rounded-full bg-white/40"></div>
+</div>
+</section>
+<!-- Content Section -->
+<article class="relative -mt-8 px-container-padding-mobile md:px-container-padding-desktop">
+<div class="bg-surface-container-lowest rounded-t-3xl p-6 md:p-8 shadow-[0px_-8px_30px_rgba(0,0,0,0.05)]">
+<!-- Title and Price Row -->
+<div class="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-6">
+<div class="flex-1">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-secondary text-base">location_on</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Ubud, Bali</span>
+</div>
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-2">Bali Tropical Paradise</h1>
+<div class="flex items-center gap-3">
+<div class="flex items-center bg-tertiary-fixed px-3 py-1 rounded-full">
+<span class="material-symbols-outlined text-tertiary text-base filled-icon" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-md text-label-md text-on-tertiary-fixed ml-1">4.8 (1.2k reviews)</span>
+</div>
+<span class="text-on-surface-variant text-label-sm">• All Inclusive</span>
+</div>
+</div>
+<div class="flex flex-col items-start md:items-end">
+<span class="text-on-surface-variant text-label-sm">Starting from</span>
+<div class="flex items-baseline gap-1">
+<span class="font-headline-md text-headline-md text-primary">$450</span>
+<span class="text-on-surface-variant text-label-md">/person</span>
+</div>
+</div>
+</div>
+<!-- Bento-style Quick Info -->
+<div class="grid grid-cols-3 gap-3 mb-stack-md">
+<div class="bg-surface-container-low p-4 rounded-2xl flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-primary mb-2">schedule</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Duration</span>
+<span class="font-label-md text-label-md text-on-surface">5 Days</span>
+</div>
+<div class="bg-surface-container-low p-4 rounded-2xl flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-primary mb-2">group</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Group Size</span>
+<span class="font-label-md text-label-md text-on-surface">12 Max</span>
+</div>
+<div class="bg-surface-container-low p-4 rounded-2xl flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-primary mb-2">translate</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Language</span>
+<span class="font-label-md text-label-md text-on-surface">English</span>
+</div>
+</div>
+<!-- Description -->
+<section class="mb-stack-md">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-3">About this tour</h2>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                        Experience the magic of Bali's lush jungles and spiritual heritage on this curated 5-day journey. From the emerald-green rice terraces of Tegallalang to the serene water temples of Tirta Empul, you'll discover why Ubud is known as the island's cultural heart. Includes private transportation, boutique villa stays, and authentic culinary experiences.
+                    </p>
+</section>
+<!-- Itinerary Section -->
+<section class="mb-stack-lg">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-6">Tour Itinerary</h2>
+<div class="space-y-0">
+<!-- Step 1 -->
+<div class="relative pl-10 pb-10 itinerary-line">
+<div class="absolute left-0 top-0 w-6 h-6 rounded-full bg-primary flex items-center justify-center z-10">
+<div class="w-2 h-2 rounded-full bg-white"></div>
+</div>
+<h3 class="font-label-md text-label-md text-primary mb-1">Step 1: Welcome to Ubud</h3>
+<p class="font-body-md text-body-md text-on-surface">Arrival at Ngurah Rai Airport, private transfer to your villa, and traditional welcome dinner with Balinese dance.</p>
+<div class="mt-4 overflow-x-auto flex gap-3 no-scrollbar">
+<img alt="Villa Arrival" class="w-32 h-24 object-cover rounded-xl shrink-0" data-alt="A luxurious boutique villa in Ubud with a private infinity pool overlooking the lush tropical canopy. The architecture features modern minimalist design with warm wood accents and traditional Balinese elements. The lighting is soft and golden as the sun begins to set." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUI7Jmjljlm_Fzb4UW2VSLwsk2DSR-Lh-JUXR1eVyKZwy2kcUR1HNie65HoB7nc74vIYEbjCcXUIFeIGxRYnuwT6aZDPct63Jt0Q0BvHXSxHN7VDDjEFx7U_OPrrktQsn4Zg22Wc7igL65dBsdW2kQtbh0nbGAXZTaYKiW6sCbbkXjxQOyMozTesehbli0ElBD1UJmUePsw7jkNrcTwKKEBKC24YgaUYioibIr0m9YvBjBw31hJjFEKHH4lcsthiMK8zbt6ROn7nQ"/>
+<img alt="Culture Dinner" class="w-32 h-24 object-cover rounded-xl shrink-0" data-alt="Traditional Balinese dancers performing in a temple courtyard at night, their vibrant gold and red costumes illuminated by flickering torches. The atmosphere is mystical and celebratory, showcasing the rich cultural heritage of the island." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDNNL8_j4DVjhqoVPFua0wTxL24J2Zfb7QSjWCviTvndql_jSpfWvGKdFl5marJE5Sgyrpl_NGVVtGuY1nhUVMY3BBunIIvui1fszLgultaGdNK-6y0k_0dlscsXUBkIcaE8kf0sA9vSj1rQ20LuUaDE9EY64UMfkgyoW-VPNPDhSCngcTjCHaj_jSHFZO1KHNLKbAQ8xCUDn0EPzKauvkEJcuHgm2bzjH288oNkTFLzwrdo1haTiU2IylxFh9zTfRUbCykYh64p8Q"/>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="relative pl-10 pb-10 itinerary-line">
+<div class="absolute left-0 top-0 w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center border-2 border-primary z-10">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+</div>
+<h3 class="font-label-md text-label-md text-primary mb-1">Step 2: Sacred Water &amp; Rice Fields</h3>
+<p class="font-body-md text-body-md text-on-surface">Spiritual cleansing at Tirta Empul temple followed by a guided trek through the iconic Tegallalang Rice Terrace.</p>
+</div>
+<!-- Step 3 -->
+<div class="relative pl-10 pb-4 itinerary-line">
+<div class="absolute left-0 top-0 w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center border-2 border-primary z-10">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+</div>
+<h3 class="font-label-md text-label-md text-primary mb-1">Step 3: Jungle Swing &amp; Hidden Waterfall</h3>
+<p class="font-body-md text-body-md text-on-surface">Morning adventure at Bali Swing for panoramic views and afternoon cooling down at Tegenungan Waterfall.</p>
+</div>
+</div>
+</section>
+<!-- Map Section -->
+<section class="mb-stack-lg">
+<div class="flex items-center justify-between mb-4">
+<h2 class="font-headline-md text-headline-md text-on-surface">Location</h2>
+<button class="text-primary font-label-md">Open in Maps</button>
+</div>
+<div class="w-full h-48 bg-surface-container-high rounded-2xl overflow-hidden relative border border-outline-variant">
+<div class="absolute inset-0 bg-blue-100 opacity-20"></div>
+<img alt="Map of Ubud" class="w-full h-full object-cover grayscale opacity-60" data-alt="A stylized aerial map view of Ubud Bali featuring artistic topography lines and subtle blue water accents. The design is modern and clean, fitting a luxury travel application's aesthetic with high-key lighting and professional cartography vibes." data-location="Ubud, Bali" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVyZSgE4z3AjPSZmCk7yArLhGJrTTze3RVa4oBW_MJWa9IRaOToRl9O97QuYA2TejzrfSzmRZRie6ZLY5X8KZgPX5Y6HQIge7dOphXAIwFV8OozkB754Irl9ItTas2rrMzWwDggYhLTDsNh1rSULYnrz73vZbFeEPGsHxyl9uUS_WuH-L7BIYIejjYqN_GJzdwTii-fi4toChP21BV6WyLXhy718mH5prj3mI3_XO9ta0XbiMA5yCWryxNFAOA-8fy29Oawbl4hMI"/>
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+<div class="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center animate-pulse">
+<div class="w-4 h-4 bg-primary rounded-full shadow-lg"></div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</article>
+</main>
+<!-- Fixed Bottom Action Bar -->
+<footer class="fixed bottom-0 left-0 w-full z-50 px-container-padding-mobile pb-safe bg-surface/80 backdrop-blur-md border-t border-outline-variant py-4 flex items-center gap-4">
+<button class="w-14 h-14 rounded-2xl border border-outline-variant flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-all active:scale-90" id="heart-btn">
+<span class="material-symbols-outlined text-[28px]">favorite</span>
+</button>
+<button class="flex-1 h-14 bg-primary text-white rounded-2xl font-headline-md text-headline-md shadow-lg shadow-primary/20 hover:bg-primary-container transition-all active:scale-95 flex items-center justify-center gap-2">
+            Book Now
+            <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</footer>
+<script>
+        // Micro-interaction for heart button
+        const heartBtn = document.getElementById('heart-btn');
+        heartBtn.addEventListener('click', () => {
+            const icon = heartBtn.querySelector('.material-symbols-outlined');
+            const isFilled = icon.style.fontVariationSettings.includes("'FILL' 1");
+            
+            if (isFilled) {
+                icon.style.fontVariationSettings = "'FILL' 0";
+                icon.classList.remove('text-error');
+                icon.classList.add('text-on-surface-variant');
+            } else {
+                icon.style.fontVariationSettings = "'FILL' 1";
+                icon.classList.add('text-error');
+                icon.classList.remove('text-on-surface-variant');
+                
+                // Pop effect
+                heartBtn.classList.add('scale-110');
+                setTimeout(() => heartBtn.classList.remove('scale-110'), 150);
+            }
+        });
+
+        // Simple scroll reveal effect for sections
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('opacity-100', 'translate-y-0');
+                    entry.target.classList.remove('opacity-0', 'translate-y-8');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('section').forEach(section => {
+            section.classList.add('transition-all', 'duration-700', 'ease-out', 'opacity-0', 'translate-y-8');
+            observer.observe(section);
+        });
+    </script>
+</body></html>

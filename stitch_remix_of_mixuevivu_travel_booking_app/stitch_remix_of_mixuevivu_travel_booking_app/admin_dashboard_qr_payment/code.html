@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MixueVivu Admin Dashboard</title>
+<!-- Google Fonts: Plus Jakarta Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed-variant": "#6a3b00",
+                        "on-error-container": "#93000a",
+                        "secondary": "#006c4b",
+                        "tertiary-fixed": "#ffdcbf",
+                        "on-tertiary-container": "#fffbff",
+                        "inverse-surface": "#2d3133",
+                        "primary-fixed-dim": "#adc6ff",
+                        "inverse-primary": "#adc6ff",
+                        "primary-container": "#0070eb",
+                        "background": "#f7f9fb",
+                        "tertiary": "#894d00",
+                        "on-secondary-fixed": "#002114",
+                        "primary-fixed": "#d8e2ff",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#64f9bc",
+                        "on-secondary-fixed-variant": "#005137",
+                        "error-container": "#ffdad6",
+                        "outline": "#717786",
+                        "on-primary-fixed-variant": "#004493",
+                        "on-error": "#ffffff",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-primary-fixed": "#001a41",
+                        "surface-dim": "#d8dadc",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed": "#2d1600",
+                        "surface-bright": "#f7f9fb",
+                        "primary": "#0058bc",
+                        "error": "#ba1a1a",
+                        "on-secondary": "#ffffff",
+                        "tertiary-container": "#ac6300",
+                        "surface-container-low": "#f2f4f6",
+                        "secondary-fixed": "#68fcbf",
+                        "tertiary-fixed-dim": "#ffb874",
+                        "on-surface-variant": "#414755",
+                        "surface-variant": "#e0e3e5",
+                        "secondary-fixed-dim": "#45dfa4",
+                        "surface": "#f7f9fb",
+                        "on-background": "#191c1e",
+                        "surface-container-high": "#e6e8ea",
+                        "inverse-on-surface": "#eff1f3",
+                        "surface-container": "#eceef0",
+                        "on-surface": "#191c1e",
+                        "on-secondary-container": "#00714e",
+                        "on-primary-container": "#fefcff",
+                        "surface-tint": "#005bc1",
+                        "outline-variant": "#c1c6d7"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-padding-mobile": "20px",
+                        "container-padding-desktop": "40px",
+                        "base": "8px",
+                        "stack-sm": "12px",
+                        "stack-lg": "48px",
+                        "stack-md": "24px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "label-md": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f7f9fb;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .qr-gradient {
+            background: linear-gradient(135deg, #0058bc 0%, #0070eb 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-on-background bg-background min-h-screen pb-32">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-container-padding-mobile md:px-container-padding-desktop h-16 bg-surface dark:bg-on-background shadow-sm">
+<div class="flex items-center gap-3">
+<div class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">MixueVivu</div>
+<span class="hidden md:inline-block px-3 py-1 bg-primary-container text-white text-[10px] uppercase tracking-widest rounded-full font-bold">Admin</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-surface-variant p-2 rounded-full hover:bg-surface-container-low transition-colors">notifications</button>
+<div class="w-10 h-10 rounded-full border-2 border-primary-fixed overflow-hidden">
+<img alt="User Profile" data-alt="A professional headshot of a smiling male administrative manager in a bright, modern office setting. The lighting is soft and high-key, reflecting a vibrant voyager travel brand aesthetic with clean white backgrounds and subtle blue accents. The image conveys trust, efficiency, and professional approachability for a travel tech company." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpmRYbnL-YVyQDj9dhIIa1BM4RIgR0Li38v0WfvLytRcmsWZbLjkq1B3rPwM4N2-PIf7pgxpBOOKxg7UMd4U58Ff-2--03Yc2_JxFh-JLOwcy3dVz7NzBNh4kDYbbnba5wgKJ7V612N9LpkZT3pl5p9MqU-T6HLRxDyWg2Fk4PwgYIgMcYehBHT9WnEK0lXyr5WXxtcYPFZK__N2xmnksq9ZlDWvQFZqV_JsZgSQeBXwIajNHASZMzneqYwJvB80MtqqBtvuQAaQc6"/>
+</div>
+</div>
+</header>
+<main class="pt-24 px-container-padding-mobile md:px-container-padding-desktop max-w-7xl mx-auto space-y-8">
+<!-- Summary Section: Metrics -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Total Revenue -->
+<div class="bg-surface-container-lowest p-6 rounded-[24px] shadow-[0px_4px_20px_rgba(0,0,0,0.05)] flex flex-col justify-between group hover:translate-y-[-4px] transition-transform duration-300">
+<div class="flex justify-between items-start">
+<div class="p-3 bg-primary-fixed rounded-xl text-primary">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<span class="text-secondary font-label-md bg-secondary-container/20 px-2 py-1 rounded-lg">+12.5%</span>
+</div>
+<div class="mt-4">
+<p class="font-label-md text-on-surface-variant">Total Revenue</p>
+<h3 class="font-headline-lg text-headline-lg text-on-surface mt-1">$42,850.00</h3>
+</div>
+</div>
+<!-- New Bookings -->
+<div class="bg-surface-container-lowest p-6 rounded-[24px] shadow-[0px_4px_20px_rgba(0,0,0,0.05)] flex flex-col justify-between group hover:translate-y-[-4px] transition-transform duration-300">
+<div class="flex justify-between items-start">
+<div class="p-3 bg-tertiary-fixed rounded-xl text-tertiary">
+<span class="material-symbols-outlined">confirmation_number</span>
+</div>
+<span class="text-secondary font-label-md bg-secondary-container/20 px-2 py-1 rounded-lg">+8 today</span>
+</div>
+<div class="mt-4">
+<p class="font-label-md text-on-surface-variant">New Bookings</p>
+<h3 class="font-headline-lg text-headline-lg text-on-surface mt-1">156</h3>
+</div>
+</div>
+<!-- Active Tours -->
+<div class="bg-surface-container-lowest p-6 rounded-[24px] shadow-[0px_4px_20px_rgba(0,0,0,0.05)] flex flex-col justify-between group hover:translate-y-[-4px] transition-transform duration-300">
+<div class="flex justify-between items-start">
+<div class="p-3 bg-secondary-fixed rounded-xl text-on-secondary-container">
+<span class="material-symbols-outlined">explore</span>
+</div>
+<span class="text-on-surface-variant font-label-md">Current month</span>
+</div>
+<div class="mt-4">
+<p class="font-label-md text-on-surface-variant">Active Tours</p>
+<h3 class="font-headline-lg text-headline-lg text-on-surface mt-1">24</h3>
+</div>
+</div>
+</section>
+<!-- Main Dashboard Layout: 2 Columns -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Left Column: Transactions & Quick Actions -->
+<div class="lg:col-span-8 space-y-8">
+<!-- Quick Actions Area -->
+<section class="bg-primary p-8 rounded-[24px] text-white overflow-hidden relative shadow-lg">
+<div class="relative z-10">
+<h2 class="font-headline-md text-headline-md mb-2">Quick Operations</h2>
+<p class="font-body-md text-primary-fixed/80 mb-6 max-w-md">Instantly manage customer payments and streamline your workflow with one-click actions.</p>
+<div class="flex flex-wrap gap-4">
+<button class="flex items-center gap-2 bg-white text-primary px-6 py-3 rounded-xl font-label-md active:scale-95 transition-transform hover:shadow-xl" onclick="openQRModal()">
+<span class="material-symbols-outlined">qr_code_2</span>
+                                Generate Payment QR
+                            </button>
+<button class="flex items-center gap-2 bg-primary-container text-white border border-primary-fixed/30 px-6 py-3 rounded-xl font-label-md hover:bg-primary-container/80 transition-colors">
+<span class="material-symbols-outlined">add_circle</span>
+                                New Booking
+                            </button>
+</div>
+</div>
+<!-- Abstract Background Shape -->
+<div class="absolute -top-10 -right-10 w-48 h-48 bg-primary-fixed/10 rounded-full blur-3xl"></div>
+<div class="absolute -bottom-10 right-20 w-32 h-32 bg-secondary-container/10 rounded-full blur-2xl"></div>
+</section>
+<!-- Recent Transactions -->
+<section class="bg-surface-container-lowest rounded-[24px] shadow-[0px_4px_20px_rgba(0,0,0,0.05)] overflow-hidden">
+<div class="p-6 border-b border-outline-variant flex justify-between items-center">
+<h2 class="font-headline-md text-headline-md text-on-surface">Recent Transactions</h2>
+<button class="text-primary font-label-md hover:underline">View All</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low text-on-surface-variant font-label-sm uppercase tracking-wider">
+<tr>
+<th class="px-6 py-4">Customer</th>
+<th class="px-6 py-4">Tour Name</th>
+<th class="px-6 py-4">Amount</th>
+<th class="px-6 py-4">Status</th>
+<th class="px-6 py-4 text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant font-body-md">
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-6 py-4 font-semibold">Alex Johnson</td>
+<td class="px-6 py-4">Bali Beach Retreat</td>
+<td class="px-6 py-4 font-bold text-primary">$1,200.00</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary-container text-on-secondary-container">
+<span class="w-1.5 h-1.5 rounded-full bg-on-secondary-container"></span>
+                                            Success
+                                        </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="material-symbols-outlined text-outline hover:text-primary">more_vert</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-6 py-4 font-semibold">Maria Garcia</td>
+<td class="px-6 py-4">Hokkaido Winter Trail</td>
+<td class="px-6 py-4 font-bold text-primary">$2,450.00</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-tertiary-fixed text-on-tertiary-fixed-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-on-tertiary-fixed-variant"></span>
+                                            Pending
+                                        </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="material-symbols-outlined text-outline hover:text-primary">more_vert</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-6 py-4 font-semibold">Kevin Smith</td>
+<td class="px-6 py-4">Santorini Sunsets</td>
+<td class="px-6 py-4 font-bold text-primary">$890.00</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary-container text-on-secondary-container">
+<span class="w-1.5 h-1.5 rounded-full bg-on-secondary-container"></span>
+                                            Success
+                                        </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="material-symbols-outlined text-outline hover:text-primary">more_vert</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+<!-- Right Column: QR & Sidebar -->
+<div class="lg:col-span-4 space-y-8">
+<!-- Live QR Payment Section -->
+<section class="bg-surface-container-lowest p-8 rounded-[32px] shadow-[0px_8px_30px_rgba(0,0,0,0.08)] border border-primary-fixed/20 relative overflow-hidden">
+<div class="text-center space-y-6 relative z-10">
+<div class="inline-block p-4 bg-primary-container/10 rounded-full">
+<span class="material-symbols-outlined text-primary text-4xl">contactless</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">QR Payment</h3>
+<p class="font-label-md text-on-surface-variant">Instant customer checkout</p>
+</div>
+<div class="mx-auto w-48 h-48 bg-white p-4 rounded-2xl shadow-inner border border-outline-variant flex items-center justify-center relative group">
+<!-- Simulated Dynamic QR Code -->
+<div class="w-full h-full bg-slate-50 flex items-center justify-center relative rounded-lg overflow-hidden">
+<span class="material-symbols-outlined text-6xl text-primary/30">qr_code_2</span>
+<!-- Animated scanner line -->
+<div class="absolute top-0 left-0 w-full h-1 bg-primary/40 animate-bounce"></div>
+</div>
+<div class="absolute inset-0 bg-white/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl cursor-pointer">
+<span class="material-symbols-outlined text-primary text-3xl">refresh</span>
+</div>
+</div>
+<div class="space-y-1">
+<span class="font-label-sm text-on-surface-variant uppercase tracking-widest">Amount Due</span>
+<div class="text-3xl font-extrabold text-on-surface">$1,450.00</div>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<button class="flex items-center justify-center gap-2 bg-primary text-white py-3 rounded-xl font-label-md active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-sm">share</span>
+                                Share QR
+                            </button>
+<button class="flex items-center justify-center gap-2 bg-surface-container-low text-on-surface py-3 rounded-xl font-label-md hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-sm">print</span>
+                                Print
+                            </button>
+</div>
+</div>
+<!-- Decorative Circle -->
+<div class="absolute -bottom-20 -left-20 w-40 h-40 bg-secondary-container/5 rounded-full"></div>
+</section>
+<!-- Tour Status Tracking (Asymmetric Card) -->
+<section class="bg-surface-container-high/40 p-6 rounded-[24px] border border-outline-variant/30">
+<h3 class="font-label-md text-on-surface uppercase tracking-widest mb-4">Live Tour Map</h3>
+<div class="aspect-video bg-surface-variant rounded-xl overflow-hidden relative">
+<img alt="Map view" class="w-full h-full object-cover grayscale opacity-50" data-alt="A stylized, clean map view of a tropical island archipelago. The map is minimalist with soft pastel blues and whites, featuring glowing location pins in a vibrant sapphire blue. It's designed in a high-end travel dashboard style, looking like a sophisticated tracking system for a premium tour operator." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfvLWydVf_BDrwjHhPn2EThFmDOhidBCR2ai3Fx1bljpzx1CF51S1MGkR8oMG62B2iGU-UDsbpePk0Ml4PB23Ay51puhw2KjB3MyxAQcYWJShQweXLuHvFGAfgdqjI9Egsr67LfTxI8JvEei2fF17-uq8SGYbwCGexfvvmtQmfOhCy6bAlb56pAdSqv6O2MKesBXkkmQg9kqEn9bi-NEBJUGAOE5VTcv68m2Df_KgkYVBGWoi99_x2liphtXLMaVwXHs85c7Dwz7gV"/>
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="flex flex-col items-center gap-2">
+<div class="w-3 h-3 bg-primary rounded-full animate-ping"></div>
+<span class="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-bold shadow-sm">12 TOURS LIVE</span>
+</div>
+</div>
+</div>
+<div class="mt-4 space-y-3">
+<div class="flex items-center justify-between text-sm">
+<span class="text-on-surface-variant">Bali Expedition</span>
+<span class="text-secondary font-bold">On Track</span>
+</div>
+<div class="w-full bg-surface-variant h-1 rounded-full overflow-hidden">
+<div class="bg-secondary w-[65%] h-full"></div>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar (Mobile only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-surface/80 dark:bg-on-background/80 backdrop-blur-md border-t border-outline-variant shadow-[0px_-8px_30px_rgba(0,0,0,0.08)]">
+<div class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed font-semibold active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined">search</span>
+<span class="font-label-sm text-label-sm">Search</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined">favorite</span>
+<span class="font-label-sm text-label-sm">Favorites</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined">confirmation_number</span>
+<span class="font-label-sm text-label-sm">Bookings</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</div>
+</nav>
+<!-- QR Generation Modal Overlay (Hidden by default) -->
+<div class="fixed inset-0 z-[100] flex items-center justify-center bg-on-background/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300" id="qrModal">
+<div class="bg-surface p-8 rounded-[32px] shadow-2xl w-full max-w-md mx-4 transform scale-95 transition-transform duration-300" id="modalContent">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-headline-md text-headline-md text-on-surface">Generate Payment QR</h3>
+<button class="material-symbols-outlined text-outline p-1 hover:bg-surface-variant rounded-full" onclick="closeQRModal()">close</button>
+</div>
+<div class="space-y-4">
+<div>
+<label class="font-label-md text-on-surface-variant block mb-2">Select Booking</label>
+<select class="w-full bg-surface-container-low border-none rounded-xl p-3 font-body-md focus:ring-2 focus:ring-primary outline-none">
+<option>Alex Johnson - Bali Beach</option>
+<option>Maria Garcia - Hokkaido Winter</option>
+<option>New Customer...</option>
+</select>
+</div>
+<div>
+<label class="font-label-md text-on-surface-variant block mb-2">Amount ($)</label>
+<input class="w-full bg-surface-container-low border-none rounded-xl p-3 font-body-md focus:ring-2 focus:ring-primary outline-none" placeholder="0.00" type="number" value="1450.00"/>
+</div>
+<div class="pt-4">
+<button class="w-full bg-primary text-white py-4 rounded-2xl font-headline-md shadow-lg shadow-primary/30 active:scale-95 transition-transform">
+                        Confirm &amp; Generate
+                    </button>
+</div>
+</div>
+</div>
+</div>
+<script>
+        function openQRModal() {
+            const modal = document.getElementById('qrModal');
+            const content = document.getElementById('modalContent');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.add('opacity-100');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeQRModal() {
+            const modal = document.getElementById('qrModal');
+            const content = document.getElementById('modalContent');
+            modal.classList.remove('opacity-100');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // Close modal on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeQRModal();
+        });
+    </script>
+</body></html>

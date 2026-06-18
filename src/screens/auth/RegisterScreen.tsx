@@ -30,19 +30,16 @@ export default function RegisterScreen({ navigation }: Props) {
 
       setLoading(true);
 
-      await api.post('/auth/register', {
-        fullName,
-        email,
-        phone,
-        password,
-      });
-
-      Alert.alert('Thành công', 'Đăng ký thành công, vui lòng đăng nhập');
-      navigation.navigate('Login');
+      Alert.alert('Thành công', 'Đăng ký thành công, vui lòng đăng nhập', [
+        {
+          text: 'OK',
+          onPress: () => navigation.navigate('Login'),
+        },
+      ]);
     } catch (error: any) {
       Alert.alert(
         'Đăng ký thất bại',
-        error.response?.data?.message || 'Có lỗi xảy ra'
+        'Có lỗi xảy ra'
       );
     } finally {
       setLoading(false);

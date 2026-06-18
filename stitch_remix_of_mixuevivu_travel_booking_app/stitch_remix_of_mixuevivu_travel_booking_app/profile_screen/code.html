@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Profile - MixueVivu</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-high": "#e6e8ea",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed": "#2d1600",
+                        "background": "#f7f9fb",
+                        "surface-variant": "#e0e3e5",
+                        "surface-dim": "#d8dadc",
+                        "on-primary-container": "#fefcff",
+                        "on-secondary-fixed-variant": "#005137",
+                        "tertiary-fixed-dim": "#ffb874",
+                        "tertiary-container": "#ac6300",
+                        "on-primary-fixed-variant": "#004493",
+                        "tertiary-fixed": "#ffdcbf",
+                        "error": "#ba1a1a",
+                        "on-secondary": "#ffffff",
+                        "tertiary": "#894d00",
+                        "outline-variant": "#c1c6d7",
+                        "primary-container": "#0070eb",
+                        "inverse-primary": "#adc6ff",
+                        "on-primary-fixed": "#001a41",
+                        "on-secondary-container": "#00714e",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#2d3133",
+                        "primary": "#0058bc",
+                        "secondary": "#006c4b",
+                        "on-surface-variant": "#414755",
+                        "on-error": "#ffffff",
+                        "surface-bright": "#f7f9fb",
+                        "primary-fixed-dim": "#adc6ff",
+                        "secondary-fixed": "#68fcbf",
+                        "on-surface": "#191c1e",
+                        "surface-container-low": "#f2f4f6",
+                        "error-container": "#ffdad6",
+                        "surface-container": "#eceef0",
+                        "on-tertiary-container": "#fffbff",
+                        "surface-container-highest": "#e0e3e5",
+                        "surface": "#f7f9fb",
+                        "on-background": "#191c1e",
+                        "primary-fixed": "#d8e2ff",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#64f9bc",
+                        "surface-tint": "#005bc1",
+                        "outline": "#717786",
+                        "inverse-on-surface": "#eff1f3",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed-variant": "#6a3b00",
+                        "on-secondary-fixed": "#002114",
+                        "secondary-fixed-dim": "#45dfa4"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-padding-desktop": "40px",
+                        "base": "8px",
+                        "stack-md": "24px",
+                        "stack-lg": "48px",
+                        "container-padding-mobile": "20px",
+                        "stack-sm": "12px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "label-md": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .profile-card-shadow {
+            box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen">
+<!-- Top App Bar -->
+<header class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-20 md:px-40 h-16 bg-surface shadow-sm">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">MixueVivu</h1>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-surface-variant p-2 hover:bg-surface-container-low transition-colors rounded-full" data-icon="notifications">notifications</button>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-container">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A professional and friendly close-up portrait of a young man with a warm smile, set against a blurred outdoor modern architectural background. The lighting is soft and natural, emphasizing a bright and approachable persona consistent with a premium travel application's clean aesthetic. The color palette features soft blues and warm skin tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1nV7wyqhldIDd-XH1v36T2_KWWakOcVkU0wO1V6zb7LNgXoXvLAuROFrSV6_5q9CXQqzVwsM8kI4P38pDiJnbgJSqKDvNvOpvhTzj69_Aevl0BvdOfKXBOJ1iNnPFDL_wuhb_UXenjX2z0RCxRA4DqEZkRpD4ANNWRiTZ5E9tVzGDC1m-7tYzl9fLeu3B1w3iThge1SKod9Nm-g1Gqx_sykFP3AikyXAtqmiMaUjysrTYt5jv0NH5CeAsR7oiBEh9pKRZreXHz1U"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-24 pb-32 px-5 md:px-0 max-w-2xl mx-auto space-y-8">
+<!-- Profile Header Section -->
+<section class="flex flex-col items-center text-center space-y-4 pt-4">
+<div class="relative group">
+<div class="w-32 h-32 md:w-40 md:h-40 rounded-full p-1 bg-gradient-to-tr from-primary to-secondary overflow-hidden profile-card-shadow">
+<img alt="John Doe Large Avatar" class="w-full h-full object-cover rounded-full border-4 border-surface" data-alt="A detailed high-resolution portrait of a stylish young male traveler with a confident smile, wearing casual modern attire. The background is a soft-focus vista of a contemporary airport lounge with bright, airy windows. The visual style is polished and high-end, using a palette of soft whites and deep blues to convey reliability and optimistic travel experiences." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9miKUBVjLkLsCWKD_nF1Q1-AlVLWlVx2GzKprTEjmX_vspyVMUxmVs3XCWHnc-Uplc6fHvqN9uJEZlBeFSAHvl3X_HZkZYN2eUa9_sAiIEAfce4HTks0gOO_b_Vx7TNcntxwxLzEbp48Gr_llUu1Ci7y3kBl6nGRTDQm8NvWn0TfxZuGqy1PWpIVmPKVjPBCQ9EwfmD88giV_cnb82F3W6CFo8CeWql3rn6LT3v-CwvrbDGnG5R1-zwf4M6V22Wt9dimrKNxtFeY"/>
+</div>
+<button class="absolute bottom-2 right-2 bg-primary text-white p-2 rounded-full shadow-lg active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-sm">edit</span>
+</button>
+</div>
+<div class="space-y-1">
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-background">John Doe</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">john.doe@email.com</p>
+</div>
+<div class="flex gap-4 pt-2">
+<div class="bg-surface profile-card-shadow px-6 py-3 rounded-xl border border-surface-container-high">
+<p class="font-label-sm text-label-sm text-on-surface-variant">Bookings</p>
+<p class="font-headline-md text-headline-md text-primary">12</p>
+</div>
+<div class="bg-surface profile-card-shadow px-6 py-3 rounded-xl border border-surface-container-high">
+<p class="font-label-sm text-label-sm text-on-surface-variant">Reviews</p>
+<p class="font-headline-md text-headline-md text-secondary">24</p>
+</div>
+</div>
+</section>
+<!-- Menu List Section -->
+<section class="space-y-stack-sm">
+<div class="bg-surface profile-card-shadow rounded-2xl overflow-hidden border border-surface-container-high">
+<!-- My Bookings -->
+<button class="w-full flex items-center justify-between p-5 hover:bg-surface-container-low transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-primary-fixed flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="confirmation_number">confirmation_number</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface">My Bookings</span>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors" data-icon="chevron_right">chevron_right</span>
+</button>
+<div class="h-[1px] bg-surface-container-high mx-5"></div>
+<!-- Favorites -->
+<button class="w-full flex items-center justify-between p-5 hover:bg-surface-container-low transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-secondary-fixed flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface">Favorites</span>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-secondary transition-colors" data-icon="chevron_right">chevron_right</span>
+</button>
+<div class="h-[1px] bg-surface-container-high mx-5"></div>
+<!-- Settings -->
+<button class="w-full flex items-center justify-between p-5 hover:bg-surface-container-low transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface">Settings</span>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-on-surface transition-colors" data-icon="chevron_right">chevron_right</span>
+</button>
+<div class="h-[1px] bg-surface-container-high mx-5"></div>
+<!-- Help Center -->
+<button class="w-full flex items-center justify-between p-5 hover:bg-surface-container-low transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface">Help Center</span>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-on-surface transition-colors" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+<!-- Logout -->
+<div class="pt-4">
+<button class="w-full flex items-center justify-between p-5 bg-error-container/20 border border-error-container/30 rounded-2xl hover:bg-error-container/40 transition-all group">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-error-container flex items-center justify-center text-error">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+</div>
+<span class="font-label-md text-label-md text-error font-bold">Logout</span>
+</div>
+<span class="material-symbols-outlined text-error/60" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</section>
+<!-- Referral Card -->
+<section class="bg-primary p-6 rounded-3xl relative overflow-hidden text-white shadow-lg">
+<div class="relative z-10 space-y-2 max-w-[70%]">
+<h3 class="font-headline-md text-headline-md">Refer &amp; Earn</h3>
+<p class="font-label-sm text-label-sm opacity-90">Invite your friends to MixueVivu and get $25 off your next booking.</p>
+<button class="mt-4 bg-white text-primary font-bold px-6 py-2 rounded-full font-label-md text-label-md active:scale-95 transition-transform">Invite Friends</button>
+</div>
+<div class="absolute -right-10 -top-10 opacity-20 transform rotate-12">
+<span class="material-symbols-outlined text-[160px]" style="font-variation-settings: 'FILL' 1;">card_giftcard</span>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-surface/80 backdrop-blur-md border-t border-outline-variant shadow-[0px_-8px_30px_rgba(0,0,0,0.08)] rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+<span class="font-label-sm text-label-sm">Search</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+<span class="font-label-sm text-label-sm">Favorites</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="confirmation_number">confirmation_number</span>
+<span class="font-label-sm text-label-sm">Bookings</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary font-semibold active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="person" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+<script>
+        // Simple micro-interaction for ripples or state updates
+        document.querySelectorAll('button, a').forEach(el => {
+            el.addEventListener('click', function(e) {
+                // Future expansion: ripple effect logic
+            });
+        });
+
+        // Dynamic scroll behavior for the TopAppBar
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 10) {
+                header.classList.add('shadow-md');
+                header.classList.add('bg-surface/95');
+                header.classList.add('backdrop-blur-sm');
+            } else {
+                header.classList.remove('shadow-md');
+                header.classList.remove('bg-surface/95');
+                header.classList.remove('backdrop-blur-sm');
+            }
+        });
+    </script>
+</body></html>

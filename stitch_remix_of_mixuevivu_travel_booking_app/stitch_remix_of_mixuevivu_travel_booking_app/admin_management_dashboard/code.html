@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MixueVivu Admin Dashboard</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-container": "#0070eb",
+                    "on-secondary-fixed": "#002114",
+                    "secondary-fixed": "#68fcbf",
+                    "on-primary-fixed": "#001a41",
+                    "on-surface": "#191c1e",
+                    "tertiary-fixed": "#ffdcbf",
+                    "on-primary-container": "#fefcff",
+                    "surface-container": "#eceef0",
+                    "background": "#f7f9fb",
+                    "on-secondary": "#ffffff",
+                    "inverse-on-surface": "#eff1f3",
+                    "surface-container-highest": "#e0e3e5",
+                    "outline": "#717786",
+                    "error": "#ba1a1a",
+                    "primary-fixed": "#d8e2ff",
+                    "inverse-surface": "#2d3133",
+                    "outline-variant": "#c1c6d7",
+                    "on-surface-variant": "#414755",
+                    "secondary": "#006c4b",
+                    "on-error-container": "#93000a",
+                    "surface": "#f7f9fb",
+                    "secondary-fixed-dim": "#45dfa4",
+                    "on-tertiary-fixed": "#2d1600",
+                    "surface-variant": "#e0e3e5",
+                    "surface-tint": "#005bc1",
+                    "on-primary": "#ffffff",
+                    "tertiary-container": "#ac6300",
+                    "on-secondary-fixed-variant": "#005137",
+                    "tertiary-fixed-dim": "#ffb874",
+                    "on-tertiary-container": "#fffbff",
+                    "on-tertiary-fixed-variant": "#6a3b00",
+                    "surface-container-high": "#e6e8ea",
+                    "on-tertiary": "#ffffff",
+                    "secondary-container": "#64f9bc",
+                    "on-background": "#191c1e",
+                    "surface-bright": "#f7f9fb",
+                    "on-error": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-fixed-variant": "#004493",
+                    "surface-dim": "#d8dadc",
+                    "inverse-primary": "#adc6ff",
+                    "primary-fixed-dim": "#adc6ff",
+                    "on-secondary-container": "#00714e",
+                    "error-container": "#ffdad6",
+                    "surface-container-low": "#f2f4f6",
+                    "tertiary": "#894d00",
+                    "primary": "#0058bc"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "container-padding-desktop": "40px",
+                    "base": "8px",
+                    "stack-md": "24px",
+                    "stack-sm": "12px",
+                    "stack-lg": "48px",
+                    "gutter": "16px",
+                    "container-padding-mobile": "20px"
+            },
+            "fontFamily": {
+                    "body-md": ["Plus Jakarta Sans"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "headline-lg-mobile": ["Plus Jakarta Sans"],
+                    "label-md": ["Plus Jakarta Sans"],
+                    "body-lg": ["Plus Jakarta Sans"],
+                    "label-sm": ["Plus Jakarta Sans"],
+                    "headline-lg": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e0e3e5; border-radius: 10px; }
+        .glass-nav { backdrop-filter: blur(12px); background-color: rgba(255, 255, 255, 0.8); }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface min-h-screen">
+<!-- Navigation Drawer (Desktop Only) -->
+<aside class="hidden lg:flex flex-col fixed left-0 top-0 h-full border-r border-outline-variant/20 bg-surface-container-low dark:bg-inverse-surface h-screen w-72 rounded-r-xl shadow-sm z-40 transition-all duration-300" id="nav-drawer">
+<div class="p-6">
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">MixueVivu</h1>
+</div>
+<nav class="flex-1 mt-4">
+<a class="flex items-center gap-3 px-4 py-3 bg-primary-container text-on-primary-container rounded-lg mx-2 my-1 active:scale-95 transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg mx-2 my-1 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">event_available</span>
+<span class="font-body-md text-body-md">Bookings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg mx-2 my-1 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="font-body-md text-body-md">Tour Management</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg mx-2 my-1 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">rate_review</span>
+<span class="font-body-md text-body-md">Reviews</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg mx-2 my-1 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">bar_chart</span>
+<span class="font-body-md text-body-md">Reports</span>
+</a>
+</nav>
+<div class="p-6 border-t border-outline-variant/20">
+<div class="flex items-center gap-3">
+<img alt="Admin Avatar" class="w-10 h-10 rounded-full object-cover" data-alt="A close-up professional portrait of a confident male executive in a sleek, modern office setting. The lighting is soft and natural, emphasizing a bright, trustworthy, and modern aesthetic. He is wearing a minimalist dark blazer, and the background shows a blurred high-end corporate interior with soft blue and white tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBk4cO_lkHRyu4iOia8BV1ZkuKYvmCuvzRlGsD14_ZivoaFyFODfEuI2EYvPZo6d44WGKt6Agyv2kRTSoZpQ43pIydbk4maqYSrV9rBMnaPYtaItssXgvlwi6kSjWchGRQgjpQl0KhWmaXAy3j3Iv1LpmAivs6NdqqSHWoXcdVfbxKVLl4kmd7Jrty30bJSbqIXWl_I0RTX2S9d9ND1C28SAJ7BBMh9GNbVxhQU3wFigcUa9mrvPcODI6TXj28L5t-vJxAtYZn_Kgua"/>
+<div>
+<p class="font-label-md text-label-md text-on-surface">MixueVivu Admin</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Super Admin</p>
+</div>
+</div>
+<p class="mt-4 font-label-sm text-label-sm text-outline opacity-50">v1.2.0</p>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="lg:ml-72 transition-all duration-300">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-50 flex justify-between items-center px-container-padding-mobile lg:px-container-padding-desktop h-20 w-full bg-surface-container-lowest dark:bg-surface-container-high shadow-sm">
+<div class="flex items-center gap-4">
+<button class="lg:hidden hover:bg-surface-variant/50 rounded-full p-2 transition-all">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h2 class="font-headline-md text-headline-md text-primary dark:text-primary-fixed-dim font-bold">Dashboard Overview</h2>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative group">
+<button class="hover:bg-surface-variant/50 rounded-full p-2 transition-all relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface-container-lowest"></span>
+</button>
+</div>
+<div class="h-8 w-[1px] bg-outline-variant/30 hidden md:block"></div>
+<div class="hidden md:block text-right">
+<p class="font-label-md text-label-md text-on-surface">Hello, Admin!</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Monday, Oct 23</p>
+</div>
+<img alt="Admin Profile" class="w-10 h-10 rounded-full object-cover border-2 border-primary-container/20" data-alt="A professional headshot of a person with a friendly and optimistic expression, set against a bright, airy background. The visual style is clean and corporate, using a color palette of soft blues and crisp whites to convey reliability and discovery. The lighting is diffused, giving a modern light-mode feeling." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvfkzkm69WAniZGu-iUiooSRvDhTBfrg9GJbZVYAiWu1ymnm4RTXyExr2W7MbcCr1jJ-Vgh27wRMuAk-q9fgDI6wagjHmSfqi42RlhvfYbIE3EOBA7VY4_qaD0hEEFgEFLtkArBP7T-6ASMgMVT5lHMLR9TyLnbTajlPYG1dU8mxs5ihuEwwb8BAH0UdIwOodLiKEHZpDBP0GwCD4LRPQkSt_WjoRFZxJ7mgbzMUkoAMPOJZj0zcQuk18-Cz-HcT0wTweIspQ8Y0G1"/>
+</div>
+</header>
+<div class="p-container-padding-mobile lg:p-container-padding-desktop">
+<!-- Summary Cards Section -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-gutter mb-stack-lg">
+<!-- Total Revenue -->
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] flex flex-col gap-2 relative overflow-hidden group hover:shadow-[0px_8px_30px_rgba(0,0,0,0.08)] transition-all">
+<div class="flex justify-between items-start">
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant">Total Revenue</p>
+<h3 class="font-headline-lg text-headline-lg text-on-surface">$128,430.00</h3>
+</div>
+<span class="flex items-center text-secondary font-label-md bg-secondary-container/30 px-2 py-1 rounded-lg">
+<span class="material-symbols-outlined text-[16px] mr-1">trending_up</span>
+                            +12.5%
+                        </span>
+</div>
+<div class="mt-4 h-12 w-full opacity-40">
+<!-- Simple Sparkline Representation -->
+<svg class="w-full h-full" viewbox="0 0 100 20">
+<path class="text-primary" d="M0 15 Q 10 5, 20 12 T 40 8 T 60 14 T 80 5 T 100 10" fill="none" stroke="currentColor" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+<!-- New Bookings -->
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] flex flex-col gap-2 hover:shadow-[0px_8px_30px_rgba(0,0,0,0.08)] transition-all">
+<div class="flex justify-between items-start">
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant">New Bookings Today</p>
+<h3 class="font-headline-lg text-headline-lg text-on-surface">42</h3>
+</div>
+<div class="bg-primary-container/10 p-2 rounded-lg text-primary">
+<span class="material-symbols-outlined">confirmation_number</span>
+</div>
+</div>
+<p class="font-label-sm text-label-sm text-outline mt-auto">8% more than yesterday</p>
+</div>
+<!-- Active Tours -->
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] flex flex-col gap-2 hover:shadow-[0px_8px_30px_rgba(0,0,0,0.08)] transition-all">
+<div class="flex justify-between items-start">
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant">Active Tours</p>
+<h3 class="font-headline-lg text-headline-lg text-on-surface">15</h3>
+</div>
+<div class="bg-tertiary-container/10 p-2 rounded-lg text-tertiary">
+<span class="material-symbols-outlined">explore</span>
+</div>
+</div>
+<div class="flex -space-x-2 mt-auto">
+<div class="w-6 h-6 rounded-full bg-primary-container text-[10px] flex items-center justify-center text-white border-2 border-surface-container-lowest">JD</div>
+<div class="w-6 h-6 rounded-full bg-secondary text-[10px] flex items-center justify-center text-white border-2 border-surface-container-lowest">SK</div>
+<div class="w-6 h-6 rounded-full bg-tertiary text-[10px] flex items-center justify-center text-white border-2 border-surface-container-lowest">+3</div>
+</div>
+</div>
+</section>
+<!-- Main Layout Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-start">
+<!-- Recent Bookings Table -->
+<section class="lg:col-span-8 bg-surface-container-lowest rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] overflow-hidden">
+<div class="p-6 border-b border-outline-variant/10 flex justify-between items-center">
+<h4 class="font-headline-md text-headline-md text-on-surface">Recent Bookings</h4>
+<button class="text-primary font-label-md hover:underline transition-all">See All</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50">
+<th class="px-6 py-4 font-label-md text-on-surface-variant">Customer</th>
+<th class="px-6 py-4 font-label-md text-on-surface-variant">Tour</th>
+<th class="px-6 py-4 font-label-md text-on-surface-variant">Amount</th>
+<th class="px-6 py-4 font-label-md text-on-surface-variant text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary-container/10 flex items-center justify-center text-primary font-bold text-xs">AM</div>
+<span class="font-body-md text-on-surface">Alex Morgan</span>
+</div>
+</td>
+<td class="px-6 py-4 font-body-md text-on-surface-variant">Ha Long Bay Cruise</td>
+<td class="px-6 py-4 font-label-md text-on-surface">$450.00</td>
+<td class="px-6 py-4 text-right">
+<button class="px-4 py-2 rounded-lg bg-primary/5 text-primary font-label-md hover:bg-primary hover:text-white transition-all active:scale-95">View</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary-container/30 flex items-center justify-center text-secondary font-bold text-xs">BT</div>
+<span class="font-body-md text-on-surface">Bella Thorne</span>
+</div>
+</td>
+<td class="px-6 py-4 font-body-md text-on-surface-variant">Sapa Trekking Adventure</td>
+<td class="px-6 py-4 font-label-md text-on-surface">$320.00</td>
+<td class="px-6 py-4 text-right">
+<button class="px-4 py-2 rounded-lg bg-primary/5 text-primary font-label-md hover:bg-primary hover:text-white transition-all active:scale-95">View</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-tertiary-container/10 flex items-center justify-center text-tertiary font-bold text-xs">CK</div>
+<span class="font-body-md text-on-surface">Chris Kim</span>
+</div>
+</td>
+<td class="px-6 py-4 font-body-md text-on-surface-variant">Da Nang City Tour</td>
+<td class="px-6 py-4 font-label-md text-on-surface">$180.00</td>
+<td class="px-6 py-4 text-right">
+<button class="px-4 py-2 rounded-lg bg-primary/5 text-primary font-label-md hover:bg-primary hover:text-white transition-all active:scale-95">View</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary-container/10 flex items-center justify-center text-primary font-bold text-xs">DR</div>
+<span class="font-body-md text-on-surface">Daniel Ricciardo</span>
+</div>
+</td>
+<td class="px-6 py-4 font-body-md text-on-surface-variant">Phu Quoc Island Escape</td>
+<td class="px-6 py-4 font-label-md text-on-surface">$590.00</td>
+<td class="px-6 py-4 text-right">
+<button class="px-4 py-2 rounded-lg bg-primary/5 text-primary font-label-md hover:bg-primary hover:text-white transition-all active:scale-95">View</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Pending Approvals & Quick Actions -->
+<aside class="lg:col-span-4 flex flex-col gap-gutter">
+<!-- Quick Actions Grid -->
+<div class="grid grid-cols-2 gap-3">
+<button class="flex flex-col items-center justify-center gap-2 p-4 bg-primary text-white rounded-xl shadow-md hover:brightness-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined">add_circle</span>
+<span class="font-label-sm">Add Tour</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-2 p-4 bg-surface-container-lowest text-primary border border-primary/20 rounded-xl hover:bg-primary/5 active:scale-95 transition-all">
+<span class="material-symbols-outlined">campaign</span>
+<span class="font-label-sm">Broadcast</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-2 p-4 bg-surface-container-lowest text-on-surface border border-outline-variant/30 rounded-xl hover:bg-surface-container-low active:scale-95 transition-all col-span-2">
+<span class="material-symbols-outlined">ios_share</span>
+<span class="font-label-sm">Export Reports</span>
+</button>
+</div>
+<!-- Pending Approvals -->
+<section class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] flex flex-col max-h-[500px]">
+<div class="p-6 border-b border-outline-variant/10">
+<h4 class="font-headline-md text-headline-md text-on-surface">Pending Approval</h4>
+</div>
+<div class="overflow-y-auto custom-scrollbar p-4 flex flex-col gap-4">
+<!-- Review Approval -->
+<div class="p-4 rounded-xl border border-outline-variant/10 bg-surface-container-low/30 hover:border-primary/30 transition-all cursor-pointer group">
+<div class="flex items-center justify-between mb-2">
+<span class="font-label-sm text-tertiary bg-tertiary-fixed px-2 py-0.5 rounded-full">New Review</span>
+<span class="font-label-sm text-outline">2h ago</span>
+</div>
+<p class="font-body-md text-on-surface line-clamp-2">"The tour was amazing! The guide was very knowledgeable about the history of Hue Imperial City..."</p>
+<div class="mt-3 flex gap-2">
+<button class="flex-1 py-1.5 rounded-lg bg-secondary text-white font-label-sm hover:brightness-110 transition-all">Approve</button>
+<button class="flex-1 py-1.5 rounded-lg bg-surface-container-highest text-on-surface-variant font-label-sm hover:bg-error/10 hover:text-error transition-all">Decline</button>
+</div>
+</div>
+<!-- New Tour Submission -->
+<div class="p-4 rounded-xl border border-outline-variant/10 bg-surface-container-low/30 hover:border-primary/30 transition-all cursor-pointer group">
+<div class="flex items-center justify-between mb-2">
+<span class="font-label-sm text-primary bg-primary-fixed px-2 py-0.5 rounded-full">Tour Listing</span>
+<span class="font-label-sm text-outline">5h ago</span>
+</div>
+<div class="flex gap-3 mb-3">
+<div class="w-12 h-12 rounded-lg bg-surface-variant overflow-hidden shrink-0">
+<img alt="Tour Image" class="w-full h-full object-cover" data-alt="A breathtaking cinematic landscape of terraced rice fields in Northwest Vietnam during the golden hour. The setting sun casts a warm, orange glow across the verdant green hills. The image exudes serenity and the joy of discovery, perfectly aligned with a modern travel brand aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDM9hgaM5-ybTr317iJ6ViloAWOrQvvafNCGqZ3K8rXwETPUBcNlruSJPRRJPDfYvdyHk0V5Br6b89lojuqy2BKXLYJ_HFiv_qkfuhCMhwNehUx_Jap8UHfcOIRIJ8Y6noQs4AQywG1nHak5wfXtaijh4nXLSk6p8lMdMHKGLzv_fCHkRvuyH8XDODSBTsH1tHaFR_z0L3PScOTxt6Et422RZwwOg7Z7deDQI30l7Si57evH3YMtUAByQON2N_A33j6nr2A7a1v--qC"/>
+</div>
+<div>
+<p class="font-label-md text-on-surface">Mekong Delta Boat Trip</p>
+<p class="font-label-sm text-outline">by AdventureCo</p>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 py-1.5 rounded-lg bg-primary text-white font-label-sm hover:brightness-110 transition-all">Review</button>
+</div>
+</div>
+<!-- User Verification -->
+<div class="p-4 rounded-xl border border-outline-variant/10 bg-surface-container-low/30 hover:border-primary/30 transition-all cursor-pointer group">
+<div class="flex items-center justify-between mb-2">
+<span class="font-label-sm text-secondary bg-secondary-fixed px-2 py-0.5 rounded-full">Guide Verification</span>
+<span class="font-label-sm text-outline">1d ago</span>
+</div>
+<p class="font-body-md text-on-surface">Michael Scott requested professional guide verification.</p>
+<div class="mt-3 flex gap-2">
+<button class="flex-1 py-1.5 rounded-lg bg-primary text-white font-label-sm hover:brightness-110 transition-all">Check Docs</button>
+</div>
+</div>
+</div>
+</section>
+</aside>
+</div>
+</div>
+</main>
+<!-- Mobile Navigation Bar -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 glass-nav h-20 border-t border-outline-variant/10 flex items-center justify-around px-4 z-50">
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="font-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">event_available</span>
+<span class="font-label-sm">Bookings</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="font-label-sm">Tours</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span class="font-label-sm">Alerts</span>
+</a>
+</nav>
+<!-- Floating Action Button (Mobile Only) -->
+<button class="md:hidden fixed bottom-24 right-6 w-14 h-14 bg-primary text-white rounded-full shadow-[0px_8px_30px_rgba(0,112,235,0.3)] flex items-center justify-center active:scale-90 transition-transform z-40">
+<span class="material-symbols-outlined text-[28px]">add</span>
+</button>
+<script>
+        // Micro-interactions and Sidebar toggle
+        document.querySelector('[data-icon="menu"]')?.parentElement?.addEventListener('click', () => {
+            const drawer = document.getElementById('nav-drawer');
+            if (drawer.classList.contains('hidden')) {
+                drawer.classList.remove('hidden');
+                drawer.classList.add('flex', 'fixed', 'inset-0', 'w-3/4');
+            } else {
+                drawer.classList.add('hidden');
+                drawer.classList.remove('flex', 'fixed', 'inset-0', 'w-3/4');
+            }
+        });
+
+        // Simple dashboard data animation
+        document.addEventListener('DOMContentLoaded', () => {
+            const counters = document.querySelectorAll('h3.font-headline-lg');
+            counters.forEach(counter => {
+                const target = parseInt(counter.innerText.replace(/[^0-9]/g, ''));
+                if (isNaN(target)) return;
+                let count = 0;
+                const updateCount = () => {
+                    const increment = target / 50;
+                    if (count < target) {
+                        count += increment;
+                        counter.innerText = counter.innerText.includes('$') 
+                            ? `$${Math.ceil(count).toLocaleString()}` 
+                            : Math.ceil(count).toLocaleString();
+                        setTimeout(updateCount, 20);
+                    } else {
+                        counter.innerText = counter.innerText.includes('$') 
+                            ? `$${target.toLocaleString()}` 
+                            : target.toLocaleString();
+                    }
+                };
+                updateCount();
+            });
+        });
+    </script>
+</body></html>

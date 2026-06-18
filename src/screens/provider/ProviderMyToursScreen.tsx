@@ -1,0 +1,330 @@
+import { useEffect, useState, useCallback } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { tourService } from '../../api/services';
+import { Tour } from '../../types';
+
+const COLORS = {
+  primary: '#006c4b',
+  primaryLight: '#e6f4ea',
+  bg: '#f7f9fb',
+  surface: '#ffffff',
+  text: '#191c1e',
+  textMuted: '#717786',
+  border: '#c1c6d7',
+  error: '#ba1a1a',
+  errorLight: '#fce8e6',
+};
+
+export default function ProviderMyToursScreen() {
+  const [tours, setTours] = useState<Tour[]>([]);
+  const [loading, setLoading] = useState(false);
+  const navigation = useNavigation<any>();
+
+  const fetchMyTours = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await tourService.getMyTours();
+      setTours(response.data.data || []);
+    } catch (error: any) {
+      Alert.alert(
+        'Lỗi',
+        error.response?.data?.message || 'Không thể lấy danh sách tour của bạn'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchMyTours();
+    });
+    return unsubscribe;
+  }, [navigation, fetchMyTours]);
+
+  const handleDeleteTour = (tourId: number) => {
+    Alert.alert(
+      'Xác nhận xóa',
+      'Bạn có chắc chắn muốn xóa tour du lịch này không? Hành động này không thể hoàn tác.',
+      [
+        { text: 'Hủy', style: 'cancel' },
+        {
+          text: 'Xóa',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await tourService.delete(tourId);
+              Alert.alert('Thành công', 'Đã xóa tour thành công.');
+              fetchMyTours();
+            } catch (error: any) {
+              Alert.alert('Lỗi', error.response?.data?.message || 'Lỗi khi xóa tour');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const getStatusDetails = (status?: string) => {
+    switch (status) {
+      case 'approved':
+        return { bg: '#e6f4ea', text: '#137333', label: 'Đã duyệt' };
+      case 'rejected':
+        return { bg: '#fce8e6', text: '#c5221f', label: 'Bị từ chối' };
+      default:
+        return { bg: '#fff4e5', text: '#b25e00', label: 'Chờ duyệt' };
+    }
+  };
+
+  const renderTourCard = ({ item }: { item: Tour }) => {
+    const status = getStatusDetails(item.status);
+
+    return (
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <Text style={styles.tourTitle} numberOfLines={1}>{item.title}</Text>
+          <View style={[styles.badge, { backgroundColor: status.bg }]}>
+            <Text style={[styles.badgeText, { color: status.text }]}>{status.label}</Text>
+          </View>
+        </View>
+
+        <View style={styles.detailsContainer}>
+          <Text style={styles.infoText}>📍 <Text style={styles.bold}>Điểm đến:</Text> {item.location}</Text>
+          <Text style={styles.infoText}>⏱️ <Text style={styles.bold}>Thời lượng:</Text> {item.duration}</Text>
+          <Text style={styles.infoText}>💰 <Text style={styles.bold}>Mức giá:</Text> {Number(item.price).toLocaleString('vi-VN')} VNĐ</Text>
+        </View>
+
+        {item.status === 'rejected' && item.rejectReason ? (
+          <View style={styles.rejectContainer}>
+            <Text style={styles.rejectLabel}>Lý do từ chối:</Text>
+            <Text style={styles.rejectText}>{item.rejectReason}</Text>
+          </View>
+        ) : null}
+
+        <View style={styles.actionRow}>
+          <TouchableOpacity
+            style={styles.deleteBtn}
+            onPress={() => handleDeleteTour(item.id)}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.deleteBtnText}>Xóa tour</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.headerTitle}>Tour Đã Đăng</Text>
+          <Text style={styles.headerSubtitle}>Quản lý và theo dõi trạng thái các tour du lịch của bạn</Text>
+        </View>
+        <TouchableOpacity
+          style={styles.addBtn}
+          onPress={() => navigation.navigate('AddTourTab')}
+          activeOpacity={0.85}
+        >
+          <Text style={styles.addBtnText}>+ Thêm Tour</Text>
+        </TouchableOpacity>
+      </View>
+
+      {loading && tours.length === 0 ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={styles.loadingText}>Đang tải danh sách tour...</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={tours}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderTourCard}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          onRefresh={fetchMyTours}
+          refreshing={loading}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyIcon}>🗺️</Text>
+              <Text style={styles.emptyTitle}>Chưa đăng tour nào</Text>
+              <Text style={styles.emptySubtitle}>Hãy bắt đầu đăng bán những tour du lịch thú vị đầu tiên của bạn.</Text>
+            </View>
+          }
+        />
+      )}
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: COLORS.bg,
+  },
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 16,
+    backgroundColor: COLORS.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eceef0',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: COLORS.text,
+  },
+  headerSubtitle: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    marginTop: 4,
+    maxWidth: 220,
+    lineHeight: 16,
+  },
+  addBtn: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 14,
+  },
+  addBtnText: {
+    color: '#ffffff',
+    fontWeight: '700',
+    fontSize: 13,
+  },
+  listContent: {
+    padding: 16,
+    paddingBottom: 32,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    color: COLORS.textMuted,
+    fontSize: 14,
+  },
+  card: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#eceef0',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  tourTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.text,
+    flex: 1,
+    marginRight: 10,
+  },
+  badge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  badgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  detailsContainer: {
+    gap: 6,
+    marginBottom: 12,
+  },
+  infoText: {
+    fontSize: 14,
+    color: COLORS.text,
+  },
+  bold: {
+    fontWeight: '600',
+    color: COLORS.textMuted,
+  },
+  rejectContainer: {
+    backgroundColor: COLORS.errorLight,
+    padding: 12,
+    borderRadius: 12,
+    marginTop: 4,
+    marginBottom: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: COLORS.error,
+  },
+  rejectLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: COLORS.error,
+    marginBottom: 2,
+  },
+  rejectText: {
+    fontSize: 13,
+    color: COLORS.text,
+    lineHeight: 18,
+  },
+  actionRow: {
+    flexDirection: 'row',
+    borderTopWidth: 1,
+    borderTopColor: '#eceef0',
+    paddingTop: 12,
+    justifyContent: 'flex-end',
+  },
+  deleteBtn: {
+    backgroundColor: COLORS.errorLight,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
+  deleteBtnText: {
+    color: COLORS.error,
+    fontWeight: '700',
+    fontSize: 12,
+  },
+  emptyContainer: {
+    paddingTop: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+  },
+  emptyIcon: {
+    fontSize: 64,
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 6,
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    color: COLORS.textMuted,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+});

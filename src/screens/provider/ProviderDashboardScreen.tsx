@@ -14,10 +14,11 @@ import api from '../../api/api';
 import { Tour, User } from '../../types';
 
 type Props = {
+  navigation: any;
   onLogout: () => void;
 };
 
-export default function ProviderDashboardScreen({ onLogout }: Props) {
+export default function ProviderDashboardScreen({ navigation, onLogout }: Props) {
   const [user, setUser] = useState<User | null>(null);
   const [tours, setTours] = useState<Tour[]>([]);
   const [loading, setLoading] = useState(false);
@@ -54,9 +55,12 @@ export default function ProviderDashboardScreen({ onLogout }: Props) {
   };
 
   useEffect(() => {
-    getUserFromStorage();
-    fetchMyTours();
-  }, []);
+    const unsubscribe = navigation.addListener('focus', () => {
+      getUserFromStorage();
+      fetchMyTours();
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   const getStatusText = (status?: string) => {
     if (status === 'approved') return 'Đã duyệt';
@@ -104,12 +108,7 @@ export default function ProviderDashboardScreen({ onLogout }: Props) {
 
       <TouchableOpacity
         style={styles.addButton}
-        onPress={() =>
-          Alert.alert(
-            'Thông báo',
-            'Bước tiếp theo mình sẽ làm màn hình Add Tour cho provider.'
-          )
-        }
+        onPress={() => navigation.navigate('AddTourTab')}
       >
         <Text style={styles.addButtonText}>+ Đăng tour mới</Text>
       </TouchableOpacity>

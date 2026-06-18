@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-high": "#e6e8ea",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed": "#2d1600",
+                        "background": "#f7f9fb",
+                        "surface-variant": "#e0e3e5",
+                        "surface-dim": "#d8dadc",
+                        "on-primary-container": "#fefcff",
+                        "on-secondary-fixed-variant": "#005137",
+                        "tertiary-fixed-dim": "#ffb874",
+                        "tertiary-container": "#ac6300",
+                        "on-primary-fixed-variant": "#004493",
+                        "tertiary-fixed": "#ffdcbf",
+                        "error": "#ba1a1a",
+                        "on-secondary": "#ffffff",
+                        "tertiary": "#894d00",
+                        "outline-variant": "#c1c6d7",
+                        "primary-container": "#0070eb",
+                        "inverse-primary": "#adc6ff",
+                        "on-primary-fixed": "#001a41",
+                        "on-secondary-container": "#00714e",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#2d3133",
+                        "primary": "#0058bc",
+                        "secondary": "#006c4b",
+                        "on-surface-variant": "#414755",
+                        "on-error": "#ffffff",
+                        "surface-bright": "#f7f9fb",
+                        "primary-fixed-dim": "#adc6ff",
+                        "secondary-fixed": "#68fcbf",
+                        "on-surface": "#191c1e",
+                        "surface-container-low": "#f2f4f6",
+                        "error-container": "#ffdad6",
+                        "surface-container": "#eceef0",
+                        "on-tertiary-container": "#fffbff",
+                        "surface-container-highest": "#e0e3e5",
+                        "surface": "#f7f9fb",
+                        "on-background": "#191c1e",
+                        "primary-fixed": "#d8e2ff",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#64f9bc",
+                        "surface-tint": "#005bc1",
+                        "outline": "#717786",
+                        "inverse-on-surface": "#eff1f3",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed-variant": "#6a3b00",
+                        "on-secondary-fixed": "#002114",
+                        "secondary-fixed-dim": "#45dfa4"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-padding-desktop": "40px",
+                        "base": "8px",
+                        "stack-md": "24px",
+                        "stack-lg": "48px",
+                        "container-padding-mobile": "20px",
+                        "stack-sm": "12px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "label-md": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .fill-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md min-h-screen pb-32">
+<!-- TopAppBar Shell -->
+<header class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-container-padding-mobile md:px-container-padding-desktop h-16 bg-surface dark:bg-on-background shadow-sm">
+<div class="flex items-center gap-3">
+<img alt="User" class="w-8 h-8 rounded-full bg-surface-container-high object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTevTJevI_V-ozon1egi8kyRKq8idN4Eh7I2_YDxe2hS9sIK-eoHifaPQJopkVMDAC4AMA9symQTDeIRcPOgesXSBSloW-9IxaWvVA8JnDqC1522bcOgKXpgMsYzPywsWUVkfVMUIUAZzrdxhqyfpQ8nMEu1uj1Qwybe4uM10qAciIXiGe7toQPhGxjqMzEB5fe6Z_FLhCSrBdSltbu_Pmok-flGV0Dobpgn-Xi7GUr_Kf_7V6JwG7KpVa03mZnyl7w_eRkWBoIb8"/>
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">MixueVivu</span>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low dark:hover:bg-surface-variant transition-colors active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed">notifications</span>
+</button>
+</header>
+<main class="pt-24 px-container-padding-mobile max-w-4xl mx-auto">
+<!-- Screen Header -->
+<div class="mb-stack-md">
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">My Favorites</h1>
+<p class="text-on-surface-variant font-body-md mt-2">Manage your saved tours and dream destinations.</p>
+</div>
+<!-- Favorites List Container -->
+<div class="grid grid-cols-1 gap-gutter" id="favorites-list">
+<!-- Favorite Card 1 -->
+<div class="group bg-surface-container-lowest rounded-[24px] overflow-hidden shadow-[0px_4px_20px_rgba(0,0,0,0.05)] flex flex-col md:flex-row border border-outline-variant/30 hover:shadow-[0px_8px_30px_rgba(0,0,0,0.08)] transition-shadow">
+<div class="relative w-full md:w-64 h-48 md:h-auto overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A breathtaking sunset over the crystalline turquoise waters of a hidden tropical lagoon in Palawan. High-key natural lighting illuminates the lush limestone cliffs and emerald vegetation, creating a serene and breezy vacation atmosphere. The visual style is crisp and modern, featuring the vibrant blues and soft whites of the MixueVivu brand palette. The mood is optimistic and discovery-ready." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPJzWGAgI-Xptj2XBOEvee2K1FgLVTWZOgakq0tzspS3iedfvi8G5pxb0ORkjbKTGCTWiRBsCnkDuPFFSAKKUh1Ijo3GNan3oOMNMEf_JZYrMnSSVWDrPHy0vlL3grxmBC5T2-TZrriaZtdjTg2o1TA-J5mm72zkXlCfc-pOtUdNKu8af0Ds69LUhWxsUPwvTZbA2CAlniVaCnifAUM09b1hnAu5IKizLEs0EiToCSYrBKdGKHdn9I2Q2rPRI9uunGqrI2izv7FCc"/>
+<div class="absolute top-4 left-4 bg-tertiary/90 text-on-tertiary px-3 py-1 rounded-full flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[16px] fill-icon" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-md text-label-md">4.9</span>
+</div>
+</div>
+<div class="p-gutter flex-1 flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start">
+<h3 class="font-headline-md text-headline-md text-on-surface">Palawan Island Escape</h3>
+<button class="text-error w-10 h-10 flex items-center justify-center rounded-full hover:bg-error/10 transition-colors active:scale-90" onclick="removeFavorite(this)">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+<p class="text-on-surface-variant font-body-md mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+                            El Nido, Philippines
+                        </p>
+</div>
+<div class="mt-stack-sm flex items-end justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant">5 Days • 4 Nights</span>
+<div class="text-right">
+<p class="text-on-surface-variant font-label-sm">Starting from</p>
+<p class="font-headline-md text-headline-md text-primary">$850</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Favorite Card 2 -->
+<div class="group bg-surface-container-lowest rounded-[24px] overflow-hidden shadow-[0px_4px_20px_rgba(0,0,0,0.05)] flex flex-col md:flex-row border border-outline-variant/30 hover:shadow-[0px_8px_30px_rgba(0,0,0,0.08)] transition-shadow">
+<div class="relative w-full md:w-64 h-48 md:h-auto overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A luxury modern resort nestled in the Swiss Alps, surrounded by snow-capped peaks and pristine pine forests during a bright winter day. Soft sunlight reflects off the white snow, creating a high-key and airy aesthetic. The architecture features clean lines and large glass windows, echoing a modern corporate yet friendly style. The color palette is dominated by cool blues and crisp whites." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBOV9AfjxbJUK3X3Na6LLhaFDe5cERnvzUZIXq4VREqynxhYIQ3fe4vhzicmKAyjojqBtFByQh9oGsiOz1qA2AiWLZCabuevYXZman-lKW7eoIc4dag88WujvScn0P2m5eyGzwj4RAq1K_3VrykpJRdB_6gjZk02trJVsWREa4gLx4WqWvNsCiNSqy8cVw3m8CYFjxPDhioJPlfTYBDC-oWVE4qLh1xTFQaN93p8DjwgUV8WXmgNAo3mnp6QiveYkxOq57cxXdop0"/>
+<div class="absolute top-4 left-4 bg-tertiary/90 text-on-tertiary px-3 py-1 rounded-full flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[16px] fill-icon" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-md text-label-md">4.8</span>
+</div>
+</div>
+<div class="p-gutter flex-1 flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start">
+<h3 class="font-headline-md text-headline-md text-on-surface">Alpine Luxury Retreat</h3>
+<button class="text-error w-10 h-10 flex items-center justify-center rounded-full hover:bg-error/10 transition-colors active:scale-90" onclick="removeFavorite(this)">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+<p class="text-on-surface-variant font-body-md mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+                            Zermatt, Switzerland
+                        </p>
+</div>
+<div class="mt-stack-sm flex items-end justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant">3 Days • 2 Nights</span>
+<div class="text-right">
+<p class="text-on-surface-variant font-label-sm">Starting from</p>
+<p class="font-headline-md text-headline-md text-primary">$1,200</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Empty State (Hidden by default) -->
+<div class="hidden flex flex-col items-center justify-center py-stack-lg text-center animate-fade-in" id="empty-state">
+<div class="w-32 h-32 bg-surface-container rounded-full flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-[64px] text-outline">favorite_border</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-on-surface">No favorites yet?</h2>
+<p class="text-on-surface-variant font-body-md mt-2 max-w-xs mx-auto">
+                Explore tours and save them here to keep track of your next adventures!
+            </p>
+<button class="mt-stack-md bg-primary text-on-primary px-8 py-3 rounded-xl font-label-md hover:shadow-lg active:scale-95 transition-all">
+                Explore Now
+            </button>
+</div>
+</main>
+<!-- Bottom Navigation Shell -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-surface/80 dark:bg-on-background/80 backdrop-blur-md shadow-[0px_-8px_30px_rgba(0,0,0,0.08)]">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">search</span>
+<span class="font-label-sm text-label-sm">Search</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed font-semibold active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined fill-icon" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span class="font-label-sm text-label-sm">Favorites</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">confirmation_number</span>
+<span class="font-label-sm text-label-sm">Bookings</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+<script>
+        function removeFavorite(btn) {
+            const card = btn.closest('.group');
+            card.classList.add('opacity-0', 'scale-95', 'translate-x-12');
+            card.style.transition = 'all 0.4s ease';
+            
+            setTimeout(() => {
+                card.remove();
+                checkEmptyState();
+            }, 400);
+        }
+
+        function checkEmptyState() {
+            const list = document.getElementById('favorites-list');
+            const emptyState = document.getElementById('empty-state');
+            if (list.children.length === 0) {
+                list.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+            }
+        }
+    </script>
+</body></html>

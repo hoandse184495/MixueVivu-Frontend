@@ -7,9 +7,10 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from '../screens/auth/LoginScreen';
 import RegisterScreen from '../screens/auth/RegisterScreen';
 
-import UserHomeScreen from '../screens/user/UserHomeScreen';
-import ProviderDashboardScreen from '../screens/provider/ProviderDashboardScreen';
-import ManagerDashboardScreen from '../screens/manager/ManagerDashboardScreen';
+import UserNavigator from './UserNavigator';
+import ProviderNavigator from './ProviderNavigator';
+import ManagerNavigator from './ManagerNavigator';
+
 import { User, UserRole } from '../types';
 
 const Stack = createNativeStackNavigator();
@@ -22,13 +23,12 @@ export default function AppNavigator() {
     try {
       const token = await AsyncStorage.getItem('token');
       const userStorage = await AsyncStorage.getItem('user');
-
       if (token && userStorage) {
         setUser(JSON.parse(userStorage));
       } else {
         setUser(null);
       }
-    } catch (error) {
+    } catch {
       setUser(null);
     } finally {
       setCheckingLogin(false);
@@ -37,10 +37,7 @@ export default function AppNavigator() {
 
   const handleLoginSuccess = async () => {
     const userStorage = await AsyncStorage.getItem('user');
-
-    if (userStorage) {
-      setUser(JSON.parse(userStorage));
-    }
+    if (userStorage) setUser(JSON.parse(userStorage));
   };
 
   const handleLogout = async () => {
@@ -49,16 +46,12 @@ export default function AppNavigator() {
     setUser(null);
   };
 
-  const renderHomeByRole = (role: UserRole) => {
-    if (role === 'provider') {
-      return <ProviderDashboardScreen onLogout={handleLogout} />;
-    }
-
-    if (role === 'manager') {
-      return <ManagerDashboardScreen onLogout={handleLogout} />;
-    }
-
-    return <UserHomeScreen onLogout={handleLogout} />;
+  const renderNavigatorByRole = (role: UserRole) => {
+    if (role === 'provider')
+      return <ProviderNavigator onLogout={handleLogout} />;
+    if (role === 'manager')
+      return <ManagerNavigator onLogout={handleLogout} />;
+    return <UserNavigator onLogout={handleLogout} />;
   };
 
   useEffect(() => {
@@ -67,14 +60,8 @@ export default function AppNavigator() {
 
   if (checkingLogin) {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      >
-        <ActivityIndicator size="large" />
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f7f9fb' }}>
+        <ActivityIndicator size="large" color="#0058bc" />
       </View>
     );
   }
@@ -84,19 +71,15 @@ export default function AppNavigator() {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {user ? (
           <Stack.Screen name="Main">
-            {() => renderHomeByRole(user.role)}
+            {() => renderNavigatorByRole(user.role)}
           </Stack.Screen>
         ) : (
           <>
             <Stack.Screen name="Login">
               {(props) => (
-                <LoginScreen
-                  {...props}
-                  onLoginSuccess={handleLoginSuccess}
-                />
+                <LoginScreen {...props} onLoginSuccess={handleLoginSuccess} />
               )}
             </Stack.Screen>
-
             <Stack.Screen name="Register" component={RegisterScreen} />
           </>
         )}
