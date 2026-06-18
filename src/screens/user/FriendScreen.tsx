@@ -1,0 +1,314 @@
+import { useEffect, useState, useCallback } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { friendService } from '../../api/services';
+import { FriendRequest } from '../../types';
+
+const COLORS = {
+  primary: '#0058bc',
+  primaryLight: '#e8f0fe',
+  bg: '#f7f9fb',
+  surface: '#ffffff',
+  surfaceContainerLow: '#f2f4f6',
+  text: '#191c1e',
+  textMuted: '#717786',
+  border: '#c1c6d7',
+  success: '#006c4b',
+  successLight: '#e6f4ee',
+  error: '#ba1a1a',
+  errorLight: '#fdecea',
+};
+
+type TabType = 'friends' | 'requests' | 'search';
+
+export default function FriendScreen({ navigation }: { navigation?: any }) {
+  const [friends, setFriends] = useState<any[]>([]);
+  const [requests, setRequests] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabType>('friends');
+  const [keyword, setKeyword] = useState('');
+
+  const fetchFriends = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [friendsRes, requestsRes] = await Promise.all([
+        friendService.getFriends(),
+        friendService.getRequests(),
+      ]);
+      setFriends(friendsRes.data.data || []);
+      setRequests(requestsRes.data.data || []);
+    } catch (e: any) {
+      Alert.alert('Lỗi', 'Không thể tải danh sách bạn bè');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchFriends(); }, []);
+
+  const handleSearch = async () => {
+    if (!keyword.trim()) return;
+    try {
+      setLoading(true);
+      const res = await friendService.search(keyword);
+      setSearchResults(res.data.data || []);
+    } catch {
+      setSearchResults([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAccept = async (id: number) => {
+    try {
+      await friendService.accept(id);
+      Alert.alert('Thành công', 'Đã chấp nhận lời mời kết bạn');
+      fetchFriends();
+    } catch {
+      Alert.alert('Lỗi', 'Không thể chấp nhận lời mời');
+    }
+  };
+
+  const handleReject = async (id: number) => {
+    try {
+      await friendService.reject(id);
+      fetchFriends();
+    } catch {
+      Alert.alert('Lỗi', 'Không thể từ chối lời mời');
+    }
+  };
+
+  const handleSendRequest = async (receiverId: number) => {
+    try {
+      await friendService.sendRequest(receiverId);
+      Alert.alert('Đã gửi', 'Lời mời kết bạn đã được gửi!');
+    } catch (e: any) {
+      Alert.alert('Lỗi', e.response?.data?.message || 'Không thể gửi lời mời');
+    }
+  };
+
+  const getInitial = (name?: string) => (name ? name[0].toUpperCase() : 'U');
+
+  const renderFriend = ({ item }: { item: any }) => (
+    <View style={styles.card}>
+      <View style={styles.avatar}>
+        <Text style={styles.avatarText}>{getInitial(item.friendName || item.senderName)}</Text>
+      </View>
+      <View style={styles.cardInfo}>
+        <Text style={styles.cardName}>{item.friendName || item.senderName || 'Người dùng'}</Text>
+        <Text style={styles.cardEmail}>{item.friendEmail || item.senderEmail || ''}</Text>
+      </View>
+      <TouchableOpacity style={styles.removeBtn} onPress={() => {
+        Alert.alert('Xóa bạn bè', 'Bạn muốn xóa người này khỏi danh sách bạn bè?', [
+          { text: 'Hủy', style: 'cancel' },
+          { text: 'Xóa', style: 'destructive', onPress: () => friendService.remove(item.id).then(fetchFriends) },
+        ]);
+      }}>
+        <Text style={{ color: COLORS.error, fontSize: 12, fontWeight: '700' }}>Xóa</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderRequest = ({ item }: { item: any }) => (
+    <View style={styles.card}>
+      <View style={[styles.avatar, { backgroundColor: '#894d00' }]}>
+        <Text style={styles.avatarText}>{getInitial(item.senderName)}</Text>
+      </View>
+      <View style={styles.cardInfo}>
+        <Text style={styles.cardName}>{item.senderName || 'Người dùng'}</Text>
+        <Text style={styles.cardEmail}>{item.senderEmail || ''}</Text>
+      </View>
+      <View style={styles.requestActions}>
+        <TouchableOpacity style={styles.acceptBtn} onPress={() => handleAccept(item.id)}>
+          <Text style={styles.acceptBtnText}>✓</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.rejectBtn} onPress={() => handleReject(item.id)}>
+          <Text style={styles.rejectBtnText}>✕</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  const renderSearchResult = ({ item }: { item: any }) => (
+    <View style={styles.card}>
+      <View style={[styles.avatar, { backgroundColor: COLORS.success }]}>
+        <Text style={styles.avatarText}>{getInitial(item.fullName)}</Text>
+      </View>
+      <View style={styles.cardInfo}>
+        <Text style={styles.cardName}>{item.fullName || 'Người dùng'}</Text>
+        <Text style={styles.cardEmail}>{item.email || ''}</Text>
+      </View>
+      <TouchableOpacity style={styles.addBtn} onPress={() => handleSendRequest(item.id)}>
+        <Text style={styles.addBtnText}>+ Kết bạn</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const TABS = [
+    { key: 'friends' as TabType, label: `Bạn bè (${friends.length})` },
+    { key: 'requests' as TabType, label: `Lời mời (${requests.length})` },
+    { key: 'search' as TabType, label: 'Tìm kiếm' },
+  ];
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>👥 Bạn bè</Text>
+        <TouchableOpacity style={styles.refreshBtn} onPress={fetchFriends}>
+          <Text style={{ fontSize: 18 }}>🔄</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.tabBar}>
+        {TABS.map((tab) => (
+          <TouchableOpacity
+            key={tab.key}
+            style={[styles.tab, activeTab === tab.key && styles.tabActive]}
+            onPress={() => setActiveTab(tab.key)}
+          >
+            <Text style={[styles.tabLabel, activeTab === tab.key && styles.tabLabelActive]}>
+              {tab.label}
+            </Text>
+            {activeTab === tab.key && <View style={styles.tabIndicator} />}
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {activeTab === 'search' && (
+        <View style={styles.searchBox}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Tìm kiếm bạn bè..."
+            placeholderTextColor={COLORS.textMuted}
+            value={keyword}
+            onChangeText={setKeyword}
+            onSubmitEditing={handleSearch}
+            returnKeyType="search"
+          />
+          <TouchableOpacity style={styles.searchBtn} onPress={handleSearch}>
+            <Text style={{ color: '#fff', fontWeight: '700' }}>Tìm</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {loading ? (
+        <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: 50 }} />
+      ) : (
+        <FlatList
+          data={
+            activeTab === 'friends' ? friends :
+            activeTab === 'requests' ? requests :
+            searchResults
+          }
+          keyExtractor={(item) => item.id?.toString()}
+          renderItem={
+            activeTab === 'friends' ? renderFriend :
+            activeTab === 'requests' ? renderRequest :
+            renderSearchResult
+          }
+          contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={{ fontSize: 40 }}>👥</Text>
+              <Text style={styles.emptyText}>
+                {activeTab === 'friends' ? 'Chưa có bạn bè' :
+                 activeTab === 'requests' ? 'Không có lời mời nào' :
+                 'Tìm kiếm để kết bạn'}
+              </Text>
+            </View>
+          }
+        />
+      )}
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: COLORS.bg },
+  header: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingVertical: 14,
+    backgroundColor: COLORS.surface,
+    borderBottomWidth: 1, borderBottomColor: COLORS.border + '40',
+  },
+  headerTitle: { fontSize: 20, fontWeight: '800', color: COLORS.text },
+  refreshBtn: {
+    width: 40, height: 40, borderRadius: 20,
+    backgroundColor: COLORS.surfaceContainerLow,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  tabBar: {
+    flexDirection: 'row', backgroundColor: COLORS.surface,
+    borderBottomWidth: 1, borderBottomColor: COLORS.border + '50',
+  },
+  tab: { flex: 1, paddingVertical: 12, alignItems: 'center', position: 'relative' },
+  tabActive: {},
+  tabLabel: { fontSize: 12, fontWeight: '600', color: COLORS.textMuted },
+  tabLabelActive: { color: COLORS.primary, fontWeight: '700' },
+  tabIndicator: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    height: 3, backgroundColor: COLORS.primary, borderRadius: 2,
+  },
+  searchBox: {
+    flexDirection: 'row', padding: 12, gap: 8,
+    backgroundColor: COLORS.surface,
+  },
+  searchInput: {
+    flex: 1, backgroundColor: COLORS.surfaceContainerLow,
+    borderRadius: 12, paddingHorizontal: 14, height: 44,
+    fontSize: 14, color: COLORS.text,
+  },
+  searchBtn: {
+    backgroundColor: COLORS.primary, borderRadius: 12,
+    paddingHorizontal: 16, height: 44, justifyContent: 'center',
+  },
+  card: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    backgroundColor: COLORS.surface, borderRadius: 16,
+    padding: 14, marginBottom: 10,
+    elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 8,
+  },
+  avatar: {
+    width: 46, height: 46, borderRadius: 23,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center', justifyContent: 'center',
+    flexShrink: 0,
+  },
+  avatarText: { fontSize: 18, fontWeight: '800', color: '#fff' },
+  cardInfo: { flex: 1 },
+  cardName: { fontSize: 15, fontWeight: '700', color: COLORS.text, marginBottom: 2 },
+  cardEmail: { fontSize: 12, color: COLORS.textMuted },
+  removeBtn: {
+    borderWidth: 1, borderColor: COLORS.error + '50',
+    borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6,
+  },
+  requestActions: { flexDirection: 'row', gap: 8 },
+  acceptBtn: {
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: COLORS.successLight, alignItems: 'center', justifyContent: 'center',
+  },
+  acceptBtnText: { color: COLORS.success, fontWeight: '800', fontSize: 14 },
+  rejectBtn: {
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: COLORS.errorLight, alignItems: 'center', justifyContent: 'center',
+  },
+  rejectBtnText: { color: COLORS.error, fontWeight: '800', fontSize: 12 },
+  addBtn: {
+    backgroundColor: COLORS.primaryLight, borderRadius: 10,
+    paddingHorizontal: 10, paddingVertical: 8,
+  },
+  addBtnText: { color: COLORS.primary, fontWeight: '700', fontSize: 12 },
+  emptyContainer: { alignItems: 'center', paddingTop: 60 },
+  emptyText: { fontSize: 16, color: COLORS.textMuted, marginTop: 12, fontWeight: '600' },
+});

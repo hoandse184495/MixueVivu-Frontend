@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>My Bookings - MixueVivu</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-high": "#e6e8ea",
+                    "on-tertiary": "#ffffff",
+                    "on-tertiary-fixed": "#2d1600",
+                    "background": "#f7f9fb",
+                    "surface-variant": "#e0e3e5",
+                    "surface-dim": "#d8dadc",
+                    "on-primary-container": "#fefcff",
+                    "on-secondary-fixed-variant": "#005137",
+                    "tertiary-fixed-dim": "#ffb874",
+                    "tertiary-container": "#ac6300",
+                    "on-primary-fixed-variant": "#004493",
+                    "tertiary-fixed": "#ffdcbf",
+                    "error": "#ba1a1a",
+                    "on-secondary": "#ffffff",
+                    "tertiary": "#894d00",
+                    "outline-variant": "#c1c6d7",
+                    "primary-container": "#0070eb",
+                    "inverse-primary": "#adc6ff",
+                    "on-primary-fixed": "#001a41",
+                    "on-secondary-container": "#00714e",
+                    "on-error-container": "#93000a",
+                    "inverse-surface": "#2d3133",
+                    "primary": "#0058bc",
+                    "secondary": "#006c4b",
+                    "on-surface-variant": "#414755",
+                    "on-error": "#ffffff",
+                    "surface-bright": "#f7f9fb",
+                    "primary-fixed-dim": "#adc6ff",
+                    "secondary-fixed": "#68fcbf",
+                    "on-surface": "#191c1e",
+                    "surface-container-low": "#f2f4f6",
+                    "error-container": "#ffdad6",
+                    "surface-container": "#eceef0",
+                    "on-tertiary-container": "#fffbff",
+                    "surface-container-highest": "#e0e3e5",
+                    "surface": "#f7f9fb",
+                    "on-background": "#191c1e",
+                    "primary-fixed": "#d8e2ff",
+                    "on-primary": "#ffffff",
+                    "secondary-container": "#64f9bc",
+                    "surface-tint": "#005bc1",
+                    "outline": "#717786",
+                    "inverse-on-surface": "#eff1f3",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-fixed-variant": "#6a3b00",
+                    "on-secondary-fixed": "#002114",
+                    "secondary-fixed-dim": "#45dfa4"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "container-padding-desktop": "40px",
+                    "base": "8px",
+                    "stack-md": "24px",
+                    "stack-lg": "48px",
+                    "container-padding-mobile": "20px",
+                    "stack-sm": "12px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Plus Jakarta Sans"],
+                    "headline-lg": ["Plus Jakarta Sans"],
+                    "headline-lg-mobile": ["Plus Jakarta Sans"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "body-md": ["Plus Jakarta Sans"],
+                    "label-md": ["Plus Jakarta Sans"],
+                    "label-sm": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .tab-active { position: relative; }
+        .tab-active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: #0058bc;
+            border-radius: 99px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen pb-24">
+<!-- Top AppBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-container-padding-mobile md:px-container-padding-desktop h-16 bg-surface dark:bg-on-background shadow-sm">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary/10">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsHdIt9JtymzM4eHaYtxIb9H5yBonGCWXhOhf5sILsqEI6zNQTX8KWmZEi62NSeL-DSi0DqmlVaSLDWYSyLlunfDqA6OmVhC_Q1myEXTkVlMIl3rYrK6OTv56pcqiX6BNHOC_GD45ptQfIBKtREegRFLTpOimJHiJTK7zFvpmklfQEntqFko4YoXaWGQVuoJgsulK6cEEqZsCH-DTUirB7jwDO__Kn9kyryVzixE3TBXfOicZC1EHVqXwNsE0tC1cjtrb22MOHwvg"/>
+</div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">MixueVivu</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors active:scale-95">
+<span class="material-symbols-outlined text-primary" data-icon="notifications">notifications</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-20 px-container-padding-mobile md:px-container-padding-desktop max-w-5xl mx-auto">
+<!-- Page Title -->
+<section class="mt-4 mb-stack-md">
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">My Bookings</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Manage your upcoming and past travel experiences.</p>
+</section>
+<!-- Custom Tabs Component -->
+<div class="flex items-center gap-gutter border-b border-outline-variant mb-stack-md overflow-x-auto no-scrollbar">
+<button class="tab-active py-3 px-2 font-label-md text-label-md text-primary whitespace-nowrap transition-all duration-200" id="tab-upcoming" onclick="switchTab('upcoming')">
+                Upcoming
+            </button>
+<button class="py-3 px-2 font-label-md text-label-md text-on-surface-variant whitespace-nowrap transition-all duration-200 hover:text-primary" id="tab-completed" onclick="switchTab('completed')">
+                Completed
+            </button>
+<button class="py-3 px-2 font-label-md text-label-md text-on-surface-variant whitespace-nowrap transition-all duration-200 hover:text-primary" id="tab-cancelled" onclick="switchTab('cancelled')">
+                Cancelled
+            </button>
+</div>
+<!-- Booking Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter" id="bookings-container">
+<!-- Card 1: Upcoming -->
+<div class="group bg-surface-container-lowest rounded-xl p-4 shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-[#F1F5F9] hover:shadow-[0px_8px_30px_rgba(0,0,0,0.08)] transition-all duration-300">
+<div class="flex gap-4">
+<div class="w-24 h-24 rounded-lg overflow-hidden shrink-0">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A serene Balinese villa surrounded by lush emerald green tropical gardens and a crystalline turquoise infinity pool. The lighting is golden hour warmth, reflecting a luxurious and tranquil vacation mood. Modern architectural lines blend with natural stone textures in a high-end travel photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8Wxa8HakZVC1zAWuIkFRCWbriYfRsp5gdgi25g_R_79zWemlcP8A3sx0ClaDvrh8aZFzJbvsKvDdzqRjga8NHNuRmaYUl-iYHS7Jg18VeZOHL0dDkzSEN7fSsg6JjalO5d2VRStJItuav0yUb5puw8uzNlfZhKoLIqogYlO4chnAoPxmW9Fcq4bzkIFHhhMSkOvSyI1L8P6xZ1dm6PtIVPCT4VVD-FSp5HyvxcxRBoeQ2oRLIKTB8xo7CUUkI6R91aXgBpMyJC9I"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start mb-1">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-primary/10 text-primary font-label-sm text-[10px] uppercase tracking-wider">Upcoming</span>
+<span class="material-symbols-outlined text-on-surface-variant text-body-md cursor-pointer hover:text-primary">more_vert</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface truncate">Bali Spiritual Retreat</h3>
+<div class="flex items-center gap-1 text-on-surface-variant mt-1">
+<span class="material-symbols-outlined text-[16px]">calendar_today</span>
+<span class="font-label-sm text-label-sm">Dec 15, 2023</span>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-outline-variant/30 flex justify-between items-center">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">group</span>
+<span class="font-body-md text-body-md text-on-surface-variant">2 guests</span>
+</div>
+</div>
+<div class="text-right">
+<span class="block font-label-sm text-label-sm text-on-surface-variant">Total Paid</span>
+<span class="font-headline-md text-headline-md text-primary">$1,240</span>
+</div>
+</div>
+<button class="w-full mt-4 py-2.5 bg-primary-fixed text-on-primary-fixed-variant rounded-lg font-label-md text-label-md hover:bg-primary-container hover:text-white transition-colors">
+                    View Details
+                </button>
+</div>
+<!-- Card 2: Upcoming -->
+<div class="group bg-surface-container-lowest rounded-xl p-4 shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-[#F1F5F9] hover:shadow-[0px_8px_30px_rgba(0,0,0,0.08)] transition-all duration-300">
+<div class="flex gap-4">
+<div class="w-24 h-24 rounded-lg overflow-hidden shrink-0">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A bright and airy beach resort scene in the Maldives with white sand and stilted bungalows over clear blue water. The lighting is high-key midday sun, creating a vibrant and optimistic atmosphere. The aesthetic is clean and professional, emphasizing the joy of a modern coastal discovery." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6Cq4Zb3vZyrQyK8WkCUV5sapZHyPHv74g1tkS7SsVY8D4Aoh05pNTNErxc1WnH_Lu66ULvkvnq57d3Av9tSPeLj3epJV5UkmQdCAAaiE55r6t9vXH8-TOmmH_ZSjAhbIvf_P_Z2X_xexCxppy9XdJKAqGBLJvkccTyazkwK9XqwunxZw9GFg99XmapO9hrlRFxg5sSxEfTjEYhMdKKUp1B_siIe0BkEUlS_i1hxDJsLnRmof7uF2DF1_VeW5SYv5lFC9EDdI4mUQ"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start mb-1">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-primary/10 text-primary font-label-sm text-[10px] uppercase tracking-wider">Upcoming</span>
+<span class="material-symbols-outlined text-on-surface-variant text-body-md cursor-pointer hover:text-primary">more_vert</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface truncate">Maldives Ocean Villa</h3>
+<div class="flex items-center gap-1 text-on-surface-variant mt-1">
+<span class="material-symbols-outlined text-[16px]">calendar_today</span>
+<span class="font-label-sm text-label-sm">Jan 08, 2024</span>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-outline-variant/30 flex justify-between items-center">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">group</span>
+<span class="font-body-md text-body-md text-on-surface-variant">2 guests</span>
+</div>
+</div>
+<div class="text-right">
+<span class="block font-label-sm text-label-sm text-on-surface-variant">Total Paid</span>
+<span class="font-headline-md text-headline-md text-primary">$3,450</span>
+</div>
+</div>
+<button class="w-full mt-4 py-2.5 bg-primary-fixed text-on-primary-fixed-variant rounded-lg font-label-md text-label-md hover:bg-primary-container hover:text-white transition-colors">
+                    View Details
+                </button>
+</div>
+</div>
+<!-- Empty State (Hidden by default) -->
+<div class="hidden flex-col items-center justify-center py-20 text-center" id="empty-state">
+<div class="w-20 h-20 bg-surface-container-high rounded-full flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-on-surface-variant text-4xl">event_busy</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface">No bookings found</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2 max-w-xs">It looks like you haven't made any bookings in this category yet.</p>
+<button class="mt-6 px-6 py-3 bg-primary text-white rounded-full font-label-md text-label-md hover:shadow-lg transition-shadow">
+                Explore Destinations
+            </button>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-surface/80 dark:bg-on-background/80 backdrop-blur-md border-t border-outline-variant dark:border-outline shadow-[0px_-8px_30px_rgba(0,0,0,0.08)] rounded-t-xl">
+<!-- Home -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-sm text-label-sm mt-1">Home</span>
+</a>
+<!-- Search -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+<span class="font-label-sm text-label-sm mt-1">Search</span>
+</a>
+<!-- Favorites -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+<span class="font-label-sm text-label-sm mt-1">Favorites</span>
+</a>
+<!-- Bookings (ACTIVE) -->
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed font-semibold active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="confirmation_number" style="font-variation-settings: 'FILL' 1;">confirmation_number</span>
+<span class="font-label-sm text-label-sm mt-1">Bookings</span>
+</a>
+<!-- Profile -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-sm text-label-sm mt-1">Profile</span>
+</a>
+</nav>
+<script>
+        const mockData = {
+            upcoming: [
+                { title: "Bali Spiritual Retreat", date: "Dec 15, 2023", guests: "2 guests", price: "$1,240", status: "Upcoming", color: "primary", img: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&q=80&w=300" },
+                { title: "Maldives Ocean Villa", date: "Jan 08, 2024", guests: "2 guests", price: "$3,450", status: "Upcoming", color: "primary", img: "https://images.unsplash.com/photo-1506929662133-57029a80a159?auto=format&fit=crop&q=80&w=300" }
+            ],
+            completed: [
+                { title: "Kyoto Autumn Tour", date: "Nov 02, 2023", guests: "1 guest", price: "$850", status: "Completed", color: "secondary", img: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&q=80&w=300" },
+                { title: "Swiss Alps Explorer", date: "Oct 15, 2023", guests: "3 guests", price: "$2,100", status: "Completed", color: "secondary", img: "https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?auto=format&fit=crop&q=80&w=300" }
+            ],
+            cancelled: []
+        };
+
+        function switchTab(tab) {
+            // Update Tab UI
+            ['upcoming', 'completed', 'cancelled'].forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                if (t === tab) {
+                    btn.classList.add('tab-active', 'text-primary');
+                    btn.classList.remove('text-on-surface-variant');
+                } else {
+                    btn.classList.remove('tab-active', 'text-primary');
+                    btn.classList.add('text-on-surface-variant');
+                }
+            });
+
+            // Update List Content
+            const container = document.getElementById('bookings-container');
+            const emptyState = document.getElementById('empty-state');
+            const data = mockData[tab];
+
+            if (data.length === 0) {
+                container.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+            } else {
+                container.classList.remove('hidden');
+                emptyState.classList.add('hidden');
+                emptyState.classList.remove('flex');
+
+                container.innerHTML = data.map(item => `
+                    <div class="group bg-surface-container-lowest rounded-xl p-4 shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-[#F1F5F9] hover:shadow-[0px_8px_30px_rgba(0,0,0,0.08)] transition-all duration-300">
+                        <div class="flex gap-4">
+                            <div class="w-24 h-24 rounded-lg overflow-hidden shrink-0">
+                                <img src="${item.img}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex justify-between items-start mb-1">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-${item.color}/10 text-${item.color} font-label-sm text-[10px] uppercase tracking-wider">${item.status}</span>
+                                    <span class="material-symbols-outlined text-on-surface-variant text-body-md cursor-pointer hover:text-primary">more_vert</span>
+                                </div>
+                                <h3 class="font-headline-md text-headline-md text-on-surface truncate">${item.title}</h3>
+                                <div class="flex items-center gap-1 text-on-surface-variant mt-1">
+                                    <span class="material-symbols-outlined text-[16px]">calendar_today</span>
+                                    <span class="font-label-sm text-label-sm">${item.date}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-outline-variant/30 flex justify-between items-center">
+                            <div class="flex items-center gap-4">
+                                <div class="flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-on-surface-variant text-[18px]">group</span>
+                                    <span class="font-body-md text-body-md text-on-surface-variant">${item.guests}</span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="block font-label-sm text-label-sm text-on-surface-variant">Total Paid</span>
+                                <span class="font-headline-md text-headline-md text-primary">${item.price}</span>
+                            </div>
+                        </div>
+                        <button class="w-full mt-4 py-2.5 bg-surface-container-high text-on-surface rounded-lg font-label-md text-label-md hover:bg-primary hover:text-white transition-colors">
+                            ${item.status === 'Upcoming' ? 'View Details' : 'Book Again'}
+                        </button>
+                    </div>
+                `).join('');
+            }
+        }
+    </script>
+</body></html>

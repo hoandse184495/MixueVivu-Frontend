@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-fixed": "#68fcbf",
+                    "on-primary-container": "#fefcff",
+                    "secondary": "#006c4b",
+                    "outline": "#717786",
+                    "on-surface": "#191c1e",
+                    "on-secondary-fixed-variant": "#005137",
+                    "on-secondary": "#ffffff",
+                    "tertiary-fixed": "#ffdcbf",
+                    "on-tertiary-fixed-variant": "#6a3b00",
+                    "secondary-container": "#64f9bc",
+                    "on-primary-fixed": "#001a41",
+                    "primary-fixed": "#d8e2ff",
+                    "surface-container-low": "#f2f4f6",
+                    "error": "#ba1a1a",
+                    "surface-tint": "#005bc1",
+                    "secondary-fixed-dim": "#45dfa4",
+                    "inverse-primary": "#adc6ff",
+                    "on-error": "#ffffff",
+                    "surface-variant": "#e0e3e5",
+                    "primary": "#0058bc",
+                    "on-primary-fixed-variant": "#004493",
+                    "surface-container": "#eceef0",
+                    "background": "#f7f9fb",
+                    "tertiary-fixed-dim": "#ffb874",
+                    "outline-variant": "#c1c6d7",
+                    "tertiary": "#894d00",
+                    "on-surface-variant": "#414755",
+                    "inverse-on-surface": "#eff1f3",
+                    "surface-bright": "#f7f9fb",
+                    "surface-container-highest": "#e0e3e5",
+                    "on-primary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "tertiary-container": "#ac6300",
+                    "on-tertiary-container": "#fffbff",
+                    "on-background": "#191c1e",
+                    "surface-container-high": "#e6e8ea",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-container": "#00714e",
+                    "inverse-surface": "#2d3133",
+                    "surface-dim": "#d8dadc",
+                    "on-secondary-fixed": "#002114"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-lg": "48px",
+                    "container-padding-desktop": "40px",
+                    "container-padding-mobile": "20px",
+                    "gutter": "16px",
+                    "stack-md": "24px",
+                    "stack-sm": "12px",
+                    "base": "8px"
+            },
+            "fontFamily": {
+                    "label-sm": ["Plus Jakarta Sans"],
+                    "label-md": ["Plus Jakarta Sans"],
+                    "body-md": ["Plus Jakarta Sans"],
+                    "headline-lg": ["Plus Jakarta Sans"],
+                    "body-lg": ["Plus Jakarta Sans"],
+                    "headline-lg-mobile": ["Plus Jakarta Sans"],
+                    "headline-md": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #f7f9fb;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .star-active {
+            font-variation-settings: 'FILL' 1;
+            color: #ac6300;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface">
+<!-- Top App Bar -->
+<header class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-container-padding-mobile h-16 bg-surface shadow-sm">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors active:scale-95">
+<span class="material-symbols-outlined text-on-surface">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Write a Review</h1>
+<div class="w-10"></div> <!-- Spacer for centering -->
+</header>
+<main class="pt-20 pb-32 px-container-padding-mobile max-w-md mx-auto">
+<!-- Tour Summary Card -->
+<section class="mb-stack-md">
+<div class="bg-surface-container-lowest rounded-xl p-4 shadow-[0px_4px_20px_rgba(0,0,0,0.05)] flex gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+<div class="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
+<img alt="Tropical Bali Resort" class="w-full h-full object-cover" data-alt="A lush tropical resort in Bali featuring crystal clear infinity pools and vibrant green palm trees under a warm golden sunset. The atmosphere is serene and luxurious, with soft natural lighting and a high-key, airy aesthetic consistent with a premium travel brand's visual identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7sTZn2bMo6vD_0hT7nfSBEIP9kKakXzgAY6NSvl3qiC-KaKhHTbGjXwsnUWvQqkl7eJ45N5Qme3wlfKwLDmQDLQz7SVFv1tzq4SuLWPz7ztm_HSqb0Q4f7Rmsd6sJ9QIYE7M1Wnwd7fep3zLlzrA6GNKMZ2f3sz_SyOgldzAP4aWseJfGgbX-vkm5WHrWqeETI2gM3K1YLZCF4OlNSU3tqqH0UbZ2Af94lonESIXe7wduTCtPzX08Z5PCvlQf8VvDXKHpzGaWMEfp"/>
+</div>
+<div class="flex flex-col justify-center">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-1">Bali Tropical Escape</h2>
+<div class="flex items-center text-on-surface-variant gap-1">
+<span class="material-symbols-outlined text-[18px]">calendar_month</span>
+<span class="font-label-md text-label-md">Oct 12 - Oct 18, 2023</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Rating Section -->
+<section class="mb-stack-md text-center bg-surface-container-lowest rounded-xl p-6 shadow-[0px_4px_20px_rgba(0,0,0,0.05)]">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-4">How was your trip?</h3>
+<div class="flex justify-center gap-2 mb-2" id="star-rating">
+<button class="p-1 hover:scale-110 transition-transform active:scale-90" onclick="setRating(1)">
+<span class="material-symbols-outlined text-4xl text-outline-variant star-icon">star</span>
+</button>
+<button class="p-1 hover:scale-110 transition-transform active:scale-90" onclick="setRating(2)">
+<span class="material-symbols-outlined text-4xl text-outline-variant star-icon">star</span>
+</button>
+<button class="p-1 hover:scale-110 transition-transform active:scale-90" onclick="setRating(3)">
+<span class="material-symbols-outlined text-4xl text-outline-variant star-icon">star</span>
+</button>
+<button class="p-1 hover:scale-110 transition-transform active:scale-90" onclick="setRating(4)">
+<span class="material-symbols-outlined text-4xl text-outline-variant star-icon">star</span>
+</button>
+<button class="p-1 hover:scale-110 transition-transform active:scale-90" onclick="setRating(5)">
+<span class="material-symbols-outlined text-4xl text-outline-variant star-icon">star</span>
+</button>
+</div>
+<p class="font-label-md text-label-md text-tertiary" id="rating-label">Select your rating</p>
+</section>
+<!-- Experience Text Area -->
+<section class="mb-stack-md">
+<label class="block font-label-md text-label-md text-on-surface-variant mb-2 ml-1">Share your experience</label>
+<textarea class="w-full h-32 p-4 rounded-xl bg-surface-container-low border-transparent focus:border-primary focus:ring-1 focus:ring-primary transition-all font-body-md text-body-md placeholder:text-outline-variant" placeholder="What did you love about this tour? Tell us about the guide, the food, or the hidden gems..."></textarea>
+</section>
+<!-- Add Photos Section -->
+<section class="mb-stack-md">
+<label class="block font-label-md text-label-md text-on-surface-variant mb-2 ml-1">Add Photos</label>
+<div class="flex gap-3 overflow-x-auto pb-2 custom-scrollbar">
+<button class="w-24 h-24 flex-shrink-0 flex flex-col items-center justify-center border-2 border-dashed border-outline-variant rounded-xl bg-surface-container-lowest hover:bg-surface-container transition-colors active:scale-95">
+<span class="material-symbols-outlined text-primary mb-1">add_a_photo</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Upload</span>
+</button>
+<!-- Placeholder for uploaded photo -->
+<div class="w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden relative group">
+<img alt="Travel memory" class="w-full h-full object-cover" data-alt="A close-up of a colorful tropical fruit plate on a white table in an outdoor Balinese cafe. The lighting is bright and cheerful with soft shadows, capturing the vibrant oranges and pinks of the fruit, evoking a sense of fresh discovery and vacation joy." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYr0uESYE3ktw6Er4b9ZPFhL121kML3QbJc9O6TtExjK1VhlArJFlC0ftGMA4yJMLaGGlmMGEJTnFfDrIrQHzXm7g4lZepHxX7S1JlVDL1yGqFLUx-YMny7EfHXA6bQHBWG8BFXz9E0C7QeQefoeWTuqZkesThEZi4yQqhZKZaZlzz_kHddVxU8qpbSQ2O54hpCMOkx9lUcu7QRDKbKiB7fE7N4bW9YUg1wOXirN_2MUg5FEWp_MDhzI0n6kKvZ5mUTUMJ-EuPqXl0"/>
+<button class="absolute top-1 right-1 w-6 h-6 bg-black/50 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-xs">close</span>
+</button>
+</div>
+<div class="w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden relative group">
+<img alt="Poolside relaxation" class="w-full h-full object-cover" data-alt="A tranquil scene of a luxury resort swimming pool mirroring the clear blue sky and surrounding palm trees. The composition is minimal and clean, with a high-key color palette that emphasizes clarity and professional elegance typical of high-end travel brochures." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQdpMZLF0_9wBS8iwDwn1Y-QpmUa0hxS7lVhJgWSaC8fGR-_YkXhJfJBme8Nie6YfLVhhXyXDYwdHH3_mhRAN5CoXdsweHwRZPBwMSUg92SIr8F4ckm6-DJIRF9baP20Gfbt16GbikvW5jhlX6hAHoShrAiXjmEoOajTMfjh7GL5iOpun76hn1DeotU59LhlCow2UI1ahjYVmbbgEvpnDf-zdcMZ0n_fj7YJz8f-bb1yPBnFNOQff5-Cj8QSyFokljM7s1lQHKSF-4"/>
+<button class="absolute top-1 right-1 w-6 h-6 bg-black/50 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-xs">close</span>
+</button>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Action Bar -->
+<div class="fixed bottom-0 left-0 w-full p-6 bg-surface/80 backdrop-blur-md border-t border-outline-variant/30 flex justify-center z-50">
+<button class="w-full max-w-md bg-primary text-on-primary py-4 rounded-xl font-label-md text-label-md shadow-lg hover:bg-on-primary-fixed-variant active:scale-95 transition-all">
+            Submit Review
+        </button>
+</div>
+<script>
+        let currentRating = 0;
+        const ratingLabels = [
+            "Select your rating",
+            "Disappointing",
+            "Below average",
+            "It was okay",
+            "Great experience",
+            "Absolutely amazing!"
+        ];
+
+        function setRating(rating) {
+            currentRating = rating;
+            const stars = document.querySelectorAll('.star-icon');
+            const label = document.getElementById('rating-label');
+
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('star-active');
+                } else {
+                    star.classList.remove('star-active');
+                }
+            });
+
+            label.textContent = ratingLabels[rating];
+            label.className = "font-label-md text-label-md " + (rating >= 4 ? "text-secondary" : "text-tertiary");
+            
+            // Subtle feedback animation
+            const ratingContainer = document.getElementById('star-rating');
+            ratingContainer.classList.add('scale-105');
+            setTimeout(() => ratingContainer.classList.remove('scale-105'), 150);
+        }
+    </script>
+</body></html>
