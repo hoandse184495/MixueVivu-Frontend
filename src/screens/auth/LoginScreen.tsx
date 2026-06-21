@@ -42,6 +42,15 @@ export default function LoginScreen({ navigation, onLoginSuccess }: Props) {
   const [emailFocused, setEmailFocused] = useState(false);
   const [passFocused, setPassFocused] = useState(false);
 
+  const saveSession = async (data: any) => {
+    const { token, accessToken, refreshToken, user } = data;
+    await AsyncStorage.multiSet([
+      ['token', accessToken || token],
+      ['refreshToken', refreshToken],
+      ['user', JSON.stringify(user)],
+    ]);
+  };
+
   const handleLogin = async () => {
     try {
       if (!email || !password) {
@@ -51,35 +60,11 @@ export default function LoginScreen({ navigation, onLoginSuccess }: Props) {
 
       setLoading(true);
 
-      let mockUserObj = null;
-      const mockToken = 'mock-session-token';
-      const emailLower = email.toLowerCase();
-
-      if (emailLower.includes('manager') || emailLower.includes('admin')) {
-        mockUserObj = {
-          id: 1,
-          fullName: 'MixueVivu Manager',
-          email: email,
-          role: 'manager',
-        };
-      } else if (emailLower.includes('provider')) {
-        mockUserObj = {
-          id: 2,
-          fullName: 'MixueVivu Provider',
-          email: email,
-          role: 'provider',
-        };
-      } else {
-        mockUserObj = {
-          id: 3,
-          fullName: 'MixueVivu User',
-          email: email,
-          role: 'user',
-        };
-      }
-
-      await AsyncStorage.setItem('token', mockToken);
-      await AsyncStorage.setItem('user', JSON.stringify(mockUserObj));
+      const response = await api.post('/auth/login', {
+        email: email.trim(),
+        password,
+      });
+      await saveSession(response.data.data);
 
       onLoginSuccess();
     } catch (error: any) {

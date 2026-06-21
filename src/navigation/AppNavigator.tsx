@@ -6,6 +6,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import LoginScreen from '../screens/auth/LoginScreen';
 import RegisterScreen from '../screens/auth/RegisterScreen';
+import { logout } from '../screens/auth/logout';
 
 import UserNavigator from './UserNavigator';
 import ProviderNavigator from './ProviderNavigator';
@@ -41,8 +42,7 @@ export default function AppNavigator() {
   };
 
   const handleLogout = async () => {
-    await AsyncStorage.removeItem('token');
-    await AsyncStorage.removeItem('user');
+    await logout();
     setUser(null);
   };
 

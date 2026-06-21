@@ -1,4 +1,5 @@
 import { Tour, Booking, Guide, Contact, Favorite, FriendRequest } from '../types';
+import api from './api';
 
 // Helper to simulate API response format with delay
 const mockApiResponse = <T>(data: T, delay = 200): Promise<{ data: { data: T; success: boolean; message: string } }> => {
@@ -291,14 +292,25 @@ export const authService = {
     }),
 };
 
+export type TourFilters = {
+  search?: string;
+  location?: string;
+  category?: string;
+  minPrice?: string;
+  maxPrice?: string;
+  startDate?: string;
+  minAvailableSlots?: string;
+};
+
 export const tourService = {
-  getAll: (search?: string) => {
-    let list = [...mockTours];
-    if (search) {
-      list = list.filter((t) => t.title.toLowerCase().includes(search.toLowerCase()) || t.location.toLowerCase().includes(search.toLowerCase()));
-    }
-    return mockApiResponse(list);
-  },
+  getAll: (filters: TourFilters = {}) =>
+    api.get('/tours', {
+      params: Object.fromEntries(
+        Object.entries(filters)
+          .map(([key, value]) => [key, value?.trim()])
+          .filter(([, value]) => value)
+      ),
+    }),
   getById: (id: number) => {
     const tour = mockTours.find((t) => t.id === id) || mockTours[0];
     const reviews = [

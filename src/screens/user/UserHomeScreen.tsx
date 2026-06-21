@@ -13,7 +13,7 @@ import {
   View,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { tourService } from '../../api/services';
+import { tourService, TourFilters } from '../../api/services';
 import { Tour, User } from '../../types';
 
 const COLORS = {
@@ -63,16 +63,29 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('Tất cả');
+  const [showFilters, setShowFilters] = useState(false);
+  const [location, setLocation] = useState('');
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [minAvailableSlots, setMinAvailableSlots] = useState('');
+  const [appliedFilters, setAppliedFilters] = useState<TourFilters>({});
 
   const getUserFromStorage = async () => {
     const s = await AsyncStorage.getItem('user');
     if (s) setUser(JSON.parse(s));
   };
 
-  const fetchTours = useCallback(async (search = '') => {
+  const fetchTours = useCallback(async (
+    search = '',
+    filters: TourFilters = {}
+  ) => {
     try {
       setLoading(true);
-      const res = await tourService.getAll(search || undefined);
+      const res = await tourService.getAll({
+        ...filters,
+        search: search || undefined,
+      });
       setTours(res.data.data || []);
     } catch (e: any) {
       Alert.alert('Lỗi', e.response?.data?.message || 'Không thể tải tour');
@@ -86,12 +99,60 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
     fetchTours();
   }, []);
 
-  const filteredTours =
-    selectedCategory === 'Tất cả'
-      ? tours
-      : tours.filter((t) =>
-          t.category?.toLowerCase().includes(selectedCategory.toLowerCase())
-        );
+  const applyAdvancedFilters = () => {
+    const numericValues = [minPrice, maxPrice, minAvailableSlots].filter(Boolean);
+    if (numericValues.some((value) => !Number.isFinite(Number(value)) || Number(value) < 0)) {
+      Alert.alert('Lỗi', 'Giá và số chỗ phải là số không âm');
+      return;
+    }
+
+    if (minAvailableSlots && !Number.isInteger(Number(minAvailableSlots))) {
+      Alert.alert('Lỗi', 'Số chỗ tối thiểu phải là số nguyên');
+      return;
+    }
+
+    if (minPrice && maxPrice && Number(minPrice) > Number(maxPrice)) {
+      Alert.alert('Lỗi', 'Giá thấp nhất không được lớn hơn giá cao nhất');
+      return;
+    }
+
+    const parsedStartDate = startDate
+      ? new Date(`${startDate}T00:00:00.000Z`)
+      : null;
+    const isValidStartDate =
+      !startDate ||
+      (/^\d{4}-\d{2}-\d{2}$/.test(startDate) &&
+        !Number.isNaN(parsedStartDate?.getTime()) &&
+        parsedStartDate?.toISOString().slice(0, 10) === startDate);
+
+    if (!isValidStartDate) {
+      Alert.alert('Lỗi', 'Ngày khởi hành phải có định dạng YYYY-MM-DD');
+      return;
+    }
+
+    const filters: TourFilters = {
+      location,
+      minPrice,
+      maxPrice,
+      startDate,
+      minAvailableSlots,
+      category: selectedCategory === 'Tất cả' ? undefined : selectedCategory,
+    };
+    setAppliedFilters(filters);
+    fetchTours(keyword, filters);
+    setShowFilters(false);
+  };
+
+  const resetFilters = () => {
+    setLocation('');
+    setMinPrice('');
+    setMaxPrice('');
+    setStartDate('');
+    setMinAvailableSlots('');
+    setSelectedCategory('Tất cả');
+    setAppliedFilters({});
+    fetchTours(keyword);
+  };
 
   const renderTourCard = ({ item }: { item: Tour }) => (
     <TouchableOpacity
@@ -175,19 +236,75 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
               placeholderTextColor={COLORS.textMuted}
               value={keyword}
               onChangeText={setKeyword}
-              onSubmitEditing={() => fetchTours(keyword)}
+              onSubmitEditing={() => fetchTours(keyword, appliedFilters)}
               returnKeyType="search"
             />
             {keyword.length > 0 && (
-              <TouchableOpacity onPress={() => { setKeyword(''); fetchTours(); }}>
+              <TouchableOpacity onPress={() => { setKeyword(''); fetchTours('', appliedFilters); }}>
                 <Text style={{ fontSize: 16, color: COLORS.textMuted }}>✕</Text>
               </TouchableOpacity>
             )}
           </View>
-          <TouchableOpacity style={styles.searchBtn} onPress={() => fetchTours(keyword)}>
+          <TouchableOpacity style={styles.searchBtn} onPress={() => fetchTours(keyword, appliedFilters)}>
             <Text style={styles.searchBtnText}>Tìm</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.filterToggle, showFilters && styles.filterToggleActive]}
+            onPress={() => setShowFilters((current) => !current)}
+          >
+            <Text style={styles.filterToggleText}>Bộ lọc</Text>
+          </TouchableOpacity>
         </View>
+
+        {showFilters && (
+          <View style={styles.filterPanel}>
+            <TextInput
+              style={styles.filterInput}
+              placeholder="Địa điểm"
+              value={location}
+              onChangeText={setLocation}
+            />
+            <View style={styles.filterRow}>
+              <TextInput
+                style={[styles.filterInput, styles.filterHalf]}
+                placeholder="Giá thấp nhất"
+                value={minPrice}
+                onChangeText={setMinPrice}
+                keyboardType="numeric"
+              />
+              <TextInput
+                style={[styles.filterInput, styles.filterHalf]}
+                placeholder="Giá cao nhất"
+                value={maxPrice}
+                onChangeText={setMaxPrice}
+                keyboardType="numeric"
+              />
+            </View>
+            <View style={styles.filterRow}>
+              <TextInput
+                style={[styles.filterInput, styles.filterHalf]}
+                placeholder="Ngày YYYY-MM-DD"
+                value={startDate}
+                onChangeText={setStartDate}
+              />
+              <TextInput
+                style={[styles.filterInput, styles.filterHalf]}
+                placeholder="Số chỗ tối thiểu"
+                value={minAvailableSlots}
+                onChangeText={setMinAvailableSlots}
+                keyboardType="numeric"
+              />
+            </View>
+            <View style={styles.filterActions}>
+              <TouchableOpacity style={styles.resetFilterBtn} onPress={resetFilters}>
+                <Text style={styles.resetFilterText}>Đặt lại</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.applyFilterBtn} onPress={applyAdvancedFilters}>
+                <Text style={styles.applyFilterText}>Áp dụng</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
 
         {/* ── Category Chips ── */}
         <ScrollView
@@ -203,7 +320,13 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
                 styles.categoryChip,
                 selectedCategory === cat.label && styles.categoryChipActive,
               ]}
-              onPress={() => setSelectedCategory(cat.label)}
+              onPress={() => {
+                const category = cat.label === 'Tất cả' ? undefined : cat.label;
+                const filters = { ...appliedFilters, category };
+                setSelectedCategory(cat.label);
+                setAppliedFilters(filters);
+                fetchTours(keyword, filters);
+              }}
             >
               <Text style={styles.categoryEmoji}>{cat.icon}</Text>
               <Text
@@ -252,19 +375,19 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Tour nổi bật</Text>
-            <Text style={styles.sectionCount}>{filteredTours.length} tour</Text>
+            <Text style={styles.sectionCount}>{tours.length} tour</Text>
           </View>
 
           {loading ? (
             <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: 40, marginBottom: 40 }} />
-          ) : filteredTours.length === 0 ? (
+          ) : tours.length === 0 ? (
             <View style={styles.emptyContainer}>
               <Text style={{ fontSize: 48 }}>🏖️</Text>
               <Text style={styles.emptyTitle}>Không tìm thấy tour nào</Text>
               <Text style={styles.emptySubtitle}>Thử tìm kiếm với từ khóa khác</Text>
             </View>
           ) : (
-            filteredTours.map((item) => (
+            tours.map((item) => (
               <View key={item.id} style={{ paddingHorizontal: 16 }}>
                 {renderTourCard({ item })}
               </View>
@@ -376,6 +499,79 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '700',
     fontSize: 14,
+  },
+  filterToggle: {
+    height: 48,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  filterToggleActive: {
+    backgroundColor: COLORS.primaryLight,
+  },
+  filterToggleText: {
+    color: COLORS.primary,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  filterPanel: {
+    marginHorizontal: 16,
+    marginBottom: 8,
+    padding: 14,
+    borderRadius: 16,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    gap: 10,
+  },
+  filterRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  filterInput: {
+    height: 46,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    color: COLORS.text,
+    backgroundColor: COLORS.surfaceContainerLow,
+  },
+  filterHalf: {
+    flex: 1,
+  },
+  filterActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 10,
+  },
+  resetFilterBtn: {
+    paddingHorizontal: 18,
+    height: 42,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  resetFilterText: {
+    color: COLORS.textMuted,
+    fontWeight: '700',
+  },
+  applyFilterBtn: {
+    paddingHorizontal: 18,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  applyFilterText: {
+    color: '#fff',
+    fontWeight: '700',
   },
 
   // Categories

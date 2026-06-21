@@ -49,8 +49,6 @@ export default function ProviderDashboardScreen({ navigation, onLogout }: Props)
   };
 
   const handleLogout = async () => {
-    await AsyncStorage.removeItem('token');
-    await AsyncStorage.removeItem('user');
     onLogout();
   };
 

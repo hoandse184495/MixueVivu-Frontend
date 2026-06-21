@@ -18,7 +18,8 @@ export default function RegisterScreen({ navigation }: Props) {
   const [fullName, setFullName] = useState('Nguyen Hoa');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('0901234567');
-  const [password, setPassword] = useState('123456');
+  const [password, setPassword] = useState('Password123');
+  const [confirmPassword, setConfirmPassword] = useState('Password123');
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
@@ -28,7 +29,33 @@ export default function RegisterScreen({ navigation }: Props) {
         return;
       }
 
+      if (!confirmPassword) {
+        Alert.alert('Lỗi', 'Vui lòng xác nhận mật khẩu');
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        Alert.alert('Lỗi', 'Mật khẩu xác nhận không khớp');
+        return;
+      }
+
       setLoading(true);
+
+      const response = await api.post('/auth/register', {
+        fullName: fullName.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+        password,
+      });
+
+      const refreshToken = response.data.data?.refreshToken;
+      if (refreshToken) {
+        try {
+          await api.post('/auth/logout', { refreshToken });
+        } catch {
+          // The account was created successfully; login can still continue normally.
+        }
+      }
 
       Alert.alert('Thành công', 'Đăng ký thành công, vui lòng đăng nhập', [
         {
@@ -39,7 +66,7 @@ export default function RegisterScreen({ navigation }: Props) {
     } catch (error: any) {
       Alert.alert(
         'Đăng ký thất bại',
-        'Có lỗi xảy ra'
+        error.response?.data?.message || 'Có lỗi xảy ra'
       );
     } finally {
       setLoading(false);
@@ -83,7 +110,19 @@ export default function RegisterScreen({ navigation }: Props) {
           onChangeText={setPassword}
         />
 
-        <TouchableOpacity style={styles.button} onPress={handleRegister}>
+        <TextInput
+          style={styles.input}
+          placeholder="Xác nhận mật khẩu"
+          value={confirmPassword}
+          secureTextEntry
+          onChangeText={setConfirmPassword}
+        />
+
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleRegister}
+          disabled={loading}
+        >
           <Text style={styles.buttonText}>
             {loading ? 'Đang đăng ký...' : 'Đăng ký'}
           </Text>
