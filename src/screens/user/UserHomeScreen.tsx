@@ -35,21 +35,14 @@ const COLORS = {
 };
 
 const CATEGORIES = [
-  { label: 'Tất cả', icon: '🌟' },
-  { label: 'Biển', icon: '🏖️' },
-  { label: 'Núi', icon: '🏔️' },
-  { label: 'Thành phố', icon: '🏙️' },
-  { label: 'Phiêu lưu', icon: '🧗' },
-  { label: 'Gia đình', icon: '👨‍👩‍👧' },
-  { label: 'Văn hóa', icon: '🏛️' },
-];
-
-const POPULAR_DESTINATIONS = [
-  { name: 'Nhật Bản', region: 'Đông Á', emoji: '⛩️', color: '#FF6B6B' },
-  { name: 'Bali', region: 'Indonesia', emoji: '🌴', color: '#4ECDC4' },
-  { name: 'Paris', region: 'Pháp', emoji: '🗼', color: '#A8E6CF' },
-  { name: 'Maldives', region: 'Ấn Độ Dương', emoji: '🏝️', color: '#88D8B0' },
-  { name: 'Santorini', region: 'Hy Lạp', emoji: '🏛️', color: '#A8D8EA' },
+  { label: 'Tất cả', value: 'all', icon: '🌟' },
+  { label: 'Biển', value: 'Beach', icon: '🏖️' },
+  { label: 'Biển đảo', value: 'Biển đảo', icon: '🏝️' },
+  { label: 'Phiêu lưu', value: 'Adventure', icon: '🧗' },
+  { label: 'Du thuyền', value: 'Cruise', icon: '🛳️' },
+  { label: 'Thiên nhiên', value: 'Nature', icon: '🏔️' },
+  { label: 'Khám phá', value: 'Khám phá', icon: '🧭' },
+  { label: 'Nghỉ dưỡng', value: 'Nghỉ dưỡng', icon: '🌴' },
 ];
 
 type Props = {
@@ -62,7 +55,7 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
   const [keyword, setKeyword] = useState('');
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('Tất cả');
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
   const [location, setLocation] = useState('');
   const [minPrice, setMinPrice] = useState('');
@@ -136,7 +129,7 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
       maxPrice,
       startDate,
       minAvailableSlots,
-      category: selectedCategory === 'Tất cả' ? undefined : selectedCategory,
+      category: selectedCategory === 'all' ? undefined : selectedCategory,
     };
     setAppliedFilters(filters);
     fetchTours(keyword, filters);
@@ -149,7 +142,7 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
     setMaxPrice('');
     setStartDate('');
     setMinAvailableSlots('');
-    setSelectedCategory('Tất cả');
+    setSelectedCategory('all');
     setAppliedFilters({});
     fetchTours(keyword);
   };
@@ -318,12 +311,12 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
               key={cat.label}
               style={[
                 styles.categoryChip,
-                selectedCategory === cat.label && styles.categoryChipActive,
+                selectedCategory === cat.value && styles.categoryChipActive,
               ]}
               onPress={() => {
-                const category = cat.label === 'Tất cả' ? undefined : cat.label;
+                const category = cat.value === 'all' ? undefined : cat.value;
                 const filters = { ...appliedFilters, category };
-                setSelectedCategory(cat.label);
+                setSelectedCategory(cat.value);
                 setAppliedFilters(filters);
                 fetchTours(keyword, filters);
               }}
@@ -332,7 +325,7 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
               <Text
                 style={[
                   styles.categoryText,
-                  selectedCategory === cat.label && styles.categoryTextActive,
+                  selectedCategory === cat.value && styles.categoryTextActive,
                 ]}
               >
                 {cat.label}
@@ -340,36 +333,6 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
             </TouchableOpacity>
           ))}
         </ScrollView>
-
-        {/* ── Popular Destinations ── */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Điểm đến phổ biến</Text>
-            <TouchableOpacity>
-              <Text style={styles.seeAllText}>Xem tất cả</Text>
-            </TouchableOpacity>
-          </View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}
-          >
-            {POPULAR_DESTINATIONS.map((dest, idx) => (
-              <TouchableOpacity key={idx} style={styles.destCard} activeOpacity={0.85}>
-                <View style={[styles.destImageArea, { backgroundColor: dest.color + '33' }]}>
-                  <Text style={styles.destEmoji}>{dest.emoji}</Text>
-                </View>
-                <View style={styles.destGradient}>
-                  <Text style={styles.destName}>{dest.name}</Text>
-                  <View style={styles.destRegionRow}>
-                    <Text style={styles.destRegionIcon}>📍</Text>
-                    <Text style={styles.destRegion}>{dest.region}</Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
 
         {/* ── Recommended Tours ── */}
         <View style={styles.section}>
@@ -633,56 +596,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: COLORS.textMuted,
     fontWeight: '600',
-  },
-
-  // Popular Destinations Card
-  destCard: {
-    width: 180,
-    height: 220,
-    borderRadius: 24,
-    overflow: 'hidden',
-    backgroundColor: COLORS.surface,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    marginBottom: 4,
-  },
-  destImageArea: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  destEmoji: {
-    fontSize: 60,
-  },
-  destGradient: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 14,
-    backgroundColor: 'rgba(0,0,0,0.55)',
-  },
-  destName: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#fff',
-    marginBottom: 2,
-  },
-  destRegionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-  },
-  destRegionIcon: {
-    fontSize: 11,
-  },
-  destRegion: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.8)',
-    fontWeight: '500',
   },
 
   // Tour Card

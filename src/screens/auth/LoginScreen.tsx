@@ -13,6 +13,7 @@ import {
   View,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import api from '../../api/api';
 
 const COLORS = {
@@ -44,6 +45,10 @@ export default function LoginScreen({ navigation, onLoginSuccess }: Props) {
 
   const saveSession = async (data: any) => {
     const { token, accessToken, refreshToken, user } = data;
+    if (!(accessToken || token) || !refreshToken || !user) {
+      throw new Error('Invalid login response from server');
+    }
+
     await AsyncStorage.multiSet([
       ['token', accessToken || token],
       ['refreshToken', refreshToken],
@@ -68,6 +73,14 @@ export default function LoginScreen({ navigation, onLoginSuccess }: Props) {
 
       onLoginSuccess();
     } catch (error: any) {
+      if (axios.isAxiosError(error)) {
+        Alert.alert(
+          'Đăng nhập thất bại',
+          error.response?.data?.message || error.message
+        );
+        return;
+      }
+
       Alert.alert(
         'Đăng nhập thất bại',
         'Có lỗi xảy ra khi xử lý thông tin đăng nhập'

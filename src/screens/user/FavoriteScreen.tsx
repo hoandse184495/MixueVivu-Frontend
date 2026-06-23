@@ -145,12 +145,9 @@ export default function FavoriteScreen({ navigation }: { navigation: any }) {
           <Text style={styles.headerTitle}>Tour yêu thích</Text>
           <Text style={styles.headerSubtitle}>Quản lý danh sách tour đã lưu</Text>
         </View>
-        <TouchableOpacity style={styles.refreshBtn} onPress={fetchFavorites}>
-          <Text style={{ fontSize: 20 }}>🔄</Text>
-        </TouchableOpacity>
       </View>
 
-      {loading ? (
+      {loading && favorites.length === 0 ? (
         <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: 50 }} />
       ) : (
         <FlatList
@@ -159,6 +156,8 @@ export default function FavoriteScreen({ navigation }: { navigation: any }) {
           renderItem={renderItem}
           contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
           showsVerticalScrollIndicator={false}
+          onRefresh={fetchFavorites}
+          refreshing={loading}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <View style={styles.emptyIconCircle}>
@@ -168,7 +167,15 @@ export default function FavoriteScreen({ navigation }: { navigation: any }) {
               <Text style={styles.emptySubtitle}>
                 Nhấn ❤️ trên tour để lưu vào đây và lên kế hoạch chuyến đi
               </Text>
-              <TouchableOpacity style={styles.exploreBtn}>
+              <TouchableOpacity
+                style={styles.exploreBtn}
+                onPress={() => {
+                  navigation.navigate('HomeTab', {
+                    screen: 'UserHome',
+                  });
+                }}
+                activeOpacity={0.85}
+              >
                 <Text style={styles.exploreBtnText}>Khám phá tour ngay →</Text>
               </TouchableOpacity>
             </View>
@@ -204,15 +211,6 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     marginTop: 2,
   },
-  refreshBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: COLORS.surfaceContainerLow,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
   // Card
   card: {
     backgroundColor: COLORS.surface,
