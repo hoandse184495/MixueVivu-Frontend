@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import api from '../../api/api';
+import api, { API_URL } from '../../api/api';
 
 const COLORS = {
   primary: '#0058bc',
@@ -74,10 +74,10 @@ export default function LoginScreen({ navigation, onLoginSuccess }: Props) {
       onLoginSuccess();
     } catch (error: any) {
       if (axios.isAxiosError(error)) {
-        Alert.alert(
-          'Đăng nhập thất bại',
-          error.response?.data?.message || error.message
-        );
+        const message = error.response?.data?.message || error.message;
+        const detail = error.message === 'Network Error' ? `${message}\nAPI URL: ${API_URL}` : message;
+
+        Alert.alert('Đăng nhập thất bại', detail);
         return;
       }
 

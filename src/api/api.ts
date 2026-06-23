@@ -1,7 +1,70 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { NativeModules, Platform } from 'react-native';
 
-const API_URL = 'http://192.168.2.5:5000/api';
+const API_PORT = '5000';
+const API_PATH = '/api';
+const DEV_MACHINE_HOST = process.env.EXPO_PUBLIC_DEV_HOST || '192.168.100.231';
+
+const normalizeHost = (value?: string | null) => {
+  if (!value) return undefined;
+
+  const host = value
+    .replace(/^https?:\/\//, '')
+    .replace(/^exp:\/\//, '')
+    .split('/')[0]
+    .split(':')[0];
+
+  if (!host || host === 'localhost' || host === '127.0.0.1') {
+    return undefined;
+  }
+
+  return host;
+};
+
+const getDevServerHost = () => {
+  if (Platform.OS === 'web' && typeof window !== 'undefined') {
+    return window.location.hostname;
+  }
+
+  const expoConstants = NativeModules.ExponentConstants;
+  const hostCandidates = [
+    expoConstants?.expoConfig?.hostUri,
+    expoConstants?.manifest2?.extra?.expoGo?.debuggerHost,
+    expoConstants?.manifest?.debuggerHost,
+    NativeModules.SourceCode?.scriptURL,
+  ];
+
+  for (const candidate of hostCandidates) {
+    const host = normalizeHost(candidate);
+    if (host) return host;
+  }
+
+  return undefined;
+};
+
+const getApiUrl = () => {
+  const manualApiUrl = process.env.EXPO_PUBLIC_API_URL;
+  if (manualApiUrl) return manualApiUrl;
+
+  const host = getDevServerHost();
+
+  if (host) {
+    return `http://${host}:${API_PORT}${API_PATH}`;
+  }
+
+  if (Platform.OS === 'android') {
+    return `http://10.0.2.2:${API_PORT}${API_PATH}`;
+  }
+
+  return `http://${DEV_MACHINE_HOST}:${API_PORT}${API_PATH}`;
+};
+
+export const API_URL = getApiUrl();
+
+if (__DEV__) {
+  console.log('MixueVivu API URL:', API_URL);
+}
 
 const api = axios.create({
   baseURL: API_URL,
