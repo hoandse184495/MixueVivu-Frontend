@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
-  Image,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -12,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { bookingService } from '../../api/services';
+import { prefetchTourImages, TourImage } from '../../components/TourImage';
 import { Booking } from '../../types';
 
 const COLORS = {
@@ -59,7 +59,9 @@ export default function BookingHistoryScreen({ navigation }: { navigation?: any 
     try {
       setLoading(true);
       const res = await bookingService.getMyBookings();
-      setBookings(res.data.data || []);
+      const nextBookings = res.data.data || [];
+      setBookings(nextBookings);
+      prefetchTourImages(nextBookings.map((booking: Booking) => booking.tourImage));
     } catch (e: any) {
       Alert.alert('Lỗi', e.response?.data?.message || 'Không thể tải lịch sử');
     } finally {
@@ -103,13 +105,7 @@ export default function BookingHistoryScreen({ navigation }: { navigation?: any 
         <View style={styles.cardTop}>
           {/* Thumbnail */}
           <View style={styles.thumbContainer}>
-            {item.tourImage ? (
-              <Image source={{ uri: item.tourImage }} style={styles.thumb} />
-            ) : (
-              <View style={[styles.thumb, styles.thumbPlaceholder]}>
-                <Text style={{ fontSize: 28 }}>🏔️</Text>
-              </View>
-            )}
+            <TourImage uri={item.tourImage} style={styles.thumb} fallbackIconSize={28} />
           </View>
 
           <View style={styles.cardInfo}>
@@ -175,9 +171,6 @@ export default function BookingHistoryScreen({ navigation }: { navigation?: any 
           <Text style={styles.headerTitle}>Lịch sử đặt tour</Text>
           <Text style={styles.headerSubtitle}>Quản lý chuyến đi của bạn</Text>
         </View>
-        <TouchableOpacity style={styles.refreshBtn} onPress={fetchBookings}>
-          <Text style={{ fontSize: 20 }}>🔄</Text>
-        </TouchableOpacity>
       </View>
 
       {/* Tab Bar */}
@@ -219,6 +212,8 @@ export default function BookingHistoryScreen({ navigation }: { navigation?: any 
           renderItem={renderBookingCard}
           contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
           showsVerticalScrollIndicator={false}
+          onRefresh={fetchBookings}
+          refreshing={loading}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <View style={styles.emptyIconCircle}>
@@ -231,7 +226,15 @@ export default function BookingHistoryScreen({ navigation }: { navigation?: any 
                   : `Không có tour ${TABS.find(t => t.key === activeTab)?.label?.toLowerCase()}`}
               </Text>
               {activeTab === 'all' && (
-                <TouchableOpacity style={styles.exploreBtn}>
+                <TouchableOpacity
+                  style={styles.exploreBtn}
+                  onPress={() => {
+                    navigation?.navigate('HomeTab', {
+                      screen: 'UserHome',
+                    });
+                  }}
+                  activeOpacity={0.85}
+                >
                   <Text style={styles.exploreBtnText}>Khám phá tour →</Text>
                 </TouchableOpacity>
               )}
@@ -268,15 +271,6 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     marginTop: 2,
   },
-  refreshBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: COLORS.surfaceContainerLow,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
   // Tab Bar
   tabBarContainer: {
     backgroundColor: COLORS.surface,

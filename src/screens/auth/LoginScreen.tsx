@@ -36,8 +36,8 @@ type Props = {
 };
 
 export default function LoginScreen({ navigation, onLoginSuccess }: Props) {
-  const [email, setEmail] = useState('hoa@gmail.com');
-  const [password, setPassword] = useState('123456');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [emailFocused, setEmailFocused] = useState(false);

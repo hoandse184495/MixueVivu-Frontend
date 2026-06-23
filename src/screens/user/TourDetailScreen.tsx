@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Image,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -12,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { tourService, activityService, favoriteService } from '../../api/services';
+import { prefetchTourImages, TourImage } from '../../components/TourImage';
 import { Tour, Activity, Review } from '../../types';
 
 const COLORS = {
@@ -60,9 +60,11 @@ export default function TourDetailScreen({ navigation, route }: Props) {
         activityService.getByTour(initialTour.id),
         favoriteService.check(initialTour.id),
       ]);
-      setTour(detailRes.data.data);
+      const nextTour = detailRes.data.data;
+      setTour(nextTour);
       setActivities(actRes.data.data || []);
-      setReviews(detailRes.data.data?.reviews || []);
+      setReviews(nextTour?.reviews || []);
+      prefetchTourImages([nextTour?.image]);
       setIsFavorited(favRes.data.data?.isFavorited || false);
     } catch {
       // use initial data if fetch fails
@@ -312,13 +314,7 @@ export default function TourDetailScreen({ navigation, route }: Props) {
 
         {/* ── Hero Section ── */}
         <View style={styles.hero}>
-          {tour.image ? (
-            <Image source={{ uri: tour.image }} style={styles.heroImage} resizeMode="cover" />
-          ) : (
-            <View style={[styles.heroImage, { backgroundColor: COLORS.primaryLight, alignItems: 'center', justifyContent: 'center' }]}>
-              <Text style={{ fontSize: 80 }}>🏔️</Text>
-            </View>
-          )}
+          <TourImage uri={tour.image} style={styles.heroImage} fallbackIconSize={80} />
 
           {/* Gradient overlay */}
           <View style={styles.heroOverlay} />

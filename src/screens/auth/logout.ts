@@ -13,5 +13,13 @@ export const logout = async () => {
     }
   }
 
-  await AsyncStorage.multiRemove(['token', 'refreshToken', 'user']);
+  await AsyncStorage.multiRemove([
+    'token',
+    'refreshToken',
+    'user',
+    'email',
+    'password',
+    'rememberedEmail',
+    'rememberedPassword',
+  ]);
 };

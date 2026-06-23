@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
-  Image,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -14,6 +13,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { tourService, TourFilters } from '../../api/services';
+import { prefetchTourImages, TourImage } from '../../components/TourImage';
 import { Tour, User } from '../../types';
 
 const COLORS = {
@@ -79,7 +79,9 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
         ...filters,
         search: search || undefined,
       });
-      setTours(res.data.data || []);
+      const nextTours = res.data.data || [];
+      setTours(nextTours);
+      prefetchTourImages(nextTours.map((tour: Tour) => tour.image));
     } catch (e: any) {
       Alert.alert('Lỗi', e.response?.data?.message || 'Không thể tải tour');
     } finally {
@@ -153,13 +155,7 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
       onPress={() => navigation.navigate('TourDetail', { tour: item })}
       activeOpacity={0.85}
     >
-      {item.image ? (
-        <Image source={{ uri: item.image }} style={styles.tourImage} />
-      ) : (
-        <View style={[styles.tourImage, styles.noImage]}>
-          <Text style={{ fontSize: 36 }}>🏔️</Text>
-        </View>
-      )}
+      <TourImage uri={item.image} style={styles.tourImage} />
 
       {/* Rating badge */}
       <View style={styles.ratingBadge}>

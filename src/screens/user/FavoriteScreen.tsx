@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
-  Image,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -11,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import { favoriteService } from '../../api/services';
+import { prefetchTourImages, TourImage } from '../../components/TourImage';
 import { Tour } from '../../types';
 
 const COLORS = {
@@ -44,7 +44,9 @@ export default function FavoriteScreen({ navigation }: { navigation: any }) {
     try {
       setLoading(true);
       const res = await favoriteService.getAll();
-      setFavorites(res.data.data || []);
+      const nextFavorites = res.data.data || [];
+      setFavorites(nextFavorites);
+      prefetchTourImages(nextFavorites.map((item: FavItem) => item.tour?.image));
     } catch (e: any) {
       Alert.alert('Lỗi', e.response?.data?.message || 'Không thể tải danh sách');
     } finally {
@@ -90,13 +92,7 @@ export default function FavoriteScreen({ navigation }: { navigation: any }) {
       >
         {/* Image Section */}
         <View style={styles.imageContainer}>
-          {tour.image ? (
-            <Image source={{ uri: tour.image }} style={styles.image} />
-          ) : (
-            <View style={[styles.image, styles.imagePlaceholder]}>
-              <Text style={{ fontSize: 36 }}>🏔️</Text>
-            </View>
-          )}
+          <TourImage uri={tour.image} style={styles.image} />
           {/* Rating Badge */}
           <View style={styles.ratingBadge}>
             <Text style={styles.ratingText}>⭐ {tour.averageRating?.toFixed(1) || '0.0'}</Text>

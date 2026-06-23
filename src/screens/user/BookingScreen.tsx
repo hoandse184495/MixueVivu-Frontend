@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import {
   Alert,
-  Image,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -10,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import { bookingService } from '../../api/services';
+import { TourImage } from '../../components/TourImage';
 import { Tour } from '../../types';
 
 const COLORS = {
@@ -99,13 +99,7 @@ export default function BookingScreen({ navigation, route }: Props) {
 
         {/* ── Tour Info Card ── */}
         <View style={styles.tourCard}>
-          {tour.image ? (
-            <Image source={{ uri: tour.image }} style={styles.tourThumb} />
-          ) : (
-            <View style={[styles.tourThumb, styles.tourThumbPlaceholder]}>
-              <Text style={{ fontSize: 32 }}>🏔️</Text>
-            </View>
-          )}
+          <TourImage uri={tour.image} style={styles.tourThumb} fallbackIconSize={32} />
           <View style={styles.tourInfo}>
             {/* Rating */}
             <View style={styles.ratingRow}>
