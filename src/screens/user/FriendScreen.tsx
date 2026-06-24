@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 import { friendService } from '../../api/services';
+import { useAppTheme } from '../../theme/ThemeContext';
 import { FriendRequest } from '../../types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -33,6 +34,7 @@ const COLORS = {
 type TabType = 'friends' | 'requests' | 'search';
 
 export default function FriendScreen({ navigation }: { navigation?: any }) {
+  const { colors } = useAppTheme();
   const [friends, setFriends] = useState<any[]>([]);
   const [requests, setRequests] = useState<any[]>([]);
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -141,11 +143,11 @@ export default function FriendScreen({ navigation }: { navigation?: any }) {
     const email = item.friendEmail || item.email || item.senderEmail;
 
     return (
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border + '30' }]}>
         {renderAvatar(item.avatar, name)}
         <View style={styles.cardInfo}>
-          <Text style={styles.cardName}>{name || 'Người dùng'}</Text>
-          <Text style={styles.cardEmail}>{email || ''}</Text>
+          <Text style={[styles.cardName, { color: colors.text }]}>{name || 'Người dùng'}</Text>
+          <Text style={[styles.cardEmail, { color: colors.textMuted }]}>{email || ''}</Text>
         </View>
         <TouchableOpacity style={styles.removeBtn} onPress={() => {
           Alert.alert('Xóa bạn bè', 'Bạn muốn xóa người này khỏi danh sách bạn bè?', [
@@ -160,11 +162,11 @@ export default function FriendScreen({ navigation }: { navigation?: any }) {
   };
 
   const renderRequest = ({ item }: { item: any }) => (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border + '30' }]}>
       {renderAvatar(item.avatar, item.senderName, '#894d00')}
       <View style={styles.cardInfo}>
-        <Text style={styles.cardName}>{item.senderName || 'Người dùng'}</Text>
-        <Text style={styles.cardEmail}>{item.senderEmail || ''}</Text>
+        <Text style={[styles.cardName, { color: colors.text }]}>{item.senderName || 'Người dùng'}</Text>
+        <Text style={[styles.cardEmail, { color: colors.textMuted }]}>{item.senderEmail || ''}</Text>
       </View>
       <View style={styles.requestActions}>
         <TouchableOpacity style={styles.acceptBtn} onPress={() => handleAccept(item.id)}>
@@ -195,11 +197,11 @@ export default function FriendScreen({ navigation }: { navigation?: any }) {
           : '+ Kết bạn';
 
     return (
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border + '30' }]}>
         {renderAvatar(item.avatar, item.fullName, COLORS.success)}
         <View style={styles.cardInfo}>
-          <Text style={styles.cardName}>{item.fullName || 'Người dùng'}</Text>
-          <Text style={styles.cardEmail}>{item.email || ''}</Text>
+          <Text style={[styles.cardName, { color: colors.text }]}>{item.fullName || 'Người dùng'}</Text>
+          <Text style={[styles.cardEmail, { color: colors.textMuted }]}>{item.email || ''}</Text>
         </View>
         <TouchableOpacity
           style={[styles.addBtn, disabled && styles.addBtnSent]}
@@ -237,12 +239,12 @@ export default function FriendScreen({ navigation }: { navigation?: any }) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>👥 Bạn bè</Text>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.bg }]}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border + '40' }]}>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>👥 Bạn bè</Text>
       </View>
 
-      <View style={styles.tabBar}>
+      <View style={[styles.tabBar, { backgroundColor: colors.surface, borderBottomColor: colors.border + '50' }]}>
         {TABS.map((tab) => (
           <TouchableOpacity
             key={tab.key}
@@ -258,7 +260,7 @@ export default function FriendScreen({ navigation }: { navigation?: any }) {
       </View>
 
       {activeTab === 'search' && (
-        <View style={styles.searchBox}>
+        <View style={[styles.searchBox, { backgroundColor: colors.surface }]}>
           <TextInput
             style={styles.searchInput}
             placeholder="Tìm kiếm bạn bè..."
@@ -296,7 +298,7 @@ export default function FriendScreen({ navigation }: { navigation?: any }) {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Text style={{ fontSize: 40 }}>👥</Text>
-              <Text style={styles.emptyText}>
+              <Text style={[styles.emptyText, { color: colors.textMuted }]}>
                 {activeTab === 'friends' ? 'Chưa có bạn bè' :
                  activeTab === 'requests' ? 'Không có lời mời nào' :
                  hasSearched ? 'Không tìm thấy người dùng phù hợp' : 'Nhập từ khóa rồi bấm Tìm để kết bạn'}

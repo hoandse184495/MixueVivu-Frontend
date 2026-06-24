@@ -10,6 +10,7 @@ import FavoriteScreen from '../screens/user/FavoriteScreen';
 import FriendScreen from '../screens/user/FriendScreen';
 import ContactScreen from '../screens/user/ContactScreen';
 import UserProfileScreen from '../screens/user/UserProfileScreen';
+import SettingsScreen from '../screens/user/SettingsScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -78,6 +79,7 @@ function ProfileStack({ onLogout }: { onLogout: () => void }) {
       <Stack.Screen name="UserProfile">
         {(props) => <UserProfileScreen {...props} onLogout={onLogout} />}
       </Stack.Screen>
+      <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
       <Stack.Screen name="ContactScreen" component={ContactScreen} />
     </Stack.Navigator>
   );

@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { tourService, activityService, favoriteService } from '../../api/services';
+import { useAppTheme } from '../../theme/ThemeContext';
 import { prefetchTourImages, TourImage } from '../../components/TourImage';
 import { Tour, Activity, Review } from '../../types';
 
@@ -41,6 +42,7 @@ type Props = {
 type TabType = 'details' | 'activities' | 'rating';
 
 export default function TourDetailScreen({ navigation, route }: Props) {
+  const { colors } = useAppTheme();
   const { tour: initialTour } = route.params as { tour: Tour };
   const [tour, setTour] = useState<Tour>(initialTour);
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -121,7 +123,7 @@ export default function TourDetailScreen({ navigation, route }: Props) {
       {Object.keys(groupedActivities).length === 0 ? (
         <View style={styles.emptyState}>
           <Text style={{ fontSize: 40 }}>📅</Text>
-          <Text style={styles.emptyText}>Chưa có lịch trình</Text>
+          <Text style={[styles.emptyText, { color: colors.textMuted }]}>Chưa có lịch trình</Text>
         </View>
       ) : (
         Object.entries(groupedActivities).map(([day, acts], dayIdx) => (
@@ -134,7 +136,7 @@ export default function TourDetailScreen({ navigation, route }: Props) {
             </View>
             <View style={styles.dayActivities}>
               {acts.map((act, idx) => (
-                <View key={idx} style={styles.activityCard}>
+                <View key={idx} style={[styles.activityCard, { backgroundColor: colors.surface }]}>
                   {act.time && (
                     <Text style={styles.actTime}>🕐 {act.time}</Text>
                   )}
@@ -159,17 +161,17 @@ export default function TourDetailScreen({ navigation, route }: Props) {
     <View style={{ padding: 16 }}>
       {/* Bento Quick Info */}
       <View style={styles.bentoGrid}>
-        <View style={styles.bentoCard}>
+        <View style={[styles.bentoCard, { backgroundColor: colors.surface }]}>
           <Text style={styles.bentoEmoji}>⏱️</Text>
           <Text style={styles.bentoLabel}>Thời gian</Text>
           <Text style={styles.bentoValue}>{tour.duration}</Text>
         </View>
-        <View style={styles.bentoCard}>
+        <View style={[styles.bentoCard, { backgroundColor: colors.surface }]}>
           <Text style={styles.bentoEmoji}>👥</Text>
           <Text style={styles.bentoLabel}>Còn chỗ</Text>
           <Text style={styles.bentoValue}>{tour.availableSlots}</Text>
         </View>
-        <View style={styles.bentoCard}>
+        <View style={[styles.bentoCard, { backgroundColor: colors.surface }]}>
           <Text style={styles.bentoEmoji}>🗂️</Text>
           <Text style={styles.bentoLabel}>Danh mục</Text>
           <Text style={styles.bentoValue} numberOfLines={1}>{tour.category || 'N/A'}</Text>
@@ -177,7 +179,7 @@ export default function TourDetailScreen({ navigation, route }: Props) {
       </View>
 
       {/* Dates */}
-      <View style={styles.infoCard}>
+      <View style={[styles.infoCard, { backgroundColor: colors.surface }]}>
         <Text style={styles.infoCardTitle}>📆 Thời gian tour</Text>
         <View style={styles.infoRow}>
           <Text style={styles.infoRowLabel}>Bắt đầu</Text>
@@ -196,7 +198,7 @@ export default function TourDetailScreen({ navigation, route }: Props) {
 
       {/* Description */}
       {tour.description ? (
-        <View style={styles.infoCard}>
+        <View style={[styles.infoCard, { backgroundColor: colors.surface }]}>
           <Text style={styles.infoCardTitle}>📋 Mô tả tour</Text>
           <Text style={styles.descText}>{tour.description}</Text>
         </View>
@@ -204,7 +206,7 @@ export default function TourDetailScreen({ navigation, route }: Props) {
 
       {/* Guide */}
       {tour.guideName && (
-        <View style={styles.infoCard}>
+        <View style={[styles.infoCard, { backgroundColor: colors.surface }]}>
           <Text style={styles.infoCardTitle}>🧭 Hướng dẫn viên</Text>
           <View style={styles.guideCard}>
             <View style={styles.guideAvatar}>
@@ -222,7 +224,7 @@ export default function TourDetailScreen({ navigation, route }: Props) {
 
       {/* Provider */}
       {tour.providerName && (
-        <View style={styles.infoCard}>
+        <View style={[styles.infoCard, { backgroundColor: colors.surface }]}>
           <Text style={styles.infoCardTitle}>🏢 Nhà cung cấp</Text>
           <Text style={styles.infoCardText}>{tour.providerName}</Text>
           {tour.providerEmail && <Text style={styles.infoCardText}>{tour.providerEmail}</Text>}
@@ -272,11 +274,11 @@ export default function TourDetailScreen({ navigation, route }: Props) {
       {reviews.length === 0 ? (
         <View style={styles.emptyState}>
           <Text style={{ fontSize: 36 }}>⭐</Text>
-          <Text style={styles.emptyText}>Chưa có đánh giá nào</Text>
+          <Text style={[styles.emptyText, { color: colors.textMuted }]}>Chưa có đánh giá nào</Text>
         </View>
       ) : (
         reviews.map((r, idx) => (
-          <View key={idx} style={styles.reviewCard}>
+          <View key={idx} style={[styles.reviewCard, { backgroundColor: colors.surface }]}>
             <View style={styles.reviewHeader}>
               <View style={styles.reviewAvatar}>
                 <Text style={{ color: COLORS.primary, fontWeight: '700', fontSize: 16 }}>
@@ -309,7 +311,7 @@ export default function TourDetailScreen({ navigation, route }: Props) {
   ];
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.bg }]}> 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
 
         {/* ── Hero Section ── */}
@@ -334,18 +336,18 @@ export default function TourDetailScreen({ navigation, route }: Props) {
         </View>
 
         {/* ── Info Panel ── */}
-        <View style={styles.infoPanel}>
+        <View style={[styles.infoPanel, { backgroundColor: colors.surface }]}> 
           {/* Location */}
           <View style={styles.locationRow}>
             <Text style={styles.locationIcon}>📍</Text>
-            <Text style={styles.locationText}>{tour.location}</Text>
+            <Text style={[styles.locationText, { color: colors.textMuted }]}>{tour.location}</Text>
           </View>
 
           {/* Title + Price */}
           <View style={styles.titlePriceRow}>
-            <Text style={styles.tourTitle} numberOfLines={3}>{tour.title}</Text>
+            <Text style={[styles.tourTitle, { color: colors.text }]} numberOfLines={3}>{tour.title}</Text>
             <View style={styles.priceBlock}>
-              <Text style={styles.priceLabel}>Từ</Text>
+              <Text style={[styles.priceLabel, { color: colors.textMuted }]}>Từ</Text>
               <Text style={styles.priceValue}>{Number(tour.price).toLocaleString('vi-VN')}₫</Text>
               <Text style={styles.pricePerPerson}>/người</Text>
             </View>
@@ -368,7 +370,7 @@ export default function TourDetailScreen({ navigation, route }: Props) {
         </View>
 
         {/* ── Tab Bar ── */}
-        <View style={styles.tabBar}>
+        <View style={[styles.tabBar, { backgroundColor: colors.surface, borderBottomColor: colors.border + '50' }]}>
           {TABS.map((tab) => (
             <TouchableOpacity
               key={tab.key}
@@ -390,7 +392,7 @@ export default function TourDetailScreen({ navigation, route }: Props) {
       </ScrollView>
 
       {/* ── Fixed Bottom Action Bar ── */}
-      <View style={styles.bottomBar}>
+      <View style={[styles.bottomBar, { backgroundColor: colors.surface, borderTopColor: colors.border }]}> 
         <TouchableOpacity
           style={[styles.favBtnBottom, isFavorited && styles.favBtnBottomActive]}
           onPress={toggleFavorite}

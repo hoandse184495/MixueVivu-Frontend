@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import { favoriteService } from '../../api/services';
+import { useAppTheme } from '../../theme/ThemeContext';
 import { prefetchTourImages, TourImage } from '../../components/TourImage';
 import { Tour } from '../../types';
 
@@ -37,6 +38,7 @@ type FavItem = {
 };
 
 export default function FavoriteScreen({ navigation }: { navigation: any }) {
+  const { colors } = useAppTheme();
   const [favorites, setFavorites] = useState<FavItem[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -84,7 +86,7 @@ export default function FavoriteScreen({ navigation }: { navigation: any }) {
 
     return (
       <TouchableOpacity
-        style={styles.card}
+        style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border + '30' }]}
         onPress={() => {
           if (navigation) navigation.navigate('TourDetail', { tour });
         }}
@@ -102,7 +104,7 @@ export default function FavoriteScreen({ navigation }: { navigation: any }) {
         {/* Content Section */}
         <View style={styles.content}>
           <View style={styles.contentTop}>
-            <Text style={styles.tourTitle} numberOfLines={2}>{tour.title}</Text>
+            <Text style={[styles.tourTitle, { color: colors.text }]} numberOfLines={2}>{tour.title}</Text>
             <TouchableOpacity
               style={styles.removeBtn}
               onPress={() => handleRemove(tour.id, tour.title)}
@@ -111,12 +113,12 @@ export default function FavoriteScreen({ navigation }: { navigation: any }) {
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.location}>📍 {tour.location}</Text>
-          <Text style={styles.duration}>⏱ {tour.duration}</Text>
+          <Text style={[styles.location, { color: colors.textMuted }]}>📍 {tour.location}</Text>
+          <Text style={[styles.duration, { color: colors.textMuted }]}>⏱ {tour.duration}</Text>
 
           <View style={styles.footer}>
             <View>
-              <Text style={styles.priceLabel}>Từ</Text>
+              <Text style={[styles.priceLabel, { color: colors.textMuted }]}>Từ</Text>
               <Text style={styles.price}>
                 {Number(tour.price).toLocaleString('vi-VN')}₫
               </Text>
@@ -134,12 +136,12 @@ export default function FavoriteScreen({ navigation }: { navigation: any }) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.bg }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border + '40' }]}>
         <View>
-          <Text style={styles.headerTitle}>Tour yêu thích</Text>
-          <Text style={styles.headerSubtitle}>Quản lý danh sách tour đã lưu</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Tour yêu thích</Text>
+          <Text style={[styles.headerSubtitle, { color: colors.textMuted }]}>Quản lý danh sách tour đã lưu</Text>
         </View>
       </View>
 
@@ -159,8 +161,8 @@ export default function FavoriteScreen({ navigation }: { navigation: any }) {
               <View style={styles.emptyIconCircle}>
                 <Text style={{ fontSize: 40 }}>❤️</Text>
               </View>
-              <Text style={styles.emptyTitle}>Chưa có tour yêu thích</Text>
-              <Text style={styles.emptySubtitle}>
+              <Text style={[styles.emptyTitle, { color: colors.text }]}>Chưa có tour yêu thích</Text>
+              <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>
                 Nhấn ❤️ trên tour để lưu vào đây và lên kế hoạch chuyến đi
               </Text>
               <TouchableOpacity

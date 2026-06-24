@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { tourService, TourFilters } from '../../api/services';
+import { useAppTheme } from '../../theme/ThemeContext';
 import { prefetchTourImages, TourImage } from '../../components/TourImage';
 import { Tour, User } from '../../types';
 
@@ -51,6 +52,7 @@ type Props = {
 };
 
 export default function UserHomeScreen({ navigation, onLogout }: Props) {
+  const { colors } = useAppTheme();
   const [tours, setTours] = useState<Tour[]>([]);
   const [keyword, setKeyword] = useState('');
   const [user, setUser] = useState<User | null>(null);
@@ -163,14 +165,14 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
       </View>
 
       <View style={styles.tourContent}>
-        <Text style={styles.tourTitle} numberOfLines={1}>{item.title}</Text>
+        <Text style={[styles.tourTitle, { color: colors.text }]} numberOfLines={1}>{item.title}</Text>
 
         <View style={styles.locationRow}>
-          <Text style={styles.locationText}>📍 {item.location}</Text>
+          <Text style={[styles.locationText, { color: colors.textMuted }]}>📍 {item.location}</Text>
         </View>
 
         <View style={styles.metaRow}>
-          <Text style={styles.durationText}>⏱ {item.duration}</Text>
+          <Text style={[styles.durationText, { color: colors.textMuted }]}>⏱ {item.duration}</Text>
           <View style={styles.slotsBadge}>
             <Text style={styles.slotsText}>{item.availableSlots} chỗ</Text>
           </View>
@@ -178,7 +180,7 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
 
         <View style={styles.priceRow}>
           <View>
-            <Text style={styles.priceLabel}>Từ</Text>
+            <Text style={[styles.priceLabel, { color: colors.textMuted }]}>Từ</Text>
             <Text style={styles.priceText}>
               {Number(item.price).toLocaleString('vi-VN')}₫
             </Text>
@@ -197,17 +199,17 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
   const getInitial = (name?: string) => (name ? name[0].toUpperCase() : 'U');
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.bg }]}>
       <ScrollView showsVerticalScrollIndicator={false} stickyHeaderIndices={[0]}>
         {/* ── Header ── */}
-        <View style={styles.header}>
+        <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border + '40' }]}>
           <View style={styles.headerLeft}>
             <View style={styles.avatarCircle}>
               <Text style={styles.avatarText}>{getInitial(user?.fullName)}</Text>
             </View>
             <View>
-              <Text style={styles.greetText}>Xin chào 👋</Text>
-              <Text style={styles.userName}>{user?.fullName || 'Traveler'}</Text>
+              <Text style={[styles.greetText, { color: colors.textMuted }]}>Xin chào 👋</Text>
+              <Text style={[styles.userName, { color: colors.text }]}>{user?.fullName || 'Traveler'}</Text>
             </View>
           </View>
           <TouchableOpacity style={styles.notifBtn}>
@@ -216,8 +218,8 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
         </View>
 
         {/* ── Search ── */}
-        <View style={styles.searchContainer}>
-          <View style={styles.searchBox}>
+        <View style={[styles.searchContainer, { backgroundColor: colors.surface }]}>
+          <View style={[styles.searchBox, { backgroundColor: colors.surface }]}>
             <Text style={styles.searchIcon}>🔍</Text>
             <TextInput
               style={styles.searchInput}
@@ -333,8 +335,8 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
         {/* ── Recommended Tours ── */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Tour nổi bật</Text>
-            <Text style={styles.sectionCount}>{tours.length} tour</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Tour nổi bật</Text>
+            <Text style={[styles.sectionCount, { color: colors.textMuted }]}>{tours.length} tour</Text>
           </View>
 
           {loading ? (
@@ -342,8 +344,8 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
           ) : tours.length === 0 ? (
             <View style={styles.emptyContainer}>
               <Text style={{ fontSize: 48 }}>🏖️</Text>
-              <Text style={styles.emptyTitle}>Không tìm thấy tour nào</Text>
-              <Text style={styles.emptySubtitle}>Thử tìm kiếm với từ khóa khác</Text>
+              <Text style={[styles.emptyTitle, { color: colors.text }]}>Không tìm thấy tour nào</Text>
+              <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>Thử tìm kiếm với từ khóa khác</Text>
             </View>
           ) : (
             tours.map((item) => (

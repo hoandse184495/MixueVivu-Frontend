@@ -138,6 +138,7 @@ export const authService = {
     api.post('/auth/login', { email, password }),
   register: (data: any) => api.post('/auth/register', data),
   getProfile: () => api.get('/auth/profile'),
+  updateProfile: (data: any) => api.put('/auth/profile', data),
 };
 
 export const tourService = {

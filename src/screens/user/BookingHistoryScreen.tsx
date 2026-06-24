@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { bookingService } from '../../api/services';
+import { useAppTheme } from '../../theme/ThemeContext';
 import { prefetchTourImages, TourImage } from '../../components/TourImage';
 import { Booking } from '../../types';
 
@@ -51,6 +52,7 @@ const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string; 
 };
 
 export default function BookingHistoryScreen({ navigation }: { navigation?: any }) {
+  const { colors } = useAppTheme();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('all');
@@ -101,7 +103,7 @@ export default function BookingHistoryScreen({ navigation }: { navigation?: any 
   const renderBookingCard = ({ item }: { item: Booking }) => {
     const statusCfg = STATUS_CONFIG[item.status] || STATUS_CONFIG.pending;
     return (
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border + '30' }]}>
         <View style={styles.cardTop}>
           {/* Thumbnail */}
           <View style={styles.thumbContainer}>
@@ -117,12 +119,12 @@ export default function BookingHistoryScreen({ navigation }: { navigation?: any 
               </View>
             </View>
 
-            <Text style={styles.tourName} numberOfLines={2}>
+            <Text style={[styles.tourName, { color: colors.text }]} numberOfLines={2}>
               {item.tourTitle || `Tour #${item.tourId}`}
             </Text>
 
             {item.tourLocation && (
-              <Text style={styles.locationText}>📍 {item.tourLocation}</Text>
+              <Text style={[styles.locationText, { color: colors.textMuted }]}>📍 {item.tourLocation}</Text>
             )}
 
             {item.tourStartDate && (
@@ -144,7 +146,7 @@ export default function BookingHistoryScreen({ navigation }: { navigation?: any 
             <Text style={styles.guestText}>{item.numPeople} người</Text>
           </View>
           <View style={styles.priceInfo}>
-            <Text style={styles.priceLabel}>Tổng tiền</Text>
+            <Text style={[styles.priceLabel, { color: colors.textMuted }]}>Tổng tiền</Text>
             <Text style={styles.priceValue}>
               {Number(item.totalPrice).toLocaleString('vi-VN')}₫
             </Text>
@@ -164,17 +166,17 @@ export default function BookingHistoryScreen({ navigation }: { navigation?: any 
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.bg }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border + '40' }]}>
         <View>
-          <Text style={styles.headerTitle}>Lịch sử đặt tour</Text>
-          <Text style={styles.headerSubtitle}>Quản lý chuyến đi của bạn</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Lịch sử đặt tour</Text>
+          <Text style={[styles.headerSubtitle, { color: colors.textMuted }]}>Quản lý chuyến đi của bạn</Text>
         </View>
       </View>
 
       {/* Tab Bar */}
-      <View style={styles.tabBarContainer}>
+      <View style={[styles.tabBarContainer, { backgroundColor: colors.surface, borderBottomColor: colors.border + '50' }]}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -219,8 +221,8 @@ export default function BookingHistoryScreen({ navigation }: { navigation?: any 
               <View style={styles.emptyIconCircle}>
                 <Text style={{ fontSize: 40 }}>🎫</Text>
               </View>
-              <Text style={styles.emptyTitle}>Chưa có booking nào</Text>
-              <Text style={styles.emptySubtitle}>
+              <Text style={[styles.emptyTitle, { color: colors.text }]}>Chưa có booking nào</Text>
+              <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>
                 {activeTab === 'all'
                   ? 'Hãy khám phá và đặt tour ngay!'
                   : `Không có tour ${TABS.find(t => t.key === activeTab)?.label?.toLowerCase()}`}
