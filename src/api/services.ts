@@ -179,6 +179,9 @@ export const bookingService = {
     id: number,
     status: 'pending' | 'confirmed' | 'cancelled' | 'completed'
   ) => api.put(`/bookings/${id}/status`, { status }),
+  providerConfirmBooking: (id: number) => api.put(`/bookings/${id}/confirm`),
+  providerRejectBooking: (id: number) => api.put(`/bookings/${id}/reject`),
+  providerCompleteBooking: (id: number) => api.put(`/bookings/${id}/complete`),
 };
 
 export const favoriteService = {
@@ -231,4 +234,43 @@ export const friendService = {
   accept: (id: number) => api.put(`/friends/${id}/accept`),
   reject: (id: number) => api.put(`/friends/${id}/reject`),
   remove: (id: number) => api.delete(`/friends/${id}`),
+};
+
+export const categoryService = {
+  getAll: () => api.get('/categories'),
+  getById: (id: number) => api.get(`/categories/${id}`),
+  create: (data: any) => api.post('/categories', data),
+  update: (id: number, data: any) => api.put(`/categories/${id}`, data),
+  delete: (id: number) => api.delete(`/categories/${id}`),
+};
+
+export const paymentService = {
+  getMyPayments: () => api.get('/payments/my-payments'),
+  getAllPayments: () => api.get('/payments'),
+  confirmPayment: (id: number) => api.put(`/payments/${id}/confirm`),
+  refundPayment: (id: number) => api.put(`/payments/${id}/refund`),
+};
+
+export const payoutService = {
+  getMyPayouts: () => api.get('/payouts/my-payouts'),
+  getEligibleBookings: () => api.get('/payouts/eligible'),
+  getAllPayouts: () => api.get('/payouts'),
+  createPayout: (data: any) => api.post('/payouts', data),
+  confirmPayout: (id: number) => api.put(`/payouts/${id}/confirm`),
+};
+
+export const providerService = {
+  getProviderStats: () => api.get('/provider/stats'),
+  getProviderRevenueByMonth: () => api.get('/provider/stats/revenue'),
+};
+
+export const adminService = {
+  getAllUsers: () => api.get('/admin/users'),
+  getUserById: (id: number) => api.get(`/admin/users/${id}`),
+  blockUser: (id: number) => api.put(`/admin/users/${id}/block`),
+  unblockUser: (id: number) => api.put(`/admin/users/${id}/unblock`),
+  getDashboard: () => api.get('/admin/dashboard'),
+  getRevenueStats: () => api.get('/admin/stats/revenue'),
+  getBookingStats: () => api.get('/admin/stats/bookings'),
+  getTopTours: () => api.get('/admin/stats/top-tours'),
 };

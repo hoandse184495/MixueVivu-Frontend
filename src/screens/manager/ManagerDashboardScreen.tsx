@@ -10,8 +10,8 @@ import {
   View,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import api from '../../api/api';
-import { Tour, User } from '../../types';
+import { adminService } from '../../api/services';
+import { User } from '../../types';
 
 type Props = {
   onLogout: () => void;
@@ -19,61 +19,28 @@ type Props = {
 
 export default function ManagerDashboardScreen({ onLogout }: Props) {
   const [user, setUser] = useState<User | null>(null);
-  const [pendingTours, setPendingTours] = useState<Tour[]>([]);
+  const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
   const getUserFromStorage = async () => {
     const userStorage = await AsyncStorage.getItem('user');
-
     if (userStorage) {
       setUser(JSON.parse(userStorage));
     }
   };
 
-  const fetchPendingTours = async () => {
+  const fetchDashboardStats = async () => {
     try {
       setLoading(true);
-
-      const response = await api.get('/tours/pending');
-
-      setPendingTours(response.data.data);
+      const res = await adminService.getDashboard();
+      setStats(res.data.data);
     } catch (error: any) {
       Alert.alert(
         'Lỗi',
-        error.response?.data?.message || 'Không thể lấy tour chờ duyệt'
+        error.response?.data?.message || 'Không thể lấy thống kê dashboard'
       );
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleApprove = async (tourId: number) => {
-    try {
-      await api.put(`/tours/${tourId}/approve`);
-
-      Alert.alert('Thành công', 'Đã duyệt tour');
-      fetchPendingTours();
-    } catch (error: any) {
-      Alert.alert(
-        'Lỗi',
-        error.response?.data?.message || 'Không thể duyệt tour'
-      );
-    }
-  };
-
-  const handleReject = async (tourId: number) => {
-    try {
-      await api.put(`/tours/${tourId}/reject`, {
-        rejectReason: 'Thông tin tour chưa phù hợp, vui lòng cập nhật lại.',
-      });
-
-      Alert.alert('Thành công', 'Đã từ chối tour');
-      fetchPendingTours();
-    } catch (error: any) {
-      Alert.alert(
-        'Lỗi',
-        error.response?.data?.message || 'Không thể từ chối tour'
-      );
     }
   };
 
@@ -83,40 +50,8 @@ export default function ManagerDashboardScreen({ onLogout }: Props) {
 
   useEffect(() => {
     getUserFromStorage();
-    fetchPendingTours();
+    fetchDashboardStats();
   }, []);
-
-  const renderTourItem = ({ item }: { item: Tour }) => {
-    return (
-      <View style={styles.card}>
-        <Text style={styles.tourTitle}>{item.title}</Text>
-        <Text style={styles.text}>Provider: {item.providerName || 'N/A'}</Text>
-        <Text style={styles.text}>Email: {item.providerEmail || 'N/A'}</Text>
-        <Text style={styles.text}>Địa điểm: {item.location}</Text>
-        <Text style={styles.text}>
-          Giá: {Number(item.price).toLocaleString('vi-VN')} VNĐ
-        </Text>
-        <Text style={styles.text}>Thời gian: {item.duration}</Text>
-        <Text style={styles.description}>{item.description}</Text>
-
-        <View style={styles.actionRow}>
-          <TouchableOpacity
-            style={styles.approveButton}
-            onPress={() => handleApprove(item.id)}
-          >
-            <Text style={styles.buttonText}>Duyệt</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.rejectButton}
-            onPress={() => handleReject(item.id)}
-          >
-            <Text style={styles.buttonText}>Từ chối</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -133,21 +68,36 @@ export default function ManagerDashboardScreen({ onLogout }: Props) {
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.title}>Tour đang chờ duyệt</Text>
+      <Text style={styles.title}>Tổng quan hệ thống</Text>
 
       {loading ? (
         <ActivityIndicator size="large" style={{ marginTop: 30 }} />
-      ) : (
-        <FlatList
-          data={pendingTours}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderTourItem}
-          ListEmptyComponent={
-            <Text style={styles.emptyText}>Không có tour nào chờ duyệt</Text>
-          }
-          contentContainerStyle={{ paddingBottom: 24 }}
-        />
-      )}
+      ) : stats ? (
+        <View style={styles.statsContainer}>
+          <View style={styles.statCard}>
+            <Text style={styles.statIcon}>👥</Text>
+            <Text style={styles.statValue}>{stats.totalUsers || 0}</Text>
+            <Text style={styles.statLabel}>Tổng người dùng</Text>
+          </View>
+          <View style={styles.rowStats}>
+            <View style={[styles.statCard, styles.halfCard]}>
+              <Text style={styles.statIcon}>🗺️</Text>
+              <Text style={styles.statValue}>{stats.totalTours || 0}</Text>
+              <Text style={styles.statLabel}>Tổng tour</Text>
+            </View>
+            <View style={[styles.statCard, styles.halfCard]}>
+              <Text style={styles.statIcon}>🎫</Text>
+              <Text style={styles.statValue}>{stats.totalBookings || 0}</Text>
+              <Text style={styles.statLabel}>Tổng booking</Text>
+            </View>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statIcon}>💰</Text>
+            <Text style={styles.statValue}>{Number(stats.totalRevenue || 0).toLocaleString('vi-VN')}₫</Text>
+            <Text style={styles.statLabel}>Tổng doanh thu (lịch sử)</Text>
+          </View>
+        </View>
+      ) : null}
     </SafeAreaView>
   );
 }
@@ -183,53 +133,40 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     color: '#1e88e5',
   },
-  card: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 14,
-    marginBottom: 14,
+  statsContainer: {
+    gap: 14,
   },
-  tourTitle: {
-    fontSize: 18,
-    fontWeight: '800',
+  statCard: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 16,
+    alignItems: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  rowStats: {
+    flexDirection: 'row',
+    gap: 14,
+  },
+  halfCard: {
+    flex: 1,
+  },
+  statIcon: {
+    fontSize: 32,
     marginBottom: 8,
   },
-  text: {
-    fontSize: 14,
-    color: '#555',
+  statValue: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#1e88e5',
     marginBottom: 4,
   },
-  description: {
+  statLabel: {
     fontSize: 14,
-    color: '#333',
-    marginTop: 8,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    marginTop: 14,
-    gap: 10,
-  },
-  approveButton: {
-    flex: 1,
-    backgroundColor: '#43a047',
-    padding: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  rejectButton: {
-    flex: 1,
-    backgroundColor: '#e53935',
-    padding: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontWeight: '800',
-  },
-  emptyText: {
-    textAlign: 'center',
-    marginTop: 30,
-    color: '#777',
+    color: '#717786',
+    fontWeight: '600',
   },
 });

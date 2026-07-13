@@ -5,7 +5,10 @@ import { Text, View } from 'react-native';
 import ManagerDashboardScreen from '../screens/manager/ManagerDashboardScreen';
 import ManagerPendingToursScreen from '../screens/manager/ManagerPendingToursScreen';
 import ManagerBookingsScreen from '../screens/manager/ManagerBookingsScreen';
-import ManagerGuidesScreen from '../screens/manager/ManagerGuidesScreen';
+import ManagerUsersScreen from '../screens/manager/ManagerUsersScreen';
+import ManagerPaymentsScreen from '../screens/manager/ManagerPaymentsScreen';
+import ManagerPayoutsScreen from '../screens/manager/ManagerPayoutsScreen';
+import ManagerCategoriesScreen from '../screens/manager/ManagerCategoriesScreen';
 import ManagerContactsScreen from '../screens/manager/ManagerContactsScreen';
 
 const Tab = createBottomTabNavigator();
@@ -22,7 +25,10 @@ function TabIcon({ name, focused }: { name: string; focused: boolean }) {
     Dashboard: '🏛️',
     'Pending Tours': '⏳',
     Bookings: '🎫',
-    Guides: '🧭',
+    Users: '👥',
+    Payments: '💳',
+    Payouts: '💰',
+    Categories: '🏷️',
     Contacts: '📩',
   };
   return (
@@ -113,11 +119,41 @@ export default function ManagerNavigator({
       />
 
       <Tab.Screen
-        name="GuidesTab"
-        component={ManagerGuidesScreen}
+        name="UsersTab"
+        component={ManagerUsersScreen}
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon name="Guides" focused={focused} />
+            <TabIcon name="Users" focused={focused} />
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="PaymentsTab"
+        component={ManagerPaymentsScreen}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon name="Payments" focused={focused} />
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="PayoutsTab"
+        component={ManagerPayoutsScreen}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon name="Payouts" focused={focused} />
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="CategoriesTab"
+        component={ManagerCategoriesScreen}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon name="Categories" focused={focused} />
           ),
         }}
       />

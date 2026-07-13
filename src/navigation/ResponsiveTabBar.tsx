@@ -48,8 +48,12 @@ export default function ResponsiveTabBar({
     if (lower.includes('profile')) return '👤';
     if (lower.includes('favorites')) return '❤️';
     if (lower.includes('friends')) return '👥';
+    if (lower.includes('payments')) return '💳';
+    if (lower.includes('payouts')) return '💰';
+    if (lower.includes('categories')) return '🏷️';
+    if (lower.includes('users')) return '👥';
     if (lower.includes('add')) return '➕';
-    return '●';
+    if (lower.includes('contacts')) return '📩';
   };
 
   const getLabel = (name: string) => {
@@ -63,8 +67,12 @@ export default function ResponsiveTabBar({
     if (lower.includes('profile')) return 'Tài Khoản';
     if (lower.includes('favorites')) return 'Yêu Thích';
     if (lower.includes('friends')) return 'Bạn Bè';
+    if (lower.includes('payments')) return 'Thanh Toán';
+    if (lower.includes('payouts')) return 'Đối Soát';
+    if (lower.includes('categories')) return 'Danh Mục';
+    if (lower.includes('users')) return 'Người Dùng';
     if (lower.includes('add')) return 'Thêm Tour';
-    return name;
+    if (lower.includes('contacts')) return 'Liên Hệ';
   };
 
   if (isLargeScreen) {

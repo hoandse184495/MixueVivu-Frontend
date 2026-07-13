@@ -11,7 +11,7 @@ import {
   View,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { tourService, guideService } from '../../api/services';
+import { tourService, guideService, categoryService } from '../../api/services';
 import { Guide } from '../../types';
 
 const COLORS = {
@@ -32,7 +32,8 @@ export default function ProviderAddTourScreen() {
   const [description, setDescription] = useState('');
   const [image, setImage] = useState('');
   const [availableSlots, setAvailableSlots] = useState('10');
-  const [category, setCategory] = useState('Du lịch');
+  const [category, setCategory] = useState('');
+  const [categoryOptions, setCategoryOptions] = useState<string[]>([]);
   
   // Guide selection
   const [guides, setGuides] = useState<Guide[]>([]);
@@ -43,22 +44,33 @@ export default function ProviderAddTourScreen() {
   const navigation = useNavigation<any>();
 
   useEffect(() => {
-    const fetchGuides = async () => {
+    const fetchGuidesAndCategories = async () => {
       try {
         setLoadingGuides(true);
-        const response = await guideService.getAll();
-        const guideList = response.data.data || [];
+        const [guideRes, catRes] = await Promise.all([
+          guideService.getAll(),
+          categoryService.getAll()
+        ]);
+        
+        const guideList = guideRes.data.data || [];
         setGuides(guideList);
         if (guideList.length > 0) {
           setSelectedGuideId(guideList[0].id);
         }
+
+        const catList = catRes.data.data || [];
+        if (catList.length > 0) {
+          const catNames = catList.map((c: any) => c.name);
+          setCategoryOptions(catNames);
+          setCategory(catNames[0]);
+        }
       } catch {
-        // Fallback if error fetching guides
+        // Fallback if error
       } finally {
         setLoadingGuides(false);
       }
     };
-    fetchGuides();
+    fetchGuidesAndCategories();
   }, []);
 
   const handleCreateTour = async () => {
@@ -126,7 +138,6 @@ export default function ProviderAddTourScreen() {
     }
   };
 
-  const categories = ['Du lịch', 'Biển', 'Núi', 'Khám phá', 'Nghỉ dưỡng'];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -204,7 +215,7 @@ export default function ProviderAddTourScreen() {
             <View style={[styles.inputGroup, { flex: 1 }]}>
               <Text style={styles.inputLabel}>Danh mục</Text>
               <View style={styles.categorySelectContainer}>
-                {categories.map((cat) => (
+                {categoryOptions.map((cat) => (
                   <TouchableOpacity
                     key={cat}
                     style={[

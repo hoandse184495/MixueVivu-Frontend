@@ -12,7 +12,7 @@ import {
   View,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { tourService, TourFilters } from '../../api/services';
+import { tourService, categoryService, TourFilters } from '../../api/services';
 import { useAppTheme } from '../../theme/ThemeContext';
 import { prefetchTourImages, TourImage } from '../../components/TourImage';
 import { Tour, User } from '../../types';
@@ -58,6 +58,7 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [categories, setCategories] = useState(CATEGORIES);
   const [showFilters, setShowFilters] = useState(false);
   const [location, setLocation] = useState('');
   const [minPrice, setMinPrice] = useState('');
@@ -91,8 +92,26 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
     }
   }, []);
 
+  const fetchCategories = async () => {
+    try {
+      const res = await categoryService.getAll();
+      const apiCategories = res.data.data.map((cat: any) => {
+        const found = CATEGORIES.find(c => c.value.toLowerCase() === cat.slug.toLowerCase() || c.label.toLowerCase() === cat.name.toLowerCase());
+        return {
+          label: cat.name,
+          value: cat.slug,
+          icon: found ? found.icon : '✨'
+        };
+      });
+      setCategories([{ label: 'Tất cả', value: 'all', icon: '🌟' }, ...apiCategories]);
+    } catch (e) {
+      console.log('Error fetching categories:', e);
+    }
+  };
+
   useEffect(() => {
     getUserFromStorage();
+    fetchCategories();
     fetchTours();
   }, []);
 
@@ -304,7 +323,7 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
           style={styles.categoryScroll}
           contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
         >
-          {CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <TouchableOpacity
               key={cat.label}
               style={[

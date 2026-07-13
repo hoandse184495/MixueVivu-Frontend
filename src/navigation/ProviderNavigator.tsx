@@ -6,6 +6,7 @@ import ProviderDashboardScreen from '../screens/provider/ProviderDashboardScreen
 import ProviderMyToursScreen from '../screens/provider/ProviderMyToursScreen';
 import ProviderAddTourScreen from '../screens/provider/ProviderAddTourScreen';
 import ProviderBookingsScreen from '../screens/provider/ProviderBookingsScreen';
+import ProviderPayoutsScreen from '../screens/provider/ProviderPayoutsScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -22,6 +23,7 @@ function TabIcon({ name, focused }: { name: string; focused: boolean }) {
     'My Tours': '🗺️',
     'Add Tour': '➕',
     Bookings: '🎫',
+    Payouts: '💰',
   };
   return (
     <View style={{ alignItems: 'center' }}>
@@ -124,6 +126,15 @@ export default function ProviderNavigator({
         options={{
           tabBarIcon: ({ focused }) => (
             <TabIcon name="Bookings" focused={focused} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="ProviderPayoutsTab"
+        component={ProviderPayoutsScreen}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon name="Payouts" focused={focused} />
           ),
         }}
       />

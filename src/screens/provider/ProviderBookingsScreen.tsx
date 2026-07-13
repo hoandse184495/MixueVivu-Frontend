@@ -78,7 +78,13 @@ export default function ProviderBookingsScreen() {
           text: 'Đồng ý',
           onPress: async () => {
             try {
-              await bookingService.updateStatus(id, status);
+              if (status === 'confirmed') {
+                await bookingService.providerConfirmBooking(id);
+              } else if (status === 'cancelled') {
+                await bookingService.providerRejectBooking(id);
+              } else if (status === 'completed') {
+                await bookingService.providerCompleteBooking(id);
+              }
               Alert.alert('Thành công', 'Cập nhật trạng thái thành công.');
               fetchBookings();
             } catch (error: any) {

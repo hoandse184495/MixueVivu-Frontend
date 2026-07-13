@@ -11,6 +11,7 @@ import FriendScreen from '../screens/user/FriendScreen';
 import ContactScreen from '../screens/user/ContactScreen';
 import UserProfileScreen from '../screens/user/UserProfileScreen';
 import SettingsScreen from '../screens/user/SettingsScreen';
+import UserPaymentsScreen from '../screens/user/UserPaymentsScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -22,7 +23,7 @@ const COLORS = {
   primaryLight: '#e8f0fe',
 };
 
-type TabName = 'Trang chủ' | 'Yêu thích' | 'Booking' | 'Bạn bè' | 'Hồ sơ';
+type TabName = 'Trang chủ' | 'Yêu thích' | 'Booking' | 'Thanh toán' | 'Bạn bè' | 'Hồ sơ';
 
 interface TabIconProps {
   name: TabName;
@@ -33,6 +34,7 @@ const TAB_ICONS: Record<TabName, { icon: string; activeIcon: string }> = {
   'Trang chủ': { icon: '🏠', activeIcon: '🏡' },
   'Yêu thích': { icon: '🤍', activeIcon: '❤️' },
   'Booking': { icon: '📋', activeIcon: '🎫' },
+  'Thanh toán': { icon: '💳', activeIcon: '💸' },
   'Bạn bè': { icon: '👥', activeIcon: '🫂' },
   'Hồ sơ': { icon: '👤', activeIcon: '🙋' },
 };
@@ -137,6 +139,16 @@ export default function UserNavigator({ onLogout }: { onLogout: () => void }) {
         options={{
           tabBarIcon: ({ focused }) => (
             <TabIcon name="Booking" focused={focused} />
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="PaymentsTab"
+        component={UserPaymentsScreen}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon name="Thanh toán" focused={focused} />
           ),
         }}
       />
