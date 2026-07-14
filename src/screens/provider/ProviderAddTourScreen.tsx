@@ -45,27 +45,30 @@ export default function ProviderAddTourScreen() {
 
   useEffect(() => {
     const fetchGuidesAndCategories = async () => {
-      try {
-        setLoadingGuides(true);
-        const [guideRes, catRes] = await Promise.all([
-          guideService.getAll(),
-          categoryService.getAll()
-        ]);
-        
-        const guideList = guideRes.data.data || [];
-        setGuides(guideList);
-        if (guideList.length > 0) {
-          setSelectedGuideId(guideList[0].id);
-        }
+      setLoadingGuides(true);
 
+      try {
+        const catRes = await categoryService.getAll();
         const catList = catRes.data.data || [];
         if (catList.length > 0) {
           const catNames = catList.map((c: any) => c.name);
           setCategoryOptions(catNames);
           setCategory(catNames[0]);
         }
+      } catch (error) {
+        console.log('Unable to load categories:', error);
+      }
+
+      try {
+        const guideRes = await guideService.getAll();
+        const guideList = guideRes.data.data || [];
+        setGuides(guideList);
+        if (guideList.length > 0) {
+          setSelectedGuideId(guideList[0].id);
+        }
       } catch {
-        // Fallback if error
+        setGuides([]);
+        setSelectedGuideId(null);
       } finally {
         setLoadingGuides(false);
       }
@@ -104,11 +107,11 @@ export default function ProviderAddTourScreen() {
       duration: duration.trim(),
       image: image.trim() || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800',
       description: description.trim(),
-      category: category,
+      category: category || 'General',
       availableSlots: numericSlots,
       startDate: today.toISOString().split('T')[0],
       endDate: futureDate.toISOString().split('T')[0],
-      guideId: selectedGuideId || 1, // Fallback to guide ID 1 if none selected
+      ...(selectedGuideId ? { guideId: selectedGuideId } : {}),
     };
 
     try {

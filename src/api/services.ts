@@ -80,6 +80,8 @@ const normalizeBooking = (booking: any) => ({
   tourLocation: booking.tourLocation ?? booking.location,
   tourDuration: booking.tourDuration ?? booking.duration,
   tourPrice: booking.tourPrice ?? booking.price,
+  tourAvailableSlots:
+    booking.tourAvailableSlots ?? booking.Tours?.availableSlots,
 });
 
 const normalizeBookingResponse = (response: any) => {
@@ -87,6 +89,51 @@ const normalizeBookingResponse = (response: any) => {
   response.data.data = Array.isArray(data)
     ? data.map(normalizeBooking)
     : normalizeBooking(data);
+
+  return response;
+};
+
+const normalizePayment = (payment: any) => ({
+  ...payment,
+  userFullName: payment.userFullName ?? payment.Users?.fullName,
+  userEmail: payment.userEmail ?? payment.Users?.email,
+  bookingFullName: payment.bookingFullName ?? payment.Bookings?.fullName,
+  tourTitle:
+    payment.tourTitle ??
+    payment.Bookings?.Tours?.title ??
+    payment.Bookings?.Tours?.Tours?.title,
+});
+
+const normalizePaymentResponse = (response: any) => {
+  const data = response.data.data;
+  response.data.data = Array.isArray(data)
+    ? data.map(normalizePayment)
+    : normalizePayment(data);
+
+  return response;
+};
+
+const normalizePayout = (payout: any) => {
+  const amount = Number(payout.amount || 0);
+  const commissionAmount = Number(payout.commissionAmount || 0);
+
+  return {
+    ...payout,
+    providerName: payout.providerName ?? payout.Users?.fullName,
+    providerEmail: payout.providerEmail ?? payout.Users?.email,
+    bookingFullName: payout.bookingFullName ?? payout.Bookings?.fullName,
+    tourTitle: payout.tourTitle ?? payout.Bookings?.Tours?.title,
+    commissionRate:
+      payout.commissionRate ??
+      (amount > 0 ? Math.round((commissionAmount / amount) * 100) : 0),
+  };
+};
+
+const normalizePayoutResponse = (response: any) => {
+  const data = response.data.data;
+  response.data.data = Array.isArray(data)
+    ? data.map(normalizePayout)
+    : normalizePayout(data);
 
   return response;
 };
@@ -172,16 +219,22 @@ export const bookingService = {
   },
   getMyBookings: async () =>
     normalizeBookingResponse(await api.get('/bookings/my-bookings')),
-  cancel: (id: number) => api.put(`/bookings/${id}/cancel`),
-  getProviderBookings: () => api.get('/bookings/provider'),
-  getAllBookings: () => api.get('/bookings'),
-  updateStatus: (
+  cancel: async (id: number) =>
+    normalizeBookingResponse(await api.put(`/bookings/${id}/cancel`)),
+  getProviderBookings: async () =>
+    normalizeBookingResponse(await api.get('/bookings/provider')),
+  getAllBookings: async () =>
+    normalizeBookingResponse(await api.get('/bookings')),
+  updateStatus: async (
     id: number,
     status: 'pending' | 'confirmed' | 'cancelled' | 'completed'
-  ) => api.put(`/bookings/${id}/status`, { status }),
-  providerConfirmBooking: (id: number) => api.put(`/bookings/${id}/confirm`),
-  providerRejectBooking: (id: number) => api.put(`/bookings/${id}/reject`),
-  providerCompleteBooking: (id: number) => api.put(`/bookings/${id}/complete`),
+  ) => normalizeBookingResponse(await api.put(`/bookings/${id}/status`, { status })),
+  providerConfirmBooking: async (id: number) =>
+    normalizeBookingResponse(await api.put(`/bookings/${id}/confirm`)),
+  providerRejectBooking: async (id: number) =>
+    normalizeBookingResponse(await api.put(`/bookings/${id}/reject`)),
+  providerCompleteBooking: async (id: number) =>
+    normalizeBookingResponse(await api.put(`/bookings/${id}/complete`)),
 };
 
 export const favoriteService = {
@@ -245,18 +298,26 @@ export const categoryService = {
 };
 
 export const paymentService = {
-  getMyPayments: () => api.get('/payments/my-payments'),
-  getAllPayments: () => api.get('/payments'),
-  confirmPayment: (id: number) => api.put(`/payments/${id}/confirm`),
-  refundPayment: (id: number) => api.put(`/payments/${id}/refund`),
+  getMyPayments: async () =>
+    normalizePaymentResponse(await api.get('/payments/my-payments')),
+  getAllPayments: async () =>
+    normalizePaymentResponse(await api.get('/payments')),
+  confirmPayment: async (id: number) =>
+    normalizePaymentResponse(await api.put(`/payments/${id}/confirm`)),
+  refundPayment: async (id: number) =>
+    normalizePaymentResponse(await api.put(`/payments/${id}/refund`)),
 };
 
 export const payoutService = {
-  getMyPayouts: () => api.get('/payouts/my-payouts'),
+  getMyPayouts: async () =>
+    normalizePayoutResponse(await api.get('/payouts/my-payouts')),
   getEligibleBookings: () => api.get('/payouts/eligible'),
-  getAllPayouts: () => api.get('/payouts'),
-  createPayout: (data: any) => api.post('/payouts', data),
-  confirmPayout: (id: number) => api.put(`/payouts/${id}/confirm`),
+  getAllPayouts: async () =>
+    normalizePayoutResponse(await api.get('/payouts')),
+  createPayout: async (data: any) =>
+    normalizePayoutResponse(await api.post('/payouts', data)),
+  confirmPayout: async (id: number) =>
+    normalizePayoutResponse(await api.put(`/payouts/${id}/confirm`)),
 };
 
 export const providerService = {

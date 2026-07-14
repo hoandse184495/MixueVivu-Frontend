@@ -41,9 +41,7 @@ export default function BookingScreen({ navigation, route }: Props) {
   const [loading, setLoading] = useState(false);
 
   const pricePerPerson = Number(tour.price);
-  const subtotal = numPeople * pricePerPerson;
-  const serviceFee = Math.round(subtotal * 0.05);
-  const totalPrice = subtotal + serviceFee;
+  const totalPrice = numPeople * pricePerPerson;
 
   const handleBook = async () => {
     if (numPeople < 1) {
@@ -183,11 +181,7 @@ export default function BookingScreen({ navigation, route }: Props) {
               <Text style={styles.summaryLabel}>
                 {pricePerPerson.toLocaleString('vi-VN')}₫ × {numPeople} người
               </Text>
-              <Text style={styles.summaryValue}>{subtotal.toLocaleString('vi-VN')}₫</Text>
-            </View>
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Phí dịch vụ (5%)</Text>
-              <Text style={styles.summaryValue}>{serviceFee.toLocaleString('vi-VN')}₫</Text>
+              <Text style={styles.summaryValue}>{totalPrice.toLocaleString('vi-VN')}₫</Text>
             </View>
             <View style={styles.summaryDivider} />
             <View style={styles.summaryRow}>
@@ -200,7 +194,7 @@ export default function BookingScreen({ navigation, route }: Props) {
           <View style={styles.guaranteeCard}>
             <Text style={styles.guaranteeIcon}>🛡️</Text>
             <Text style={styles.guaranteeText}>
-              Đảm bảo giá tốt nhất. Không có phí ẩn khi thanh toán.
+              Thanh toán đúng giá tour. Hoa hồng nền tảng được hệ thống khấu trừ từ doanh thu provider.
             </Text>
           </View>
         </View>

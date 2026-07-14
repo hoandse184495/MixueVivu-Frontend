@@ -128,6 +128,13 @@ export default function ManagerBookingsScreen() {
           <Text style={styles.value}>{item.numPeople} người</Text>
         </View>
 
+        {item.tourAvailableSlots !== undefined && (
+          <View style={styles.row}>
+            <Text style={styles.label}>Chỗ còn lại:</Text>
+            <Text style={styles.value}>{item.tourAvailableSlots} chỗ</Text>
+          </View>
+        )}
+
         <View style={styles.row}>
           <Text style={styles.label}>Tổng chi phí:</Text>
           <Text style={styles.priceValue}>{Number(item.totalPrice).toLocaleString('vi-VN')} VNĐ</Text>

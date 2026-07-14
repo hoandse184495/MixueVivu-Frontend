@@ -30,8 +30,9 @@ const COLORS = {
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string; emoji: string }> = {
   pending: { label: 'Chờ xử lý', bg: COLORS.warningLight, color: COLORS.warning, emoji: '⏳' },
-  completed: { label: 'Thành công', bg: COLORS.successLight, color: COLORS.success, emoji: '✅' },
+  paid: { label: 'Đã thanh toán', bg: COLORS.successLight, color: COLORS.success, emoji: '✅' },
   refunded: { label: 'Đã hoàn tiền', bg: COLORS.errorLight, color: COLORS.error, emoji: '💵' },
+  failed: { label: 'Thất bại', bg: COLORS.errorLight, color: COLORS.error, emoji: '!' },
 };
 
 export default function ManagerPaymentsScreen() {
@@ -54,6 +55,31 @@ export default function ManagerPaymentsScreen() {
   useEffect(() => {
     fetchPayments();
   }, [fetchPayments]);
+
+  const handleConfirm = (id: number) => {
+    Alert.alert(
+      'Xác nhận thanh toán',
+      'Bạn đã nhận đủ tiền cho giao dịch này?',
+      [
+        { text: 'Chưa', style: 'cancel' },
+        {
+          text: 'Đã nhận',
+          onPress: async () => {
+            try {
+              await paymentService.confirmPayment(id);
+              Alert.alert('Thành công', 'Đã xác nhận thanh toán.');
+              fetchPayments();
+            } catch (error: any) {
+              Alert.alert(
+                'Lỗi',
+                error.response?.data?.message || 'Không thể xác nhận thanh toán'
+              );
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const handleRefund = (id: number) => {
     Alert.alert(
@@ -120,7 +146,18 @@ export default function ManagerPaymentsScreen() {
           </Text>
         </View>
 
-        {item.status === 'completed' && (
+        {item.status === 'pending' && (
+          <View style={styles.actionRow}>
+            <TouchableOpacity
+              style={styles.confirmBtn}
+              onPress={() => handleConfirm(item.id)}
+            >
+              <Text style={styles.confirmBtnText}>Xác nhận đã nhận tiền</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {item.status === 'paid' && (
           <View style={styles.actionRow}>
             <TouchableOpacity
               style={styles.refundBtn}
@@ -247,6 +284,17 @@ const styles = StyleSheet.create({
   actionRow: {
     marginTop: 12,
     alignItems: 'flex-end',
+  },
+  confirmBtn: {
+    backgroundColor: COLORS.primaryLight,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  confirmBtnText: {
+    color: COLORS.primary,
+    fontWeight: '600',
+    fontSize: 13,
   },
   refundBtn: {
     backgroundColor: COLORS.errorLight,

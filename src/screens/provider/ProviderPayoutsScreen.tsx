@@ -28,7 +28,8 @@ const COLORS = {
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string; emoji: string }> = {
   pending: { label: 'Chờ thanh toán', bg: COLORS.warningLight, color: COLORS.warning, emoji: '⏳' },
-  completed: { label: 'Đã thanh toán', bg: COLORS.successLight, color: COLORS.success, emoji: '✅' },
+  processing: { label: 'Đang xử lý', bg: COLORS.primaryLight, color: COLORS.primary, emoji: '...' },
+  paid: { label: 'Đã thanh toán', bg: COLORS.successLight, color: COLORS.success, emoji: '✅' },
 };
 
 export default function ProviderPayoutsScreen() {

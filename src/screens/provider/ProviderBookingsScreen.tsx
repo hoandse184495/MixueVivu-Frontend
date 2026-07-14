@@ -139,6 +139,13 @@ export default function ProviderBookingsScreen() {
           <Text style={styles.value}>{item.numPeople} khách</Text>
         </View>
 
+        {item.tourAvailableSlots !== undefined && (
+          <View style={styles.row}>
+            <Text style={styles.label}>Chỗ còn lại:</Text>
+            <Text style={styles.value}>{item.tourAvailableSlots} chỗ</Text>
+          </View>
+        )}
+
         <View style={styles.row}>
           <Text style={styles.label}>Thành tiền:</Text>
           <Text style={styles.priceValue}>{Number(item.totalPrice).toLocaleString('vi-VN')} VNĐ</Text>

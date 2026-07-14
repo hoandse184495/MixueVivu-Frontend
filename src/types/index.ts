@@ -54,6 +54,7 @@ export type Booking = {
   tourDuration?: string;
   tourStartDate?: string;
   tourEndDate?: string;
+  tourAvailableSlots?: number;
   userName?: string;
   userEmail?: string;
 };

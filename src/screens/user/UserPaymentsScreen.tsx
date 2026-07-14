@@ -29,8 +29,9 @@ const COLORS = {
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string; emoji: string }> = {
   pending: { label: 'Chờ xử lý', bg: COLORS.warningLight, color: COLORS.warning, emoji: '⏳' },
-  completed: { label: 'Thành công', bg: COLORS.successLight, color: COLORS.success, emoji: '✅' },
+  paid: { label: 'Đã thanh toán', bg: COLORS.successLight, color: COLORS.success, emoji: '✅' },
   refunded: { label: 'Đã hoàn tiền', bg: COLORS.errorLight, color: COLORS.error, emoji: '💵' },
+  failed: { label: 'Thất bại', bg: COLORS.errorLight, color: COLORS.error, emoji: '!' },
 };
 
 export default function UserPaymentsScreen() {
