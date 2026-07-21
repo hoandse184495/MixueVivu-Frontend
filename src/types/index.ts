@@ -7,6 +7,9 @@ export type User = {
   phone?: string;
   avatar?: string;
   role: UserRole;
+  providerStatus?: 'pending' | 'approved' | 'rejected';
+  providerRejectReason?: string;
+  companyName?: string;
 };
 
 export type Tour = {
@@ -24,7 +27,7 @@ export type Tour = {
   guideId: number;
   averageRating: number;
   reviewCount?: number;
-  status?: 'pending' | 'approved' | 'rejected';
+  status?: 'pending' | 'approved' | 'rejected' | 'hidden' | 'completed';
   rejectReason?: string;
   providerId?: number;
   providerName?: string;
@@ -89,6 +92,7 @@ export type Activity = {
   day: number;
   time?: string;
   location?: string;
+  image?: string;
 };
 
 export type Contact = {

@@ -3,14 +3,17 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Modal,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { tourService } from '../../api/services';
+import { activityService, tourService } from '../../api/services';
 import { Tour } from '../../types';
 
 const COLORS = {
@@ -28,6 +31,13 @@ const COLORS = {
 export default function ProviderMyToursScreen() {
   const [tours, setTours] = useState<Tour[]>([]);
   const [loading, setLoading] = useState(false);
+  const [activityModalVisible, setActivityModalVisible] = useState(false);
+  const [selectedTour, setSelectedTour] = useState<Tour | null>(null);
+  const [activities, setActivities] = useState<any[]>([]);
+  const [activityTitle, setActivityTitle] = useState('');
+  const [activityTime, setActivityTime] = useState('');
+  const [activityLocation, setActivityLocation] = useState('');
+  const [activityDescription, setActivityDescription] = useState('');
   const navigation = useNavigation<any>();
 
   const fetchMyTours = useCallback(async () => {
@@ -86,6 +96,57 @@ export default function ProviderMyToursScreen() {
     }
   };
 
+  const openActivityManager = async (tour: Tour) => {
+    try {
+      setSelectedTour(tour);
+      setActivityModalVisible(true);
+      const response = await activityService.getByTour(tour.id);
+      setActivities(response.data.data || []);
+    } catch (error: any) {
+      Alert.alert('Lỗi', error.response?.data?.message || 'Không thể tải lịch trình');
+    }
+  };
+
+  const resetActivityForm = () => {
+    setActivityTitle('');
+    setActivityTime('');
+    setActivityLocation('');
+    setActivityDescription('');
+  };
+
+  const createActivity = async () => {
+    if (!selectedTour || !activityTitle.trim()) {
+      Alert.alert('Lỗi', 'Vui lòng nhập tên hoạt động');
+      return;
+    }
+
+    try {
+      await activityService.create({
+        tourId: selectedTour.id,
+        title: activityTitle.trim(),
+        activityTime: activityTime.trim(),
+        location: activityLocation.trim(),
+        description: activityDescription.trim(),
+      });
+      resetActivityForm();
+      const response = await activityService.getByTour(selectedTour.id);
+      setActivities(response.data.data || []);
+    } catch (error: any) {
+      Alert.alert('Lỗi', error.response?.data?.message || 'Không thể thêm hoạt động');
+    }
+  };
+
+  const deleteActivity = async (id: number) => {
+    if (!selectedTour) return;
+    try {
+      await activityService.delete(id);
+      const response = await activityService.getByTour(selectedTour.id);
+      setActivities(response.data.data || []);
+    } catch (error: any) {
+      Alert.alert('Lỗi', error.response?.data?.message || 'Không thể xóa hoạt động');
+    }
+  };
+
   const renderTourCard = ({ item }: { item: Tour }) => {
     const status = getStatusDetails(item.status);
 
@@ -112,6 +173,22 @@ export default function ProviderMyToursScreen() {
         ) : null}
 
         <View style={styles.actionRow}>
+          <TouchableOpacity
+            style={styles.itineraryBtn}
+            onPress={() => openActivityManager(item)}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.itineraryBtnText}>Lịch trình</Text>
+          </TouchableOpacity>
+          {item.status === 'rejected' ? (
+            <TouchableOpacity
+              style={styles.editBtn}
+              onPress={() => navigation.navigate('AddTourTab', { editingTour: item })}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.editBtnText}>Sửa & gửi lại</Text>
+            </TouchableOpacity>
+          ) : null}
           <TouchableOpacity
             style={styles.deleteBtn}
             onPress={() => handleDeleteTour(item.id)}
@@ -163,6 +240,55 @@ export default function ProviderMyToursScreen() {
           }
         />
       )}
+
+      <Modal
+        visible={activityModalVisible}
+        animationType="slide"
+        onRequestClose={() => setActivityModalVisible(false)}
+      >
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.header}>
+            <View>
+              <Text style={styles.headerTitle}>Lịch trình</Text>
+              <Text style={styles.headerSubtitle} numberOfLines={1}>{selectedTour?.title}</Text>
+            </View>
+            <TouchableOpacity style={styles.deleteBtn} onPress={() => setActivityModalVisible(false)}>
+              <Text style={styles.deleteBtnText}>Đóng</Text>
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView contentContainerStyle={styles.listContent}>
+            {activities.map((activity) => (
+              <View key={activity.id} style={styles.activityCard}>
+                <Text style={styles.tourTitle}>{activity.title}</Text>
+                {activity.time ? <Text style={styles.infoText}>⏱ {activity.time}</Text> : null}
+                {activity.location ? <Text style={styles.infoText}>📍 {activity.location}</Text> : null}
+                {activity.description ? <Text style={styles.infoText}>{activity.description}</Text> : null}
+                <TouchableOpacity style={styles.deleteBtn} onPress={() => deleteActivity(activity.id)}>
+                  <Text style={styles.deleteBtnText}>Xóa hoạt động</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+
+            <View style={styles.activityForm}>
+              <Text style={styles.tourTitle}>Thêm hoạt động</Text>
+              <TextInput style={styles.input} placeholder="Tên hoạt động" value={activityTitle} onChangeText={setActivityTitle} />
+              <TextInput style={styles.input} placeholder="Thời gian, ví dụ 08:00" value={activityTime} onChangeText={setActivityTime} />
+              <TextInput style={styles.input} placeholder="Địa điểm" value={activityLocation} onChangeText={setActivityLocation} />
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                placeholder="Mô tả"
+                value={activityDescription}
+                onChangeText={setActivityDescription}
+                multiline
+              />
+              <TouchableOpacity style={styles.addBtnWide} onPress={createActivity}>
+                <Text style={styles.addBtnText}>+ Thêm hoạt động</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -293,6 +419,29 @@ const styles = StyleSheet.create({
     borderTopColor: '#eceef0',
     paddingTop: 12,
     justifyContent: 'flex-end',
+    gap: 10,
+  },
+  editBtn: {
+    backgroundColor: COLORS.primaryLight,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
+  editBtnText: {
+    color: COLORS.primary,
+    fontWeight: '700',
+    fontSize: 12,
+  },
+  itineraryBtn: {
+    backgroundColor: '#eef4ff',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
+  itineraryBtnText: {
+    color: '#0058bc',
+    fontWeight: '700',
+    fontSize: 12,
   },
   deleteBtn: {
     backgroundColor: COLORS.errorLight,
@@ -304,6 +453,44 @@ const styles = StyleSheet.create({
     color: COLORS.error,
     fontWeight: '700',
     fontSize: 12,
+  },
+  activityCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#eceef0',
+    gap: 6,
+  },
+  activityForm: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 18,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#eceef0',
+    gap: 10,
+  },
+  input: {
+    height: 46,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    paddingHorizontal: 12,
+    color: COLORS.text,
+    backgroundColor: '#f8fafc',
+  },
+  textArea: {
+    height: 90,
+    paddingVertical: 10,
+    textAlignVertical: 'top',
+  },
+  addBtnWide: {
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   emptyContainer: {
     paddingTop: 80,

@@ -10,6 +10,7 @@ import ManagerPaymentsScreen from '../screens/manager/ManagerPaymentsScreen';
 import ManagerPayoutsScreen from '../screens/manager/ManagerPayoutsScreen';
 import ManagerCategoriesScreen from '../screens/manager/ManagerCategoriesScreen';
 import ManagerContactsScreen from '../screens/manager/ManagerContactsScreen';
+import ManagerGuidesScreen from '../screens/manager/ManagerGuidesScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -154,6 +155,16 @@ export default function ManagerNavigator({
         options={{
           tabBarIcon: ({ focused }) => (
             <TabIcon name="Categories" focused={focused} />
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="GuidesTab"
+        component={ManagerGuidesScreen}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon name="Guides" focused={focused} />
           ),
         }}
       />

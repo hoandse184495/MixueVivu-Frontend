@@ -80,23 +80,54 @@ export default function ManagerUsersScreen() {
     );
   };
 
+  const handleProviderApproval = (id: number, approve: boolean) => {
+    Alert.alert(
+      approve ? 'Duyệt provider' : 'Từ chối provider',
+      approve
+        ? 'Cho phép provider này đăng và quản lý tour?'
+        : 'Từ chối provider này với lý do mặc định?',
+      [
+        { text: 'Hủy', style: 'cancel' },
+        {
+          text: approve ? 'Duyệt' : 'Từ chối',
+          style: approve ? 'default' : 'destructive',
+          onPress: async () => {
+            try {
+              if (approve) {
+                await adminService.approveProvider(id);
+              } else {
+                await adminService.rejectProvider(id, 'Thông tin công ty chưa đạt yêu cầu');
+              }
+              fetchUsers();
+            } catch (error: any) {
+              Alert.alert('Lỗi', error.response?.data?.message || 'Không thể cập nhật provider');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const renderUserCard = ({ item }: { item: any }) => {
     const initials = item.fullName ? item.fullName.split(' ').pop()?.charAt(0).toUpperCase() : '👤';
 
     return (
       <View style={styles.card}>
         <View style={styles.cardInfo}>
-          <View style={[styles.avatarCircle, { backgroundColor: item.isBlocked ? COLORS.errorLight : COLORS.primaryLight }]}>
-            <Text style={[styles.avatarText, { color: item.isBlocked ? COLORS.error : COLORS.primary }]}>{initials}</Text>
+          <View style={[styles.avatarCircle, { backgroundColor: !item.isActive ? COLORS.errorLight : COLORS.primaryLight }]}>
+            <Text style={[styles.avatarText, { color: !item.isActive ? COLORS.error : COLORS.primary }]}>{initials}</Text>
           </View>
           <View style={styles.details}>
             <Text style={styles.userName}>{item.fullName}</Text>
             <Text style={styles.contactText}>Vai trò: {item.role}</Text>
             <Text style={styles.contactText}>✉️ {item.email}</Text>
             {item.phone ? <Text style={styles.contactText}>📞 {item.phone}</Text> : null}
+            {item.role === 'provider' ? (
+              <Text style={styles.contactText}>Trạng thái provider: {item.providerStatus || 'approved'}</Text>
+            ) : null}
             <View style={{ marginTop: 6 }}>
-              <Text style={{ fontSize: 12, fontWeight: 'bold', color: item.isBlocked ? COLORS.error : COLORS.success }}>
-                {item.isBlocked ? 'Đã khóa' : 'Hoạt động'}
+              <Text style={{ fontSize: 12, fontWeight: 'bold', color: !item.isActive ? COLORS.error : COLORS.success }}>
+                {!item.isActive ? 'Đã khóa' : 'Hoạt động'}
               </Text>
             </View>
           </View>
@@ -104,14 +135,32 @@ export default function ManagerUsersScreen() {
 
         <View style={styles.actionRow}>
           <TouchableOpacity
-            style={[styles.actionBtn, { backgroundColor: item.isBlocked ? COLORS.primaryLight : COLORS.errorLight }]}
-            onPress={() => handleToggleBlock(item.id, item.isBlocked)}
+            style={[styles.actionBtn, { backgroundColor: !item.isActive ? COLORS.primaryLight : COLORS.errorLight }]}
+            onPress={() => handleToggleBlock(item.id, !item.isActive)}
             activeOpacity={0.8}
           >
-            <Text style={[styles.actionBtnText, { color: item.isBlocked ? COLORS.primary : COLORS.error }]}>
-              {item.isBlocked ? 'Mở khóa' : 'Khóa tài khoản'}
+            <Text style={[styles.actionBtnText, { color: !item.isActive ? COLORS.primary : COLORS.error }]}>
+              {!item.isActive ? 'Mở khóa' : 'Khóa tài khoản'}
             </Text>
           </TouchableOpacity>
+          {item.role === 'provider' && item.providerStatus === 'pending' ? (
+            <>
+              <TouchableOpacity
+                style={[styles.actionBtn, { backgroundColor: COLORS.primaryLight }]}
+                onPress={() => handleProviderApproval(item.id, true)}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.actionBtnText, { color: COLORS.primary }]}>Duyệt</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.actionBtn, { backgroundColor: COLORS.errorLight }]}
+                onPress={() => handleProviderApproval(item.id, false)}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.actionBtnText, { color: COLORS.error }]}>Từ chối</Text>
+              </TouchableOpacity>
+            </>
+          ) : null}
         </View>
       </View>
     );
@@ -243,6 +292,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#eceef0',
     paddingTop: 12,
+    gap: 8,
   },
   actionBtn: {
     flex: 1,

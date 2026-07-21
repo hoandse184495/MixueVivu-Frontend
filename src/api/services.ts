@@ -56,9 +56,16 @@ const normalizeGuideResponse = (response: any) => {
   return response;
 };
 
-const normalizeActivity = (activity: any, index: number) => ({
+const getActivityDay = (activity: any) => {
+  if (activity.day) return Number(activity.day) || 1;
+
+  const titleDay = String(activity.title || '').match(/ng[aà]y\s*(\d+)/i);
+  return titleDay ? Number(titleDay[1]) || 1 : 1;
+};
+
+export const normalizeActivity = (activity: any, index = 0) => ({
   ...activity,
-  day: activity.day || 1,
+  day: getActivityDay(activity),
   time: activity.time || activity.activityTime,
   order: activity.order || index + 1,
 });
@@ -184,6 +191,7 @@ export const authService = {
   login: (email: string, password: string) =>
     api.post('/auth/login', { email, password }),
   register: (data: any) => api.post('/auth/register', data),
+  registerProvider: (data: any) => api.post('/auth/register-provider', data),
   getProfile: () => api.get('/auth/profile'),
   updateProfile: (data: any) => api.put('/auth/profile', data),
 };
@@ -202,6 +210,7 @@ export const tourService = {
   approve: (id: number) => api.put(`/tours/${id}/approve`),
   reject: (id: number, rejectReason: string) =>
     api.put(`/tours/${id}/reject`, { rejectReason }),
+  resubmit: (id: number) => api.put(`/tours/${id}/resubmit`),
   addReview: (tourId: number, rating: number, comment: string) =>
     api.post(`/tours/${tourId}/reviews`, { rating, comment }),
 };
@@ -302,6 +311,8 @@ export const paymentService = {
     normalizePaymentResponse(await api.get('/payments/my-payments')),
   getAllPayments: async () =>
     normalizePaymentResponse(await api.get('/payments')),
+  submitPayment: async (id: number, data: any) =>
+    normalizePaymentResponse(await api.put(`/payments/${id}/submit`, data)),
   confirmPayment: async (id: number) =>
     normalizePaymentResponse(await api.put(`/payments/${id}/confirm`)),
   refundPayment: async (id: number) =>
@@ -330,6 +341,9 @@ export const adminService = {
   getUserById: (id: number) => api.get(`/admin/users/${id}`),
   blockUser: (id: number) => api.put(`/admin/users/${id}/block`),
   unblockUser: (id: number) => api.put(`/admin/users/${id}/unblock`),
+  approveProvider: (id: number) => api.put(`/admin/providers/${id}/approve`),
+  rejectProvider: (id: number, reason: string) =>
+    api.put(`/admin/providers/${id}/reject`, { reason }),
   getDashboard: () => api.get('/admin/dashboard'),
   getRevenueStats: () => api.get('/admin/stats/revenue'),
   getBookingStats: () => api.get('/admin/stats/bookings'),

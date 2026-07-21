@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  FlatList,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -18,20 +17,21 @@ import { prefetchTourImages, TourImage } from '../../components/TourImage';
 import { Tour, User } from '../../types';
 
 const COLORS = {
-  primary: '#0058bc',
-  primaryLight: '#e8f0fe',
-  primaryFixed: '#d8e2ff',
-  bg: '#f7f9fb',
+  primary: '#0f766e',
+  primaryDark: '#115e59',
+  primaryLight: '#dff4ef',
+  accent: '#2563eb',
+  accentLight: '#e8efff',
+  bg: '#f4f7fa',
   surface: '#ffffff',
-  surfaceContainer: '#eceef0',
-  surfaceContainerLow: '#f2f4f6',
-  text: '#191c1e',
-  textMuted: '#717786',
-  border: '#c1c6d7',
-  success: '#006c4b',
-  tertiary: '#894d00',
-  tertiaryFixed: '#ffdcbf',
-  warning: '#894d00',
+  surfaceMuted: '#f8fafc',
+  text: '#111827',
+  textMuted: '#6b7280',
+  textSoft: '#9ca3af',
+  border: '#d7dee8',
+  success: '#047857',
+  warning: '#b45309',
+  warningLight: '#fff7ed',
   error: '#ba1a1a',
 };
 
@@ -99,7 +99,7 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
         const found = CATEGORIES.find(c => c.value.toLowerCase() === cat.slug.toLowerCase() || c.label.toLowerCase() === cat.name.toLowerCase());
         return {
           label: cat.name,
-          value: cat.slug,
+          value: cat.name,
           icon: found ? found.icon : '✨'
         };
       });
@@ -177,21 +177,20 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
       activeOpacity={0.85}
     >
       <TourImage uri={item.image} style={styles.tourImage} />
-
-      {/* Rating badge */}
-      <View style={styles.ratingBadge}>
-        <Text style={styles.ratingText}>⭐ {item.averageRating?.toFixed(1) || '0.0'}</Text>
-      </View>
-
       <View style={styles.tourContent}>
-        <Text style={[styles.tourTitle, { color: colors.text }]} numberOfLines={1}>{item.title}</Text>
-
-        <View style={styles.locationRow}>
-          <Text style={[styles.locationText, { color: colors.textMuted }]}>📍 {item.location}</Text>
+        <View style={styles.cardTopRow}>
+          <Text style={[styles.tourTitle, { color: colors.text }]} numberOfLines={2}>{item.title}</Text>
+          <View style={styles.ratingBadge}>
+            <Text style={styles.ratingText}>{item.averageRating?.toFixed(1) || '0.0'}</Text>
+          </View>
         </View>
 
-        <View style={styles.metaRow}>
-          <Text style={[styles.durationText, { color: colors.textMuted }]}>⏱ {item.duration}</Text>
+        <Text style={[styles.locationText, { color: colors.textMuted }]} numberOfLines={1}>
+          {item.location}
+        </Text>
+
+        <View style={styles.tourMetaGrid}>
+          <Text style={styles.metaPill} numberOfLines={1}>{item.duration}</Text>
           <View style={styles.slotsBadge}>
             <Text style={styles.slotsText}>{item.availableSlots} chỗ</Text>
           </View>
@@ -208,7 +207,7 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
             style={styles.detailBtn}
             onPress={() => navigation.navigate('TourDetail', { tour: item })}
           >
-            <Text style={styles.detailBtnText}>Xem chi tiết →</Text>
+            <Text style={styles.detailBtnText}>Chi tiết</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -216,30 +215,52 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
   );
 
   const getInitial = (name?: string) => (name ? name[0].toUpperCase() : 'U');
+  const firstName = user?.fullName?.trim().split(/\s+/).pop() || 'bạn';
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.bg }]}>
       <ScrollView showsVerticalScrollIndicator={false} stickyHeaderIndices={[0]}>
-        {/* ── Header ── */}
         <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border + '40' }]}>
           <View style={styles.headerLeft}>
             <View style={styles.avatarCircle}>
               <Text style={styles.avatarText}>{getInitial(user?.fullName)}</Text>
             </View>
             <View>
-              <Text style={[styles.greetText, { color: colors.textMuted }]}>Xin chào 👋</Text>
+              <Text style={[styles.greetText, { color: colors.textMuted }]}>Xin chào</Text>
               <Text style={[styles.userName, { color: colors.text }]}>{user?.fullName || 'Traveler'}</Text>
             </View>
           </View>
           <TouchableOpacity style={styles.notifBtn}>
-            <Text style={{ fontSize: 20 }}>🔔</Text>
+            <Text style={styles.notifText}>?</Text>
           </TouchableOpacity>
         </View>
 
-        {/* ── Search ── */}
+        <View style={styles.overviewSection}>
+          <View style={styles.dashboardIntro}>
+            <Text style={styles.heroEyebrow}>MixueVivu Travel</Text>
+            <Text style={styles.heroTitle}>Chọn chuyến đi phù hợp, {firstName}</Text>
+            <Text style={styles.heroSubtitle}>Tour đã duyệt, giá rõ ràng và lịch trình theo từng ngày.</Text>
+          </View>
+
+          <View style={styles.insightGrid}>
+            <View style={styles.insightItem}>
+              <Text style={styles.insightValue}>{tours.length}</Text>
+              <Text style={styles.insightLabel}>tour đang mở</Text>
+            </View>
+            <View style={styles.insightItem}>
+              <Text style={styles.insightValue}>{categories.length}</Text>
+              <Text style={styles.insightLabel}>nhóm trải nghiệm</Text>
+            </View>
+            <View style={styles.insightItem}>
+              <Text style={styles.insightValue}>24/7</Text>
+              <Text style={styles.insightLabel}>hỗ trợ chuyến đi</Text>
+            </View>
+          </View>
+        </View>
+
         <View style={[styles.searchContainer, { backgroundColor: colors.surface }]}>
-          <View style={[styles.searchBox, { backgroundColor: colors.surface }]}>
-            <Text style={styles.searchIcon}>🔍</Text>
+          <View style={styles.searchBox}>
+            <Text style={styles.searchIcon}>⌕</Text>
             <TextInput
               style={styles.searchInput}
               placeholder="Tìm điểm đến hoặc tour..."
@@ -262,7 +283,7 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
             style={[styles.filterToggle, showFilters && styles.filterToggleActive]}
             onPress={() => setShowFilters((current) => !current)}
           >
-            <Text style={styles.filterToggleText}>Bộ lọc</Text>
+            <Text style={styles.filterToggleText}>Lọc</Text>
           </TouchableOpacity>
         </View>
 
@@ -316,7 +337,6 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
           </View>
         )}
 
-        {/* ── Category Chips ── */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -338,7 +358,6 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
                 fetchTours(keyword, filters);
               }}
             >
-              <Text style={styles.categoryEmoji}>{cat.icon}</Text>
               <Text
                 style={[
                   styles.categoryText,
@@ -351,10 +370,12 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
           ))}
         </ScrollView>
 
-        {/* ── Recommended Tours ── */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Tour nổi bật</Text>
+            <View>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Tour nổi bật</Text>
+              <Text style={[styles.sectionSubtitle, { color: colors.textMuted }]}>Danh sách tour đang mở bán</Text>
+            </View>
             <Text style={[styles.sectionCount, { color: colors.textMuted }]}>{tours.length} tour</Text>
           </View>
 
@@ -362,13 +383,12 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
             <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: 40, marginBottom: 40 }} />
           ) : tours.length === 0 ? (
             <View style={styles.emptyContainer}>
-              <Text style={{ fontSize: 48 }}>🏖️</Text>
               <Text style={[styles.emptyTitle, { color: colors.text }]}>Không tìm thấy tour nào</Text>
               <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>Thử tìm kiếm với từ khóa khác</Text>
             </View>
           ) : (
             tours.map((item) => (
-              <View key={item.id} style={{ paddingHorizontal: 16 }}>
+              <View key={item.id} style={{ paddingHorizontal: 20 }}>
                 {renderTourCard({ item })}
               </View>
             ))
@@ -387,13 +407,12 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.bg,
   },
 
-  // Header
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
     backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border + '40',
@@ -404,104 +423,171 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   avatarCircle: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: COLORS.primary,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.primaryDark,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: COLORS.primaryFixed,
   },
   avatarText: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 16,
+    fontWeight: '800',
     color: '#fff',
   },
   greetText: {
     fontSize: 12,
     color: COLORS.textMuted,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   userName: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '800',
     color: COLORS.text,
   },
   notifBtn: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: COLORS.surfaceContainerLow,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: COLORS.surfaceMuted,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  notifText: {
+    color: COLORS.textMuted,
+    fontSize: 16,
+    fontWeight: '900',
   },
 
-  // Search
+  overviewSection: {
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 14,
+    backgroundColor: COLORS.bg,
+  },
+  dashboardIntro: {
+    marginBottom: 14,
+  },
+  heroEyebrow: {
+    color: COLORS.primary,
+    fontSize: 11,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    marginBottom: 6,
+  },
+  heroTitle: {
+    color: COLORS.text,
+    fontSize: 28,
+    lineHeight: 33,
+    fontWeight: '900',
+    marginBottom: 8,
+  },
+  heroSubtitle: {
+    color: COLORS.textMuted,
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '600',
+  },
+  insightGrid: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  insightItem: {
+    flex: 1,
+    minHeight: 74,
+    borderRadius: 12,
+    backgroundColor: COLORS.surface,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    borderWidth: 1,
+    borderColor: COLORS.border + '70',
+    justifyContent: 'center',
+  },
+  insightValue: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: COLORS.primary,
+    marginBottom: 3,
+  },
+  insightLabel: {
+    fontSize: 11,
+    lineHeight: 15,
+    color: COLORS.textMuted,
+    fontWeight: '700',
+  },
+
   searchContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingVertical: 12,
     backgroundColor: COLORS.surface,
     gap: 8,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: COLORS.border + '55',
   },
   searchBox: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.surfaceContainerLow,
-    borderRadius: 14,
+    backgroundColor: COLORS.surfaceMuted,
+    borderRadius: 12,
     paddingHorizontal: 14,
-    height: 48,
+    height: 46,
     gap: 8,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   searchIcon: {
-    fontSize: 16,
+    fontSize: 20,
+    color: COLORS.textMuted,
+    lineHeight: 22,
   },
   searchInput: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 14,
     color: COLORS.text,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   searchBtn: {
     backgroundColor: COLORS.primary,
-    borderRadius: 14,
-    paddingHorizontal: 18,
-    height: 48,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    height: 46,
     justifyContent: 'center',
-    elevation: 2,
-    shadowColor: COLORS.primary,
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
   },
   searchBtnText: {
     color: '#fff',
-    fontWeight: '700',
+    fontWeight: '800',
     fontSize: 14,
   },
   filterToggle: {
-    height: 48,
+    height: 46,
     paddingHorizontal: 12,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: COLORS.primary,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: COLORS.surface,
   },
   filterToggleActive: {
     backgroundColor: COLORS.primaryLight,
+    borderColor: COLORS.primary,
   },
   filterToggleText: {
     color: COLORS.primary,
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   filterPanel: {
-    marginHorizontal: 16,
-    marginBottom: 8,
+    marginHorizontal: 20,
+    marginTop: 10,
+    marginBottom: 6,
     padding: 14,
-    borderRadius: 16,
+    borderRadius: 12,
     backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -515,10 +601,10 @@ const styles = StyleSheet.create({
     height: 46,
     borderWidth: 1,
     borderColor: COLORS.border,
-    borderRadius: 12,
+    borderRadius: 10,
     paddingHorizontal: 12,
     color: COLORS.text,
-    backgroundColor: COLORS.surfaceContainerLow,
+    backgroundColor: COLORS.surfaceMuted,
   },
   filterHalf: {
     flex: 1,
@@ -531,7 +617,7 @@ const styles = StyleSheet.create({
   resetFilterBtn: {
     paddingHorizontal: 18,
     height: 42,
-    borderRadius: 12,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: COLORS.border,
     alignItems: 'center',
@@ -544,7 +630,7 @@ const styles = StyleSheet.create({
   applyFilterBtn: {
     paddingHorizontal: 18,
     height: 42,
-    borderRadius: 12,
+    borderRadius: 10,
     backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
@@ -559,15 +645,16 @@ const styles = StyleSheet.create({
     flexGrow: 0,
     paddingVertical: 12,
     backgroundColor: COLORS.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border + '50',
   },
   categoryChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 14,
+    paddingHorizontal: 13,
     paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: COLORS.surfaceContainerLow,
+    borderRadius: 999,
+    backgroundColor: COLORS.surfaceMuted,
     borderWidth: 1,
     borderColor: COLORS.border,
   },
@@ -575,121 +662,121 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     borderColor: COLORS.primary,
   },
-  categoryEmoji: {
-    fontSize: 14,
-  },
   categoryText: {
     fontSize: 13,
     color: COLORS.textMuted,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   categoryTextActive: {
     color: '#fff',
   },
 
-  // Section
   section: {
-    marginTop: 8,
+    marginTop: 12,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
+    alignItems: 'flex-end',
+    paddingHorizontal: 20,
     paddingVertical: 12,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '800',
     color: COLORS.text,
-    letterSpacing: -0.3,
   },
-  seeAllText: {
+  sectionSubtitle: {
     fontSize: 13,
-    color: COLORS.primary,
-    fontWeight: '700',
+    marginTop: 2,
+    fontWeight: '600',
   },
   sectionCount: {
     fontSize: 13,
     color: COLORS.textMuted,
-    fontWeight: '600',
+    fontWeight: '800',
   },
 
-  // Tour Card
   tourCard: {
+    flexDirection: 'row',
     backgroundColor: COLORS.surface,
-    borderRadius: 20,
-    marginBottom: 16,
+    borderRadius: 14,
+    marginBottom: 12,
     overflow: 'hidden',
-    elevation: 3,
+    elevation: 2,
     shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 3 },
     borderWidth: 1,
-    borderColor: COLORS.border + '30',
+    borderColor: COLORS.border + '80',
   },
   tourImage: {
-    width: '100%',
-    height: 180,
+    width: 116,
+    minHeight: 148,
   },
-  noImage: {
-    backgroundColor: COLORS.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
+  tourContent: {
+    flex: 1,
+    padding: 12,
+  },
+  cardTopRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    marginBottom: 6,
+  },
+  tourTitle: {
+    flex: 1,
+    fontSize: 15,
+    lineHeight: 20,
+    fontWeight: '800',
+    color: COLORS.text,
   },
   ratingBadge: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    backgroundColor: COLORS.tertiaryFixed,
-    borderRadius: 10,
+    minWidth: 38,
+    alignItems: 'center',
+    backgroundColor: COLORS.warningLight,
+    borderRadius: 999,
     paddingHorizontal: 8,
     paddingVertical: 4,
   },
   ratingText: {
     fontSize: 12,
-    fontWeight: '700',
-    color: COLORS.tertiary,
-  },
-  tourContent: {
-    padding: 14,
-  },
-  tourTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginBottom: 6,
-  },
-  locationRow: {
-    marginBottom: 6,
+    fontWeight: '900',
+    color: COLORS.warning,
   },
   locationText: {
     fontSize: 13,
     color: COLORS.textMuted,
-    fontWeight: '500',
+    fontWeight: '700',
+    marginBottom: 10,
   },
-  metaRow: {
+  tourMetaGrid: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 8,
     marginBottom: 12,
   },
-  durationText: {
-    fontSize: 13,
+  metaPill: {
+    flex: 1,
+    backgroundColor: COLORS.surfaceMuted,
+    borderRadius: 999,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    fontSize: 12,
     color: COLORS.textMuted,
-    fontWeight: '500',
+    fontWeight: '800',
   },
   slotsBadge: {
-    backgroundColor: '#e6f4ee',
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    backgroundColor: COLORS.primaryLight,
+    borderRadius: 999,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
   },
   slotsText: {
     fontSize: 12,
     color: COLORS.success,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   priceRow: {
     flexDirection: 'row',
@@ -699,29 +786,35 @@ const styles = StyleSheet.create({
   priceLabel: {
     fontSize: 11,
     color: COLORS.textMuted,
-    marginBottom: 2,
+    marginBottom: 1,
+    fontWeight: '700',
   },
   priceText: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: COLORS.primary,
+    fontSize: 17,
+    fontWeight: '900',
+    color: COLORS.accent,
   },
   detailBtn: {
-    backgroundColor: COLORS.primaryLight,
-    borderRadius: 12,
+    backgroundColor: COLORS.accentLight,
+    borderRadius: 10,
     paddingHorizontal: 14,
-    paddingVertical: 9,
+    paddingVertical: 8,
   },
   detailBtnText: {
-    color: COLORS.primary,
-    fontWeight: '700',
+    color: COLORS.accent,
+    fontWeight: '800',
     fontSize: 13,
   },
 
-  // Empty
   emptyContainer: {
     alignItems: 'center',
-    paddingVertical: 60,
+    marginHorizontal: 20,
+    paddingVertical: 46,
+    paddingHorizontal: 18,
+    borderRadius: 14,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   emptyTitle: {
     fontSize: 16,

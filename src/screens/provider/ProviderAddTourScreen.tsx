@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -10,8 +10,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { tourService, guideService, categoryService } from '../../api/services';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { activityService, tourService, guideService, categoryService } from '../../api/services';
 import { Guide } from '../../types';
 
 const COLORS = {
@@ -24,6 +24,32 @@ const COLORS = {
   border: '#c1c6d7',
 };
 
+type ItineraryItem = {
+  day: string;
+  time: string;
+  title: string;
+  location: string;
+  description: string;
+  image: string;
+};
+
+type CategoryOption = {
+  id: number;
+  name: string;
+  slug: string;
+};
+
+const MAX_IMAGE_URL_LENGTH = 2048;
+
+const createEmptyItineraryItem = (day = '1'): ItineraryItem => ({
+  day,
+  time: '',
+  title: '',
+  location: '',
+  description: '',
+  image: '',
+});
+
 export default function ProviderAddTourScreen() {
   const [title, setTitle] = useState('');
   const [location, setLocation] = useState('');
@@ -32,16 +58,25 @@ export default function ProviderAddTourScreen() {
   const [description, setDescription] = useState('');
   const [image, setImage] = useState('');
   const [availableSlots, setAvailableSlots] = useState('10');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [category, setCategory] = useState('');
-  const [categoryOptions, setCategoryOptions] = useState<string[]>([]);
+  const [categoryId, setCategoryId] = useState<number | null>(null);
+  const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
+  const [itineraryItems, setItineraryItems] = useState<ItineraryItem[]>([
+    createEmptyItineraryItem(),
+  ]);
   
   // Guide selection
   const [guides, setGuides] = useState<Guide[]>([]);
   const [selectedGuideId, setSelectedGuideId] = useState<number | null>(null);
   const [loadingGuides, setLoadingGuides] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const submitLockRef = useRef(false);
 
   const navigation = useNavigation<any>();
+  const route = useRoute<any>();
+  const editingTour = route.params?.editingTour;
 
   useEffect(() => {
     const fetchGuidesAndCategories = async () => {
@@ -51,9 +86,9 @@ export default function ProviderAddTourScreen() {
         const catRes = await categoryService.getAll();
         const catList = catRes.data.data || [];
         if (catList.length > 0) {
-          const catNames = catList.map((c: any) => c.name);
-          setCategoryOptions(catNames);
-          setCategory(catNames[0]);
+          setCategoryOptions(catList);
+          setCategory(catList[0].name);
+          setCategoryId(catList[0].id);
         }
       } catch (error) {
         console.log('Unable to load categories:', error);
@@ -76,7 +111,86 @@ export default function ProviderAddTourScreen() {
     fetchGuidesAndCategories();
   }, []);
 
+  useEffect(() => {
+    if (!editingTour) return;
+
+    setTitle(editingTour.title || '');
+    setLocation(editingTour.location || '');
+    setPrice(String(editingTour.price || ''));
+    setDuration(editingTour.duration || '');
+    setDescription(editingTour.description || '');
+    setImage(editingTour.image || '');
+    setAvailableSlots(String(editingTour.availableSlots || 10));
+    setStartDate(editingTour.startDate ? String(editingTour.startDate).slice(0, 10) : '');
+    setEndDate(editingTour.endDate ? String(editingTour.endDate).slice(0, 10) : '');
+    setCategory(editingTour.category || '');
+    setCategoryId(editingTour.categoryId || null);
+    setSelectedGuideId(editingTour.guideId || null);
+    setItineraryItems([createEmptyItineraryItem()]);
+  }, [editingTour]);
+
+  const updateItineraryItem = (
+    index: number,
+    field: keyof ItineraryItem,
+    value: string
+  ) => {
+    setItineraryItems((current) =>
+      current.map((item, itemIndex) =>
+        itemIndex === index ? { ...item, [field]: value } : item
+      )
+    );
+  };
+
+  const addItineraryItem = () => {
+    const lastDay = itineraryItems[itineraryItems.length - 1]?.day || '1';
+    setItineraryItems((current) => [...current, createEmptyItineraryItem(lastDay)]);
+  };
+
+  const removeItineraryItem = (index: number) => {
+    setItineraryItems((current) =>
+      current.length === 1
+        ? [createEmptyItineraryItem()]
+        : current.filter((_, itemIndex) => itemIndex !== index)
+    );
+  };
+
+  const getImageInputError = (value: string, label: string) => {
+    const trimmedValue = value.trim();
+    if (!trimmedValue) return '';
+
+    if (trimmedValue.startsWith('data:image/')) {
+      return `${label} phải là đường dẫn URL ảnh, không dán trực tiếp dữ liệu ảnh/base64.`;
+    }
+
+    if (trimmedValue.length > MAX_IMAGE_URL_LENGTH) {
+      return `${label} quá dài. Vui lòng dùng URL ảnh ngắn hơn ${MAX_IMAGE_URL_LENGTH} ký tự.`;
+    }
+
+    if (!/^https?:\/\/\S+$/i.test(trimmedValue)) {
+      return `${label} phải bắt đầu bằng http:// hoặc https://.`;
+    }
+
+    return '';
+  };
+
+  const createItineraryActivities = async (tourId: number) => {
+    const validItems = itineraryItems.filter((item) => item.title.trim());
+
+    for (const item of validItems) {
+      await activityService.create({
+        tourId,
+        title: `Ngày ${item.day || '1'} - ${item.title.trim()}`,
+        activityTime: item.time.trim(),
+        location: item.location.trim(),
+        description: item.description.trim(),
+        image: item.image.trim(),
+      });
+    }
+  };
+
   const handleCreateTour = async () => {
+    if (submitLockRef.current) return;
+
     if (!title.trim() || !location.trim() || !price.trim() || !duration.trim() || !description.trim()) {
       Alert.alert('Lỗi', 'Vui lòng điền đầy đủ các thông tin bắt buộc (*)');
       return;
@@ -95,10 +209,39 @@ export default function ProviderAddTourScreen() {
       return;
     }
 
-    // Default dates if not specified
-    const today = new Date();
-    const futureDate = new Date();
-    futureDate.setDate(today.getDate() + 7);
+    const isValidDate = (value: string) =>
+      /^\d{4}-\d{2}-\d{2}$/.test(value) &&
+      !Number.isNaN(new Date(`${value}T00:00:00.000Z`).getTime());
+
+    if (!isValidDate(startDate) || !isValidDate(endDate)) {
+      Alert.alert('Lỗi', 'Ngày bắt đầu và ngày kết thúc phải có định dạng YYYY-MM-DD');
+      return;
+    }
+
+    if (new Date(startDate) > new Date(endDate)) {
+      Alert.alert('Lỗi', 'Ngày bắt đầu không được sau ngày kết thúc');
+      return;
+    }
+
+    const validItineraryItems = itineraryItems.filter((item) => item.title.trim());
+    if (validItineraryItems.length === 0) {
+      Alert.alert('Lỗi', 'Vui lòng thêm ít nhất một hoạt động trong lịch trình.');
+      return;
+    }
+
+    const tourImageError = getImageInputError(image, 'Ảnh nền tour');
+    if (tourImageError) {
+      Alert.alert('Lỗi', tourImageError);
+      return;
+    }
+
+    const invalidActivityImage = itineraryItems.find((item) =>
+      getImageInputError(item.image, 'Ảnh hoạt động')
+    );
+    if (invalidActivityImage) {
+      Alert.alert('Lỗi', getImageInputError(invalidActivityImage.image, 'Ảnh hoạt động'));
+      return;
+    }
 
     const data = {
       title: title.trim(),
@@ -108,16 +251,42 @@ export default function ProviderAddTourScreen() {
       image: image.trim() || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800',
       description: description.trim(),
       category: category || 'General',
+      categoryId,
       availableSlots: numericSlots,
-      startDate: today.toISOString().split('T')[0],
-      endDate: futureDate.toISOString().split('T')[0],
+      startDate,
+      endDate,
       ...(selectedGuideId ? { guideId: selectedGuideId } : {}),
     };
 
     try {
+      submitLockRef.current = true;
       setSubmitting(true);
-      await tourService.create(data);
-      Alert.alert('Thành công', 'Đăng tour du lịch mới thành công! Đang chờ quản trị viên duyệt.', [
+      let savedTourId = editingTour?.id;
+      let createdTourId: number | null = null;
+      if (editingTour) {
+        const response = await tourService.update(editingTour.id, data);
+        savedTourId = response.data.data?.id || editingTour.id;
+        if (editingTour.status === 'rejected') {
+          await tourService.resubmit(editingTour.id);
+        }
+      } else {
+        const response = await tourService.create(data);
+        savedTourId = response.data.data?.id;
+        createdTourId = savedTourId || null;
+      }
+
+      try {
+        if (savedTourId) {
+          await createItineraryActivities(savedTourId);
+        }
+      } catch (activityError) {
+        if (createdTourId) {
+          await tourService.delete(createdTourId);
+        }
+        throw activityError;
+      }
+
+      Alert.alert('Thành công', editingTour ? 'Đã cập nhật tour và gửi lại cho quản lý duyệt.' : 'Đăng tour du lịch mới thành công! Đang chờ quản trị viên duyệt.', [
         {
           text: 'OK',
           onPress: () => {
@@ -129,6 +298,11 @@ export default function ProviderAddTourScreen() {
             setDescription('');
             setImage('');
             setAvailableSlots('10');
+            setStartDate('');
+            setEndDate('');
+            setCategory(categoryOptions[0]?.name || '');
+            setCategoryId(categoryOptions[0]?.id || null);
+            setItineraryItems([createEmptyItineraryItem()]);
             // Navigate back to My Tours screen
             navigation.navigate('MyToursTab');
           },
@@ -138,6 +312,7 @@ export default function ProviderAddTourScreen() {
       Alert.alert('Lỗi', error.response?.data?.message || 'Không thể tạo tour mới');
     } finally {
       setSubmitting(false);
+      submitLockRef.current = false;
     }
   };
 
@@ -145,8 +320,10 @@ export default function ProviderAddTourScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Đăng Tour Mới</Text>
-        <Text style={styles.headerSubtitle}>Tạo tour du lịch mới và gửi cho quản lý duyệt để hiển thị lên ứng dụng</Text>
+        <Text style={styles.headerTitle}>{editingTour ? 'Sửa Tour' : 'Đăng Tour Mới'}</Text>
+        <Text style={styles.headerSubtitle}>
+          {editingTour ? 'Cập nhật thông tin tour và gửi lại cho quản lý duyệt' : 'Tạo tour du lịch mới và gửi cho quản lý duyệt để hiển thị lên ứng dụng'}
+        </Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -220,24 +397,52 @@ export default function ProviderAddTourScreen() {
               <View style={styles.categorySelectContainer}>
                 {categoryOptions.map((cat) => (
                   <TouchableOpacity
-                    key={cat}
+                    key={cat.id}
                     style={[
                       styles.categoryChip,
-                      category === cat && styles.categoryChipActive,
+                      categoryId === cat.id && styles.categoryChipActive,
                     ]}
-                    onPress={() => setCategory(cat)}
+                    onPress={() => {
+                      setCategory(cat.name);
+                      setCategoryId(cat.id);
+                    }}
                   >
                     <Text
                       style={[
                         styles.categoryChipText,
-                        category === cat && styles.categoryChipTextActive,
+                        categoryId === cat.id && styles.categoryChipTextActive,
                       ]}
                     >
-                      {cat}
+                      {cat.name}
                     </Text>
                   </TouchableOpacity>
                 ))}
               </View>
+            </View>
+          </View>
+
+          {/* Tour Dates */}
+          <View style={styles.row}>
+            <View style={[styles.inputGroup, { flex: 1 }]}>
+              <Text style={styles.inputLabel}>Ngày bắt đầu *</Text>
+              <TextInput
+                style={styles.textInput}
+                placeholder="YYYY-MM-DD"
+                placeholderTextColor={COLORS.textMuted}
+                value={startDate}
+                onChangeText={setStartDate}
+              />
+            </View>
+
+            <View style={[styles.inputGroup, { flex: 1 }]}>
+              <Text style={styles.inputLabel}>Ngày kết thúc *</Text>
+              <TextInput
+                style={styles.textInput}
+                placeholder="YYYY-MM-DD"
+                placeholderTextColor={COLORS.textMuted}
+                value={endDate}
+                onChangeText={setEndDate}
+              />
             </View>
           </View>
 
@@ -300,6 +505,100 @@ export default function ProviderAddTourScreen() {
             />
           </View>
 
+          <View style={styles.itinerarySection}>
+            <View style={styles.itineraryHeader}>
+              <View>
+                <Text style={styles.sectionTitle}>Lịch trình chi tiết</Text>
+                <Text style={styles.sectionSubtitle}>Nhập hoạt động theo ngày, giờ và ảnh minh họa</Text>
+              </View>
+              <TouchableOpacity style={styles.addActivityBtn} onPress={addItineraryItem}>
+                <Text style={styles.addActivityText}>+ Thêm</Text>
+              </TouchableOpacity>
+            </View>
+
+            {itineraryItems.map((item, index) => (
+              <View key={index} style={styles.itineraryCard}>
+                <View style={styles.itineraryCardHeader}>
+                  <Text style={styles.itineraryCardTitle}>Hoạt động {index + 1}</Text>
+                  <TouchableOpacity onPress={() => removeItineraryItem(index)}>
+                    <Text style={styles.removeActivityText}>Xóa</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.row}>
+                  <View style={[styles.inputGroup, { flex: 1, marginBottom: 12 }]}>
+                    <Text style={styles.inputLabel}>Ngày</Text>
+                    <TextInput
+                      style={styles.textInput}
+                      placeholder="1"
+                      placeholderTextColor={COLORS.textMuted}
+                      keyboardType="numeric"
+                      value={item.day}
+                      onChangeText={(value) => updateItineraryItem(index, 'day', value)}
+                    />
+                  </View>
+                  <View style={[styles.inputGroup, { flex: 1, marginBottom: 12 }]}>
+                    <Text style={styles.inputLabel}>Giờ</Text>
+                    <TextInput
+                      style={styles.textInput}
+                      placeholder="08:00"
+                      placeholderTextColor={COLORS.textMuted}
+                      value={item.time}
+                      onChangeText={(value) => updateItineraryItem(index, 'time', value)}
+                    />
+                  </View>
+                </View>
+
+                <View style={[styles.inputGroup, { marginBottom: 12 }]}>
+                  <Text style={styles.inputLabel}>Tên hoạt động *</Text>
+                  <TextInput
+                    style={styles.textInput}
+                    placeholder="Ví dụ: Check-in bản Cát Cát"
+                    placeholderTextColor={COLORS.textMuted}
+                    value={item.title}
+                    onChangeText={(value) => updateItineraryItem(index, 'title', value)}
+                  />
+                </View>
+
+                <View style={[styles.inputGroup, { marginBottom: 12 }]}>
+                  <Text style={styles.inputLabel}>Địa điểm</Text>
+                  <TextInput
+                    style={styles.textInput}
+                    placeholder="Ví dụ: Sa Pa, Lào Cai"
+                    placeholderTextColor={COLORS.textMuted}
+                    value={item.location}
+                    onChangeText={(value) => updateItineraryItem(index, 'location', value)}
+                  />
+                </View>
+
+                <View style={[styles.inputGroup, { marginBottom: 12 }]}>
+                  <Text style={styles.inputLabel}>Mô tả hoạt động</Text>
+                  <TextInput
+                    style={[styles.textInput, styles.activityTextArea]}
+                    placeholder="Mô tả trải nghiệm, dịch vụ, lưu ý..."
+                    placeholderTextColor={COLORS.textMuted}
+                    value={item.description}
+                    onChangeText={(value) => updateItineraryItem(index, 'description', value)}
+                    multiline
+                    numberOfLines={3}
+                  />
+                </View>
+
+                <View style={[styles.inputGroup, { marginBottom: 0 }]}>
+                  <Text style={styles.inputLabel}>Ảnh hoạt động (URL)</Text>
+                  <TextInput
+                    style={styles.textInput}
+                    placeholder="https://..."
+                    placeholderTextColor={COLORS.textMuted}
+                    autoCapitalize="none"
+                    value={item.image}
+                    onChangeText={(value) => updateItineraryItem(index, 'image', value)}
+                  />
+                </View>
+              </View>
+            ))}
+          </View>
+
           <TouchableOpacity
             style={[styles.submitBtn, submitting && styles.submitBtnDisabled]}
             onPress={handleCreateTour}
@@ -307,7 +606,7 @@ export default function ProviderAddTourScreen() {
             activeOpacity={0.85}
           >
             <Text style={styles.submitBtnText}>
-              {submitting ? 'Đang gửi thông tin...' : 'Đăng bán tour'}
+              {submitting ? 'Đang gửi thông tin...' : editingTour ? 'Lưu & gửi lại' : 'Đăng bán tour'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -441,6 +740,69 @@ const styles = StyleSheet.create({
   guideChipTextActive: {
     color: COLORS.primary,
     fontWeight: '700',
+  },
+  itinerarySection: {
+    marginTop: 2,
+    marginBottom: 18,
+    gap: 12,
+  },
+  itineraryHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: COLORS.text,
+    marginBottom: 3,
+  },
+  sectionSubtitle: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    fontWeight: '600',
+  },
+  addActivityBtn: {
+    minHeight: 38,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    backgroundColor: COLORS.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addActivityText: {
+    color: COLORS.primary,
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  itineraryCard: {
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#dfe8e4',
+    backgroundColor: '#fbfdfc',
+    padding: 14,
+  },
+  itineraryCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  itineraryCardTitle: {
+    fontSize: 14,
+    color: COLORS.primary,
+    fontWeight: '800',
+  },
+  removeActivityText: {
+    color: '#ba1a1a',
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  activityTextArea: {
+    height: 86,
+    textAlignVertical: 'top',
+    paddingVertical: 10,
   },
   submitBtn: {
     backgroundColor: COLORS.primary,

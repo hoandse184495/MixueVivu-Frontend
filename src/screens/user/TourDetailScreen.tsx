@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { tourService, activityService, favoriteService } from '../../api/services';
+import { tourService, activityService, favoriteService, normalizeActivity } from '../../api/services';
 import { useAppTheme } from '../../theme/ThemeContext';
 import { prefetchTourImages, TourImage } from '../../components/TourImage';
 import { Tour, Activity, Review } from '../../types';
@@ -57,17 +57,26 @@ export default function TourDetailScreen({ navigation, route }: Props) {
   const loadDetail = useCallback(async () => {
     try {
       setLoading(true);
-      const [detailRes, actRes, favRes] = await Promise.all([
+      const [detailRes, actRes, favRes] = await Promise.allSettled([
         tourService.getById(initialTour.id),
         activityService.getByTour(initialTour.id),
         favoriteService.check(initialTour.id),
       ]);
-      const nextTour = detailRes.data.data;
+
+      if (detailRes.status !== 'fulfilled') return;
+
+      const nextTour = detailRes.value.data.data;
+      const detailActivities = nextTour?.activities || nextTour?.TourActivities || [];
+      const loadedActivities =
+        actRes.status === 'fulfilled' ? actRes.value.data.data || [] : detailActivities;
+
       setTour(nextTour);
-      setActivities(actRes.data.data || []);
+      setActivities(loadedActivities.map(normalizeActivity));
       setReviews(nextTour?.reviews || []);
       prefetchTourImages([nextTour?.image]);
-      setIsFavorited(favRes.data.data?.isFavorited || false);
+      if (favRes.status === 'fulfilled') {
+        setIsFavorited(favRes.value.data.data?.isFavorited || false);
+      }
     } catch {
       // use initial data if fetch fails
     } finally {
@@ -75,7 +84,12 @@ export default function TourDetailScreen({ navigation, route }: Props) {
     }
   }, [initialTour.id]);
 
-  useEffect(() => { loadDetail(); }, []);
+  useEffect(() => {
+    setTour(initialTour);
+    setActivities([]);
+    setReviews([]);
+    loadDetail();
+  }, [initialTour, loadDetail]);
 
   const toggleFavorite = async () => {
     try {
@@ -137,6 +151,9 @@ export default function TourDetailScreen({ navigation, route }: Props) {
             <View style={styles.dayActivities}>
               {acts.map((act, idx) => (
                 <View key={idx} style={[styles.activityCard, { backgroundColor: colors.surface }]}>
+                  {act.image ? (
+                    <TourImage uri={act.image} style={styles.activityImage} />
+                  ) : null}
                   {act.time && (
                     <Text style={styles.actTime}>🕐 {act.time}</Text>
                   )}
@@ -732,6 +749,12 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOpacity: 0.04,
     shadowRadius: 6,
+  },
+  activityImage: {
+    width: '100%',
+    height: 140,
+    borderRadius: 10,
+    marginBottom: 10,
   },
   actTime: {
     fontSize: 11,

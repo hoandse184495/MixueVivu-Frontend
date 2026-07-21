@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { paymentService } from '../../api/services';
@@ -29,6 +30,7 @@ const COLORS = {
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string; emoji: string }> = {
   pending: { label: 'Chờ xử lý', bg: COLORS.warningLight, color: COLORS.warning, emoji: '⏳' },
+  submitted: { label: 'Chờ xác nhận', bg: COLORS.primaryLight, color: COLORS.primary, emoji: '📨' },
   paid: { label: 'Đã thanh toán', bg: COLORS.successLight, color: COLORS.success, emoji: '✅' },
   refunded: { label: 'Đã hoàn tiền', bg: COLORS.errorLight, color: COLORS.error, emoji: '💵' },
   failed: { label: 'Thất bại', bg: COLORS.errorLight, color: COLORS.error, emoji: '!' },
@@ -54,6 +56,29 @@ export default function UserPaymentsScreen() {
   useEffect(() => {
     fetchPayments();
   }, []);
+
+  const submitPayment = (id: number) => {
+    Alert.alert(
+      'Xác nhận chuyển khoản',
+      'Bạn đã chuyển khoản theo thông tin thanh toán của booking này?',
+      [
+        { text: 'Hủy', style: 'cancel' },
+        {
+          text: 'Tôi đã chuyển',
+          onPress: async () => {
+            try {
+              await paymentService.submitPayment(id, {
+                note: 'Customer confirmed bank transfer from mobile app',
+              });
+              fetchPayments();
+            } catch (error: any) {
+              Alert.alert('Lỗi', error.response?.data?.message || 'Không thể gửi xác nhận thanh toán');
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const renderPaymentCard = ({ item }: { item: any }) => {
     const statusCfg = STATUS_CONFIG[item.status] || STATUS_CONFIG.pending;
@@ -103,6 +128,18 @@ export default function UserPaymentsScreen() {
             {Number(item.amount).toLocaleString('vi-VN')}₫
           </Text>
         </View>
+
+        {item.status === 'pending' ? (
+          <View style={styles.paymentGuide}>
+            <Text style={styles.paymentGuideTitle}>Thông tin chuyển khoản</Text>
+            <Text style={styles.paymentGuideText}>Ngân hàng: MixueVivu Bank</Text>
+            <Text style={styles.paymentGuideText}>Số tài khoản: 88889999</Text>
+            <Text style={styles.paymentGuideText}>Nội dung: BOOKING-{item.bookingId}</Text>
+            <TouchableOpacity style={styles.submitPaymentBtn} onPress={() => submitPayment(item.id)}>
+              <Text style={styles.submitPaymentText}>Tôi đã chuyển khoản</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -215,6 +252,37 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '800',
     color: COLORS.primary,
+  },
+  paymentGuide: {
+    marginTop: 14,
+    padding: 14,
+    borderRadius: 14,
+    backgroundColor: COLORS.primaryLight,
+    gap: 4,
+  },
+  paymentGuideTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: COLORS.primary,
+    marginBottom: 4,
+  },
+  paymentGuideText: {
+    fontSize: 13,
+    color: COLORS.text,
+    fontWeight: '600',
+  },
+  submitPaymentBtn: {
+    marginTop: 10,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  submitPaymentText: {
+    color: '#ffffff',
+    fontWeight: '800',
+    fontSize: 14,
   },
   emptyContainer: {
     alignItems: 'center',

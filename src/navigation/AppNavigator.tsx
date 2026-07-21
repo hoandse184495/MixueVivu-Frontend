@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -47,6 +47,27 @@ export default function AppNavigator() {
   };
 
   const renderNavigatorByRole = (role: UserRole) => {
+    if (role === 'provider' && user?.providerStatus !== 'approved') {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', padding: 24, backgroundColor: '#f7f9fb' }}>
+          <Text style={{ fontSize: 24, fontWeight: '800', color: '#191c1e', marginBottom: 8 }}>
+            {user?.providerStatus === 'rejected' ? 'Tài khoản chưa được duyệt' : 'Đang chờ quản lý duyệt'}
+          </Text>
+          <Text style={{ fontSize: 14, color: '#717786', lineHeight: 21, marginBottom: 20 }}>
+            {user?.providerStatus === 'rejected'
+              ? user?.providerRejectReason || 'Thông tin công ty chưa đạt yêu cầu. Vui lòng liên hệ quản lý để cập nhật.'
+              : 'Bạn đã đăng ký tài khoản công ty du lịch. Sau khi manager duyệt, bạn có thể đăng tour và quản lý booking.'}
+          </Text>
+          <TouchableOpacity
+            style={{ height: 48, borderRadius: 14, backgroundColor: '#0058bc', alignItems: 'center', justifyContent: 'center' }}
+            onPress={handleLogout}
+          >
+            <Text style={{ color: '#ffffff', fontWeight: '800' }}>Đăng xuất</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
     if (role === 'provider')
       return <ProviderNavigator onLogout={handleLogout} />;
     if (role === 'manager')

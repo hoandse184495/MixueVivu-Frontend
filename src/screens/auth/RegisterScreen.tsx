@@ -30,7 +30,7 @@ type Props = {
 };
 
 type FieldErrors = Partial<Record<
-  'fullName' | 'email' | 'phone' | 'password' | 'confirmPassword',
+  'fullName' | 'email' | 'phone' | 'password' | 'confirmPassword' | 'companyName',
   string
 >>;
 
@@ -45,6 +45,11 @@ export default function RegisterScreen({ navigation }: Props) {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [accountType, setAccountType] = useState<'user' | 'provider'>('user');
+  const [companyName, setCompanyName] = useState('');
+  const [companyAddress, setCompanyAddress] = useState('');
+  const [businessLicense, setBusinessLicense] = useState('');
+  const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<keyof FieldErrors | null>(null);
   const [errors, setErrors] = useState<FieldErrors>({});
@@ -83,6 +88,10 @@ export default function RegisterScreen({ navigation }: Props) {
       nextErrors.confirmPassword = 'Mật khẩu xác nhận không khớp';
     }
 
+    if (accountType === 'provider' && !companyName.trim()) {
+      nextErrors.companyName = 'Vui lòng nhập tên công ty du lịch';
+    }
+
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   };
@@ -102,11 +111,15 @@ export default function RegisterScreen({ navigation }: Props) {
     try {
       setLoading(true);
 
-      const response = await api.post('/auth/register', {
+      const response = await api.post(accountType === 'provider' ? '/auth/register-provider' : '/auth/register', {
         fullName: fullName.trim(),
         email: email.trim(),
         phone: phone.trim(),
         password,
+        companyName: companyName.trim(),
+        companyAddress: companyAddress.trim(),
+        businessLicense: businessLicense.trim(),
+        description: description.trim(),
       });
 
       const refreshToken = response.data.data?.refreshToken;
@@ -118,12 +131,18 @@ export default function RegisterScreen({ navigation }: Props) {
         }
       }
 
-      Alert.alert('Thành công', 'Đăng ký thành công, vui lòng đăng nhập', [
-        {
-          text: 'OK',
-          onPress: () => navigation.navigate('Login'),
-        },
-      ]);
+      Alert.alert(
+        'Thành công',
+        accountType === 'provider'
+          ? 'Đăng ký công ty thành công. Vui lòng chờ quản lý duyệt trước khi đăng tour.'
+          : 'Đăng ký thành công, vui lòng đăng nhập',
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.navigate('Login'),
+          },
+        ]
+      );
     } catch (error: any) {
       const message = error.response?.data?.message || 'Có lỗi xảy ra';
 
@@ -206,6 +225,25 @@ export default function RegisterScreen({ navigation }: Props) {
             <Text style={styles.title}>Tạo tài khoản</Text>
             <Text style={styles.subtitle}>Điền thông tin để bắt đầu chuyến đi của bạn</Text>
 
+            <View style={styles.segment}>
+              <TouchableOpacity
+                style={[styles.segmentItem, accountType === 'user' && styles.segmentItemActive]}
+                onPress={() => setAccountType('user')}
+              >
+                <Text style={[styles.segmentText, accountType === 'user' && styles.segmentTextActive]}>
+                  Khách hàng
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.segmentItem, accountType === 'provider' && styles.segmentItemActive]}
+                onPress={() => setAccountType('provider')}
+              >
+                <Text style={[styles.segmentText, accountType === 'provider' && styles.segmentTextActive]}>
+                  Công ty du lịch
+                </Text>
+              </TouchableOpacity>
+            </View>
+
             {renderInput({
               field: 'fullName',
               label: 'Họ tên',
@@ -247,6 +285,47 @@ export default function RegisterScreen({ navigation }: Props) {
               secureTextEntry: true,
               autoCapitalize: 'none',
             })}
+
+            {accountType === 'provider' ? (
+              <>
+                {renderInput({
+                  field: 'companyName',
+                  label: 'Tên công ty du lịch',
+                  value: companyName,
+                  onChangeText: setCompanyName,
+                })}
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>Địa chỉ công ty</Text>
+                  <TextInput
+                    style={styles.textInput}
+                    value={companyAddress}
+                    onChangeText={setCompanyAddress}
+                  />
+                </View>
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>Mã giấy phép kinh doanh</Text>
+                  <TextInput
+                    style={styles.textInput}
+                    value={businessLicense}
+                    onChangeText={setBusinessLicense}
+                    autoCapitalize="none"
+                  />
+                </View>
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>Giới thiệu công ty</Text>
+                  <TextInput
+                    style={[styles.textInput, styles.textArea]}
+                    value={description}
+                    onChangeText={setDescription}
+                    multiline
+                    numberOfLines={3}
+                  />
+                </View>
+              </>
+            ) : null}
 
             <TouchableOpacity
               style={[styles.button, loading && styles.buttonDisabled]}
@@ -336,6 +415,31 @@ const styles = StyleSheet.create({
     marginBottom: 22,
     lineHeight: 20,
   },
+  segment: {
+    flexDirection: 'row',
+    backgroundColor: '#f1f5f9',
+    borderRadius: 14,
+    padding: 4,
+    marginBottom: 18,
+  },
+  segmentItem: {
+    flex: 1,
+    minHeight: 42,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  segmentItemActive: {
+    backgroundColor: COLORS.primary,
+  },
+  segmentText: {
+    color: COLORS.textMuted,
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  segmentTextActive: {
+    color: '#ffffff',
+  },
   inputGroup: {
     marginBottom: 14,
   },
@@ -363,6 +467,11 @@ const styles = StyleSheet.create({
   textInputError: {
     borderColor: COLORS.error,
     backgroundColor: COLORS.errorLight,
+  },
+  textArea: {
+    height: 86,
+    paddingVertical: 12,
+    textAlignVertical: 'top',
   },
   errorText: {
     marginTop: 6,
