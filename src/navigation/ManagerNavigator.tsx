@@ -28,7 +28,7 @@ function TabIcon({ name, focused }: { name: string; focused: boolean }) {
     Bookings: '🎫',
     Users: '👥',
     Payments: '💳',
-    Payouts: '💰',
+    Revenue: '💰',
     Categories: '🏷️',
     Contacts: '📩',
   };
@@ -144,7 +144,7 @@ export default function ManagerNavigator({
         component={ManagerPayoutsScreen}
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon name="Payouts" focused={focused} />
+            <TabIcon name="Revenue" focused={focused} />
           ),
         }}
       />

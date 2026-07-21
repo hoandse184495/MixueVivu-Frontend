@@ -28,22 +28,30 @@ const COLORS = {
   errorLight: '#ffdad6',
 };
 
+type TourReviewTab = 'pending' | 'active';
+
 export default function ManagerPendingToursScreen() {
   const [pendingTours, setPendingTours] = useState<Tour[]>([]);
+  const [activeTours, setActiveTours] = useState<Tour[]>([]);
   const [loading, setLoading] = useState(false);
   const [rejectingTourId, setRejectingTourId] = useState<number | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
+  const [activeTab, setActiveTab] = useState<TourReviewTab>('pending');
 
   const fetchPendingTours = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await tourService.getPending();
-      setPendingTours(response.data.data || []);
+      const [pendingResponse, activeResponse] = await Promise.all([
+        tourService.getPending(),
+        tourService.getAll(),
+      ]);
+      setPendingTours(pendingResponse.data.data || []);
+      setActiveTours(activeResponse.data.data || []);
     } catch (error: any) {
       Alert.alert(
         'Lỗi',
-        error.response?.data?.message || 'Không thể lấy danh sách tour chờ duyệt'
+        error.response?.data?.message || 'Không thể lấy danh sách tour'
       );
     } finally {
       setLoading(false);
@@ -100,12 +108,39 @@ export default function ManagerPendingToursScreen() {
     }
   };
 
+  const handleDelete = (tourId: number) => {
+    Alert.alert(
+      'Xóa tour',
+      'Bạn có chắc chắn muốn xóa tour này không? Tour sẽ không còn hiển thị trong hệ thống.',
+      [
+        { text: 'Hủy', style: 'cancel' },
+        {
+          text: 'Xóa',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await tourService.delete(tourId);
+              Alert.alert('Thành công', 'Đã xóa tour.');
+              fetchPendingTours();
+            } catch (error: any) {
+              Alert.alert('Lỗi', error.response?.data?.message || 'Lỗi khi xóa tour');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const visibleTours = activeTab === 'pending' ? pendingTours : activeTours;
+
   const renderTourCard = ({ item }: { item: Tour }) => (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
         <Text style={styles.tourTitle}>{item.title}</Text>
-        <View style={styles.badgePending}>
-          <Text style={styles.badgePendingText}>Chờ duyệt</Text>
+        <View style={activeTab === 'pending' ? styles.badgePending : styles.badgeActive}>
+          <Text style={activeTab === 'pending' ? styles.badgePendingText : styles.badgeActiveText}>
+            {activeTab === 'pending' ? 'Chờ duyệt' : 'Đang hoạt động'}
+          </Text>
         </View>
       </View>
 
@@ -119,20 +154,32 @@ export default function ManagerPendingToursScreen() {
 
       <View style={styles.actionContainer}>
         <TouchableOpacity
-          style={styles.rejectBtn}
-          onPress={() => handleOpenRejectModal(item.id)}
+          style={styles.deleteBtn}
+          onPress={() => handleDelete(item.id)}
           activeOpacity={0.8}
         >
-          <Text style={styles.rejectBtnText}>Từ chối</Text>
+          <Text style={styles.deleteBtnText}>Xóa</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.approveBtn}
-          onPress={() => handleApprove(item.id)}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.approveBtnText}>Duyệt Tour</Text>
-        </TouchableOpacity>
+        {activeTab === 'pending' ? (
+          <>
+            <TouchableOpacity
+              style={styles.rejectBtn}
+              onPress={() => handleOpenRejectModal(item.id)}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.rejectBtnText}>Từ chối</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.approveBtn}
+              onPress={() => handleApprove(item.id)}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.approveBtnText}>Duyệt Tour</Text>
+            </TouchableOpacity>
+          </>
+        ) : null}
       </View>
     </View>
   );
@@ -140,18 +187,39 @@ export default function ManagerPendingToursScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Duyệt Tour Mới</Text>
-        <Text style={styles.headerSubtitle}>Xem xét và phê duyệt các tour du lịch mới đăng từ Provider</Text>
+        <Text style={styles.headerTitle}>Quản lý duyệt tour</Text>
+        <Text style={styles.headerSubtitle}>Duyệt, từ chối tour mới và xóa các tour đang hoạt động khi cần.</Text>
       </View>
 
-      {loading && pendingTours.length === 0 ? (
+      <View style={styles.tabBar}>
+        <TouchableOpacity
+          style={[styles.tabButton, activeTab === 'pending' && styles.tabButtonActive]}
+          onPress={() => setActiveTab('pending')}
+          activeOpacity={0.85}
+        >
+          <Text style={[styles.tabButtonText, activeTab === 'pending' && styles.tabButtonTextActive]}>
+            Chờ duyệt ({pendingTours.length})
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tabButton, activeTab === 'active' && styles.tabButtonActive]}
+          onPress={() => setActiveTab('active')}
+          activeOpacity={0.85}
+        >
+          <Text style={[styles.tabButtonText, activeTab === 'active' && styles.tabButtonTextActive]}>
+            Đang hoạt động ({activeTours.length})
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {loading && visibleTours.length === 0 ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.primary} />
           <Text style={styles.loadingText}>Đang tải danh sách...</Text>
         </View>
       ) : (
         <FlatList
-          data={pendingTours}
+          data={visibleTours}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderTourCard}
           contentContainerStyle={styles.listContent}
@@ -161,8 +229,14 @@ export default function ManagerPendingToursScreen() {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyIcon}>🎉</Text>
-              <Text style={styles.emptyTitle}>Tất cả đã được xử lý</Text>
-              <Text style={styles.emptySubtitle}>Không có tour nào đang chờ bạn duyệt lúc này.</Text>
+              <Text style={styles.emptyTitle}>
+                {activeTab === 'pending' ? 'Tất cả đã được xử lý' : 'Chưa có tour hoạt động'}
+              </Text>
+              <Text style={styles.emptySubtitle}>
+                {activeTab === 'pending'
+                  ? 'Không có tour nào đang chờ bạn duyệt lúc này.'
+                  : 'Các tour đã duyệt và đang hiển thị cho khách sẽ xuất hiện tại đây.'}
+              </Text>
             </View>
           }
         />
@@ -235,6 +309,39 @@ const styles = StyleSheet.create({
     marginTop: 4,
     lineHeight: 18,
   },
+  tabBar: {
+    flexDirection: 'row',
+    gap: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: COLORS.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eceef0',
+  },
+  tabButton: {
+    flex: 1,
+    minHeight: 42,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: '#f8fafc',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 10,
+  },
+  tabButtonActive: {
+    backgroundColor: COLORS.primaryLight,
+    borderColor: COLORS.primary,
+  },
+  tabButtonText: {
+    color: COLORS.textMuted,
+    fontSize: 13,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  tabButtonTextActive: {
+    color: COLORS.primary,
+  },
   listContent: {
     padding: 16,
     paddingBottom: 32,
@@ -286,6 +393,17 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
   },
+  badgeActive: {
+    backgroundColor: '#e6f4ea',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  badgeActiveText: {
+    color: COLORS.success,
+    fontSize: 12,
+    fontWeight: '700',
+  },
   metaText: {
     fontSize: 14,
     color: COLORS.text,
@@ -309,13 +427,33 @@ const styles = StyleSheet.create({
   },
   actionContainer: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     marginTop: 16,
-    gap: 12,
+    gap: 10,
+  },
+  deleteBtn: {
+    flexGrow: 1,
+    flexBasis: 86,
+    backgroundColor: '#fff7ed',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#fed7aa',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deleteBtnText: {
+    color: '#c2410c',
+    fontWeight: '800',
+    fontSize: 14,
   },
   rejectBtn: {
-    flex: 1,
+    flexGrow: 1,
+    flexBasis: 100,
     backgroundColor: COLORS.errorLight,
     paddingVertical: 12,
+    paddingHorizontal: 12,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
@@ -326,9 +464,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   approveBtn: {
-    flex: 2,
+    flexGrow: 2,
+    flexBasis: 130,
     backgroundColor: COLORS.primary,
     paddingVertical: 12,
+    paddingHorizontal: 12,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',

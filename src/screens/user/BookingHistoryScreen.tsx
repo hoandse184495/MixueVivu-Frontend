@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { bookingService } from '../../api/services';
+import { bookingService, paymentService } from '../../api/services';
 import { useAppTheme } from '../../theme/ThemeContext';
 import { prefetchTourImages, TourImage } from '../../components/TourImage';
 import { Booking } from '../../types';
@@ -35,11 +35,13 @@ const COLORS = {
 };
 
 type TabType = 'all' | 'pending' | 'confirmed' | 'completed' | 'cancelled';
+type PaymentStatus = 'pending' | 'submitted' | 'paid' | 'refunded' | 'failed' | string;
+type PaymentByBookingId = Record<number, { id: number; status: PaymentStatus }>;
 
 const TABS: { key: TabType; label: string; emoji: string }[] = [
   { key: 'all', label: 'Tất cả', emoji: '📋' },
   { key: 'pending', label: 'Chờ duyệt', emoji: '⏳' },
-  { key: 'confirmed', label: 'Sắp đến', emoji: '✅' },
+  { key: 'confirmed', label: 'Đã xác nhận', emoji: '✅' },
   { key: 'completed', label: 'Hoàn thành', emoji: '🎉' },
   { key: 'cancelled', label: 'Đã hủy', emoji: '❌' },
 ];
@@ -54,15 +56,33 @@ const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string; 
 export default function BookingHistoryScreen({ navigation }: { navigation?: any }) {
   const { colors } = useAppTheme();
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [paymentsByBookingId, setPaymentsByBookingId] = useState<PaymentByBookingId>({});
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('all');
 
   const fetchBookings = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await bookingService.getMyBookings();
-      const nextBookings = res.data.data || [];
+      const [bookingRes, paymentRes] = await Promise.all([
+        bookingService.getMyBookings(),
+        paymentService.getMyPayments(),
+      ]);
+      const nextBookings = (bookingRes.data.data || []).filter((booking: Booking) =>
+        ['pending', 'confirmed', 'completed', 'cancelled'].includes(booking.status)
+      );
       setBookings(nextBookings);
+      setPaymentsByBookingId(
+        (paymentRes.data.data || []).reduce((acc: PaymentByBookingId, payment: any) => {
+          if (payment.bookingId) {
+            acc[Number(payment.bookingId)] = {
+              id: payment.id,
+              status: payment.status,
+            };
+          }
+
+          return acc;
+        }, {})
+      );
       prefetchTourImages(nextBookings.map((booking: Booking) => booking.tourImage));
     } catch (e: any) {
       Alert.alert('Lỗi', e.response?.data?.message || 'Không thể tải lịch sử');
@@ -71,11 +91,23 @@ export default function BookingHistoryScreen({ navigation }: { navigation?: any 
     }
   }, []);
 
-  useEffect(() => { fetchBookings(); }, []);
+  useEffect(() => { fetchBookings(); }, [fetchBookings]);
 
   const filteredBookings = activeTab === 'all'
     ? bookings
     : bookings.filter((b) => b.status === activeTab);
+
+  const getPaymentStatusStyle = (status?: PaymentStatus) => {
+    switch (status) {
+      case 'paid':
+        return { bg: COLORS.successLight, text: COLORS.success, label: 'Đã thanh toán' };
+      case 'submitted':
+        return { bg: COLORS.primaryLight, text: COLORS.primary, label: 'Chờ manager xác nhận' };
+      case 'pending':
+      default:
+        return { bg: COLORS.warningLight, text: COLORS.warning, label: 'Chưa thanh toán' };
+    }
+  };
 
   const handleCancel = (bookingId: number) => {
     Alert.alert(
@@ -102,6 +134,8 @@ export default function BookingHistoryScreen({ navigation }: { navigation?: any 
 
   const renderBookingCard = ({ item }: { item: Booking }) => {
     const statusCfg = STATUS_CONFIG[item.status] || STATUS_CONFIG.pending;
+    const payment = paymentsByBookingId[item.id];
+    const paymentStatusStyle = getPaymentStatusStyle(payment?.status);
     return (
       <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border + '30' }]}>
         <View style={styles.cardTop}>
@@ -117,6 +151,13 @@ export default function BookingHistoryScreen({ navigation }: { navigation?: any 
                   {statusCfg.emoji} {statusCfg.label}
                 </Text>
               </View>
+              {item.status === 'confirmed' && (
+                <View style={[styles.paymentBadge, { backgroundColor: paymentStatusStyle.bg }]}>
+                  <Text style={[styles.paymentBadgeText, { color: paymentStatusStyle.text }]}>
+                    {paymentStatusStyle.label}
+                  </Text>
+                </View>
+              )}
             </View>
 
             <Text style={[styles.tourName, { color: colors.text }]} numberOfLines={2}>
@@ -353,6 +394,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cardInfoTop: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 6,
     marginBottom: 6,
   },
   statusBadge: {
@@ -365,7 +410,19 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
     textTransform: 'uppercase',
-    letterSpacing: 0.3,
+    letterSpacing: 0,
+  },
+  paymentBadge: {
+    alignSelf: 'flex-start',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  paymentBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0,
   },
   tourName: {
     fontSize: 15,

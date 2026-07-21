@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Modal,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -11,10 +12,10 @@ import {
   View,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { tourService, categoryService, TourFilters } from '../../api/services';
+import { tourService, categoryService, notificationService, TourFilters } from '../../api/services';
 import { useAppTheme } from '../../theme/ThemeContext';
 import { prefetchTourImages, TourImage } from '../../components/TourImage';
-import { Tour, User } from '../../types';
+import { Notification, Tour, User } from '../../types';
 
 const COLORS = {
   primary: '#0f766e',
@@ -66,6 +67,11 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
   const [startDate, setStartDate] = useState('');
   const [minAvailableSlots, setMinAvailableSlots] = useState('');
   const [appliedFilters, setAppliedFilters] = useState<TourFilters>({});
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notificationLoading, setNotificationLoading] = useState(false);
+  const [notificationError, setNotificationError] = useState('');
+  const [notificationModalVisible, setNotificationModalVisible] = useState(false);
 
   const getUserFromStorage = async () => {
     const s = await AsyncStorage.getItem('user');
@@ -109,11 +115,38 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
     }
   };
 
+  const fetchNotifications = useCallback(async () => {
+    try {
+      setNotificationError('');
+      const [listRes, countRes] = await Promise.all([
+        notificationService.getAll(),
+        notificationService.getUnreadCount(),
+      ]);
+      setNotifications(listRes.data.data || []);
+      const nextUnreadCount = countRes.data.data?.count || 0;
+      setUnreadCount(nextUnreadCount);
+      return nextUnreadCount;
+    } catch (error) {
+      console.log('Error fetching notifications:', error);
+      setNotificationError('Không thể tải thông báo. Vui lòng thử lại.');
+      return 0;
+    }
+  }, []);
+
   useEffect(() => {
     getUserFromStorage();
     fetchCategories();
     fetchTours();
-  }, []);
+    fetchNotifications();
+  }, [fetchNotifications, fetchTours]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchNotifications();
+    });
+
+    return unsubscribe;
+  }, [navigation, fetchNotifications]);
 
   const applyAdvancedFilters = () => {
     const numericValues = [minPrice, maxPrice, minAvailableSlots].filter(Boolean);
@@ -168,6 +201,112 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
     setSelectedCategory('all');
     setAppliedFilters({});
     fetchTours(keyword);
+  };
+
+  const openNotifications = async () => {
+    setNotificationModalVisible(true);
+    setNotificationLoading(true);
+    await fetchNotifications();
+    setNotificationLoading(false);
+  };
+
+  const markAllNotificationsAsRead = async () => {
+    if (unreadCount === 0) return;
+
+    try {
+      await notificationService.markAllAsRead();
+      setUnreadCount(0);
+      setNotifications((current) =>
+        current.map((item) => ({ ...item, isRead: true }))
+      );
+    } catch (error) {
+      console.log('Error marking all notifications as read:', error);
+      Alert.alert('Lỗi', 'Không thể đánh dấu tất cả thông báo đã đọc');
+    }
+  };
+
+  const openNotificationItem = async (item: Notification) => {
+    if (!item.isRead) {
+      setUnreadCount((current) => Math.max(current - 1, 0));
+      setNotifications((current) =>
+        current.map((notification) =>
+          notification.id === item.id
+            ? { ...notification, isRead: true }
+            : notification
+        )
+      );
+
+      try {
+        await notificationService.markAsRead(item.id);
+      } catch (error) {
+        console.log('Error marking notification as read:', error);
+      }
+    }
+
+    const meta = getNotificationMeta(item);
+    if (meta.targetTab) {
+      setNotificationModalVisible(false);
+      navigation.getParent?.()?.navigate(meta.targetTab);
+    }
+  };
+
+  const getNotificationMeta = (item: Notification) => {
+    const type = item.type?.toLowerCase() || '';
+
+    if (type.includes('payment') || type.includes('thanh_toan') || item.paymentId) {
+      const isSuccess = ['paid', 'confirmed'].includes(String(item.status || '').toLowerCase());
+      const isDanger = ['failed', 'refunded', 'rejected'].includes(String(item.status || '').toLowerCase());
+
+      return {
+        icon: isDanger ? '!' : isSuccess ? '✓' : '$',
+        iconStyle: isDanger
+          ? styles.notificationIconDanger
+          : isSuccess
+            ? styles.notificationIconSuccess
+            : styles.notificationIconPayment,
+        linkLabel: 'Xem thanh toán',
+        targetTab: 'PaymentsTab',
+      };
+    }
+
+    if (type.includes('tour') || item.tourId) {
+      const isDanger = type.includes('reject') || type.includes('rejected');
+
+      return {
+        icon: isDanger ? '!' : '★',
+        iconStyle: isDanger ? styles.notificationIconDanger : styles.notificationIconTour,
+        linkLabel: 'Xem lịch sử booking',
+        targetTab: 'BookingsTab',
+      };
+    }
+
+    if (type.includes('booking') || item.bookingId) {
+      const isDanger = type.includes('reject') || type.includes('cancel');
+
+      return {
+        icon: isDanger ? '!' : '✓',
+        iconStyle: isDanger ? styles.notificationIconDanger : styles.notificationIconSuccess,
+        linkLabel: 'Xem lịch sử booking',
+        targetTab: 'BookingsTab',
+      };
+    }
+
+    return {
+      icon: 'i',
+      iconStyle: styles.notificationIcon,
+      linkLabel: '',
+      targetTab: '',
+    };
+  };
+
+  const formatNotificationTime = (value?: string) => {
+    if (!value) return '';
+    return new Date(value).toLocaleString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
   const renderTourCard = ({ item }: { item: Tour }) => (
@@ -230,8 +369,13 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
               <Text style={[styles.userName, { color: colors.text }]}>{user?.fullName || 'Traveler'}</Text>
             </View>
           </View>
-          <TouchableOpacity style={styles.notifBtn}>
-            <Text style={styles.notifText}>?</Text>
+          <TouchableOpacity style={styles.notifBtn} onPress={openNotifications} activeOpacity={0.85}>
+            <Text style={styles.notifText}>🔔</Text>
+            {unreadCount > 0 ? (
+              <View style={styles.unreadBadge}>
+                <Text style={styles.unreadBadgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
+              </View>
+            ) : null}
           </TouchableOpacity>
         </View>
 
@@ -397,6 +541,107 @@ export default function UserHomeScreen({ navigation, onLogout }: Props) {
 
         <View style={{ height: 100 }} />
       </ScrollView>
+
+      <Modal
+        visible={notificationModalVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setNotificationModalVisible(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.notificationSheet}>
+            <View style={styles.notificationHeader}>
+              <View>
+                <Text style={styles.notificationTitle}>Thông báo</Text>
+                <Text style={styles.notificationSubtitle}>
+                  {unreadCount > 0
+                    ? `${unreadCount} thông báo chưa đọc`
+                    : 'Cập nhật trạng thái đơn đặt tour'}
+                </Text>
+              </View>
+              <View style={styles.notificationHeaderActions}>
+                {unreadCount > 0 ? (
+                  <TouchableOpacity
+                    style={styles.readAllBtn}
+                    onPress={markAllNotificationsAsRead}
+                  >
+                    <Text style={styles.readAllBtnText}>Đã đọc</Text>
+                  </TouchableOpacity>
+                ) : null}
+                <TouchableOpacity
+                  style={styles.closeBtn}
+                  onPress={() => setNotificationModalVisible(false)}
+                >
+                  <Text style={styles.closeBtnText}>Đóng</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {notificationLoading ? (
+              <View style={styles.notificationEmpty}>
+                <ActivityIndicator size="small" color={COLORS.primary} />
+                <Text style={styles.notificationEmptyText}>Đang tải thông báo...</Text>
+              </View>
+            ) : notificationError ? (
+              <View style={styles.notificationEmpty}>
+                <Text style={styles.notificationEmptyTitle}>Có lỗi xảy ra</Text>
+                <Text style={styles.notificationEmptyText}>{notificationError}</Text>
+                <TouchableOpacity
+                  style={styles.retryNotificationBtn}
+                  onPress={async () => {
+                    setNotificationLoading(true);
+                    await fetchNotifications();
+                    setNotificationLoading(false);
+                  }}
+                >
+                  <Text style={styles.retryNotificationText}>Thử lại</Text>
+                </TouchableOpacity>
+              </View>
+            ) : notifications.length === 0 ? (
+              <View style={styles.notificationEmpty}>
+                <Text style={styles.notificationEmptyTitle}>Chưa có thông báo</Text>
+                <Text style={styles.notificationEmptyText}>
+                  Trạng thái đặt tour, tour và thanh toán sẽ hiện tại đây.
+                </Text>
+              </View>
+            ) : (
+              <ScrollView showsVerticalScrollIndicator={false}>
+                {notifications.map((item) => {
+                  const meta = getNotificationMeta(item);
+
+                  return (
+                    <TouchableOpacity
+                      key={item.id}
+                      style={[
+                        styles.notificationItem,
+                        !item.isRead && styles.notificationItemUnread,
+                      ]}
+                      onPress={() => openNotificationItem(item)}
+                      activeOpacity={0.82}
+                    >
+                      <View style={[styles.notificationIcon, meta.iconStyle]}>
+                        <Text style={styles.notificationIconText}>{meta.icon}</Text>
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <View style={styles.notificationItemTop}>
+                          <Text style={styles.notificationItemTitle}>{item.title}</Text>
+                          <Text style={styles.notificationTime}>
+                            {formatNotificationTime(item.createdAt)}
+                          </Text>
+                        </View>
+                        <Text style={styles.notificationMessage}>{item.message}</Text>
+                        {meta.linkLabel ? (
+                          <Text style={styles.notificationLink}>{meta.linkLabel}</Text>
+                        ) : null}
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            )}
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -412,10 +657,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
+    paddingRight: 52,
     paddingVertical: 14,
     backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border + '40',
+    position: 'relative',
   },
   headerLeft: {
     flexDirection: 'row',
@@ -446,6 +693,9 @@ const styles = StyleSheet.create({
     color: COLORS.text,
   },
   notifBtn: {
+    position: 'absolute',
+    top: 8,
+    right: 2,
     width: 38,
     height: 38,
     borderRadius: 19,
@@ -456,8 +706,25 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
   },
   notifText: {
-    color: COLORS.textMuted,
-    fontSize: 16,
+    fontSize: 18,
+  },
+  unreadBadge: {
+    position: 'absolute',
+    top: -5,
+    right: -5,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: COLORS.error,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 2,
+    borderColor: COLORS.surface,
+  },
+  unreadBadgeText: {
+    color: '#ffffff',
+    fontSize: 10,
     fontWeight: '900',
   },
 
@@ -826,5 +1093,173 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: COLORS.textMuted,
     marginTop: 4,
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(17, 24, 39, 0.42)',
+    justifyContent: 'flex-end',
+  },
+  notificationSheet: {
+    maxHeight: '78%',
+    backgroundColor: COLORS.surface,
+    borderTopLeftRadius: 22,
+    borderTopRightRadius: 22,
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 28,
+  },
+  notificationHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 14,
+    marginBottom: 16,
+  },
+  notificationHeaderActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  notificationTitle: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: COLORS.text,
+  },
+  notificationSubtitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.textMuted,
+    marginTop: 2,
+  },
+  closeBtn: {
+    height: 38,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    backgroundColor: COLORS.surfaceMuted,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  closeBtnText: {
+    color: COLORS.textMuted,
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  readAllBtn: {
+    height: 38,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    backgroundColor: COLORS.primaryLight,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  readAllBtnText: {
+    color: COLORS.primaryDark,
+    fontSize: 13,
+    fontWeight: '900',
+  },
+  notificationEmpty: {
+    alignItems: 'center',
+    paddingVertical: 42,
+    paddingHorizontal: 20,
+  },
+  notificationEmptyTitle: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: COLORS.text,
+    marginBottom: 6,
+  },
+  notificationEmptyText: {
+    fontSize: 13,
+    color: COLORS.textMuted,
+    textAlign: 'center',
+    lineHeight: 19,
+    fontWeight: '600',
+    marginTop: 6,
+  },
+  retryNotificationBtn: {
+    marginTop: 16,
+    height: 40,
+    paddingHorizontal: 18,
+    borderRadius: 10,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  retryNotificationText: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '900',
+  },
+  notificationItem: {
+    flexDirection: 'row',
+    gap: 12,
+    padding: 14,
+    borderRadius: 14,
+    backgroundColor: COLORS.surfaceMuted,
+    borderWidth: 1,
+    borderColor: COLORS.border + '70',
+    marginBottom: 10,
+  },
+  notificationItemUnread: {
+    backgroundColor: COLORS.primaryLight,
+    borderColor: COLORS.primary,
+  },
+  notificationIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  notificationIconDanger: {
+    backgroundColor: COLORS.error,
+  },
+  notificationIconSuccess: {
+    backgroundColor: COLORS.success,
+  },
+  notificationIconPayment: {
+    backgroundColor: COLORS.accent,
+  },
+  notificationIconTour: {
+    backgroundColor: COLORS.warning,
+  },
+  notificationIconText: {
+    color: '#ffffff',
+    fontSize: 15,
+    fontWeight: '900',
+  },
+  notificationItemTop: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    marginBottom: 4,
+  },
+  notificationItemTitle: {
+    flex: 1,
+    color: COLORS.text,
+    fontSize: 14,
+    fontWeight: '900',
+  },
+  notificationTime: {
+    color: COLORS.textSoft,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  notificationMessage: {
+    color: COLORS.textMuted,
+    fontSize: 13,
+    lineHeight: 19,
+    fontWeight: '600',
+  },
+  notificationLink: {
+    color: COLORS.accent,
+    fontSize: 12,
+    fontWeight: '900',
+    marginTop: 8,
   },
 });

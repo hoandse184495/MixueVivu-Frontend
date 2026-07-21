@@ -20,6 +20,23 @@ type Props = {
   onLogout: () => void;
 };
 
+const DASHBOARD_COLORS = {
+  ink: '#0f172a',
+  muted: '#64748b',
+  line: '#d9e2ec',
+  panel: '#ffffff',
+  canvas: '#f5f7fb',
+  blue: '#0058bc',
+  blueSoft: '#e8f0fe',
+  teal: '#00796b',
+  tealSoft: '#e0f2ef',
+  amber: '#b45309',
+  amberSoft: '#fff7ed',
+  violet: '#6d28d9',
+  violetSoft: '#f3efff',
+  danger: '#ba1a1a',
+};
+
 export default function ManagerDashboardScreen({ onLogout }: Props) {
   const { colors } = useAppTheme();
   const { width } = useWindowDimensions();
@@ -74,30 +91,58 @@ export default function ManagerDashboardScreen({ onLogout }: Props) {
     {
       label: 'Người dùng',
       value: formatNumber(stats?.totalUsers),
-      accent: '#0058bc',
-      tone: '#e8f0fe',
+      icon: '👥',
+      accent: DASHBOARD_COLORS.blue,
+      tone: DASHBOARD_COLORS.blueSoft,
       detail: 'Tài khoản khách hàng',
     },
     {
       label: 'Provider',
       value: formatNumber(stats?.totalProviders),
-      accent: '#006c4b',
-      tone: '#e6f4ea',
+      icon: '🏢',
+      accent: DASHBOARD_COLORS.teal,
+      tone: DASHBOARD_COLORS.tealSoft,
       detail: 'Đối tác cung cấp tour',
     },
     {
       label: 'Tour',
       value: formatNumber(stats?.totalTours),
-      accent: '#7c3aed',
-      tone: '#f0ebff',
+      icon: '🧭',
+      accent: DASHBOARD_COLORS.violet,
+      tone: DASHBOARD_COLORS.violetSoft,
       detail: 'Tổng tour trong hệ thống',
     },
     {
       label: 'Booking',
       value: formatNumber(stats?.totalBookings),
-      accent: '#b25e00',
-      tone: '#fff4e5',
+      icon: '🎫',
+      accent: DASHBOARD_COLORS.amber,
+      tone: DASHBOARD_COLORS.amberSoft,
       detail: 'Lượt đặt tour',
+    },
+  ];
+
+  const financeCards = [
+    {
+      label: 'Tổng doanh thu',
+      value: formatCurrency(stats?.totalRevenue),
+      detail: 'Từ booking đã xác nhận hoặc hoàn thành',
+      accent: DASHBOARD_COLORS.blue,
+      tone: DASHBOARD_COLORS.blueSoft,
+    },
+    {
+      label: 'Hoa hồng nền tảng',
+      value: formatCurrency(stats?.totalCommission),
+      detail: 'Phần doanh thu MixueVivu giữ lại',
+      accent: DASHBOARD_COLORS.violet,
+      tone: DASHBOARD_COLORS.violetSoft,
+    },
+    {
+      label: 'Phải trả provider',
+      value: formatCurrency(stats?.totalProviderAmount),
+      detail: 'Tổng tiền cần đối soát cho đối tác',
+      accent: DASHBOARD_COLORS.teal,
+      tone: DASHBOARD_COLORS.tealSoft,
     },
   ];
 
@@ -151,23 +196,23 @@ export default function ManagerDashboardScreen({ onLogout }: Props) {
           <RefreshControl refreshing={loading} onRefresh={fetchDashboardStats} />
         }
       >
-        <View style={[styles.header, { backgroundColor: colors.surface }]}>
+        <View style={styles.header}>
           <View style={styles.headerTextBlock}>
-            <Text style={[styles.eyebrow, { color: colors.primary }]}>ADMIN CONSOLE</Text>
-            <Text style={[styles.title, { color: colors.text }]}>Tổng quan hệ thống</Text>
-            <Text style={[styles.subtitle, { color: colors.textMuted }]}>
+            <Text style={styles.eyebrow}>ADMIN CONSOLE</Text>
+            <Text style={styles.title}>Tổng quan hệ thống</Text>
+            <Text style={styles.subtitle}>
               Xin chào {user?.fullName || 'Manager'}, theo dõi vận hành và doanh thu của MixueVivu.
             </Text>
           </View>
 
           <View style={styles.headerActions}>
             <TouchableOpacity
-              style={[styles.secondaryButton, { borderColor: colors.border }]}
+              style={styles.secondaryButton}
               onPress={fetchDashboardStats}
               disabled={loading}
               activeOpacity={0.85}
             >
-              <Text style={[styles.secondaryButtonText, { color: colors.text }]}>
+              <Text style={styles.secondaryButtonText}>
                 {loading ? 'Đang tải' : 'Làm mới'}
               </Text>
             </TouchableOpacity>
@@ -191,40 +236,56 @@ export default function ManagerDashboardScreen({ onLogout }: Props) {
                   style={[
                     styles.kpiCard,
                     isWide && styles.kpiCardWide,
-                    { backgroundColor: colors.surface, borderColor: colors.border + '55' },
+                    { borderColor: colors.border + '55' },
                   ]}
                 >
-                  <View style={[styles.kpiMark, { backgroundColor: item.tone }]}>
-                    <View style={[styles.kpiMarkDot, { backgroundColor: item.accent }]} />
+                  <View style={styles.kpiTopRow}>
+                    <View style={[styles.kpiMark, { backgroundColor: item.tone }]}>
+                      <Text style={styles.kpiIcon}>{item.icon}</Text>
+                    </View>
+                    <View style={[styles.kpiAccentLine, { backgroundColor: item.accent }]} />
                   </View>
-                  <Text style={[styles.kpiLabel, { color: colors.textMuted }]}>{item.label}</Text>
-                  <Text style={[styles.kpiValue, { color: colors.text }]}>{item.value}</Text>
-                  <Text style={[styles.kpiDetail, { color: colors.textMuted }]}>{item.detail}</Text>
+                  <Text style={styles.kpiLabel}>{item.label}</Text>
+                  <Text style={styles.kpiValue}>{item.value}</Text>
+                  <Text style={styles.kpiDetail}>{item.detail}</Text>
                 </View>
               ))}
             </View>
 
-            <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border + '55' }]}>
+            <View style={[styles.financeGrid, isWide && styles.financeGridWide]}>
+              {financeCards.map((item) => (
+                <View key={item.label} style={[styles.financeCard, isWide && styles.financeCardWide]}>
+                  <View style={[styles.financeMarker, { backgroundColor: item.tone }]}>
+                    <View style={[styles.financeMarkerDot, { backgroundColor: item.accent }]} />
+                  </View>
+                  <Text style={styles.financeLabel}>{item.label}</Text>
+                  <Text style={styles.financeValue}>{item.value}</Text>
+                  <Text style={styles.financeDetail}>{item.detail}</Text>
+                </View>
+              ))}
+            </View>
+
+            <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <View>
-                  <Text style={[styles.sectionTitle, { color: colors.text }]}>Tài chính theo nhà cung cấp</Text>
-                  <Text style={[styles.sectionSubtitle, { color: colors.textMuted }]}>
-                    Dữ liệu lấy từ bảng Payouts, gom theo từng provider.
+                  <Text style={styles.sectionTitle}>Tài chính theo nhà cung cấp</Text>
+                  <Text style={styles.sectionSubtitle}>
+                    Theo dõi đối soát, số phiếu đã trả và phần còn chờ xử lý.
                   </Text>
                 </View>
-                <View style={[styles.statusBadge, { backgroundColor: colors.primaryLight }]}>
-                  <Text style={[styles.statusBadgeText, { color: colors.primary }]}>
+                <View style={styles.statusBadge}>
+                  <Text style={styles.statusBadgeText}>
                     {providerFinanceRows.length} provider
                   </Text>
                 </View>
               </View>
 
               {providerFinanceRows.length === 0 ? (
-                <View style={[styles.providerEmpty, { backgroundColor: colors.surfaceContainerLow }]}>
-                  <Text style={[styles.providerEmptyTitle, { color: colors.text }]}>
+                <View style={styles.providerEmpty}>
+                  <Text style={styles.providerEmptyTitle}>
                     Chưa có phiếu đối soát
                   </Text>
-                  <Text style={[styles.providerEmptyText, { color: colors.textMuted }]}>
+                  <Text style={styles.providerEmptyText}>
                     Khi booking hoàn thành và phát sinh payout, tài chính từng provider sẽ hiện ở đây.
                   </Text>
                 </View>
@@ -233,21 +294,21 @@ export default function ManagerDashboardScreen({ onLogout }: Props) {
                   {providerFinanceRows.map((row: any) => (
                     <View
                       key={row.providerId || row.providerEmail || row.providerName}
-                      style={[styles.providerFinanceCard, { borderColor: colors.border + '55' }]}
+                      style={styles.providerFinanceCard}
                     >
                       <View style={styles.providerFinanceHeader}>
                         <View style={styles.providerIdentity}>
-                          <Text style={[styles.providerName, { color: colors.text }]} numberOfLines={1}>
+                          <Text style={styles.providerName} numberOfLines={1}>
                             {row.providerName}
                           </Text>
                           {row.providerEmail ? (
-                            <Text style={[styles.providerEmail, { color: colors.textMuted }]} numberOfLines={1}>
+                            <Text style={styles.providerEmail} numberOfLines={1}>
                               {row.providerEmail}
                             </Text>
                           ) : null}
                         </View>
-                        <View style={[styles.providerBadge, { backgroundColor: colors.surfaceContainerLow }]}>
-                          <Text style={[styles.providerBadgeText, { color: colors.textMuted }]}>
+                        <View style={styles.providerBadge}>
+                          <Text style={styles.providerBadgeText}>
                             {row.payoutCount} phiếu
                           </Text>
                         </View>
@@ -255,27 +316,27 @@ export default function ManagerDashboardScreen({ onLogout }: Props) {
 
                       <View style={styles.providerMetricGrid}>
                         <View style={styles.providerMetric}>
-                          <Text style={[styles.providerMetricLabel, { color: colors.textMuted }]}>Doanh thu</Text>
-                          <Text style={[styles.providerMetricValue, { color: colors.text }]}>
+                          <Text style={styles.providerMetricLabel}>Doanh thu</Text>
+                          <Text style={styles.providerMetricValue}>
                             {formatCurrency(row.totalRevenue)}
                           </Text>
                         </View>
                         <View style={styles.providerMetric}>
-                          <Text style={[styles.providerMetricLabel, { color: colors.textMuted }]}>Hoa hồng</Text>
-                          <Text style={[styles.providerMetricValue, { color: colors.text }]}>
+                          <Text style={styles.providerMetricLabel}>Hoa hồng</Text>
+                          <Text style={styles.providerMetricValue}>
                             {formatCurrency(row.totalCommission)}
                           </Text>
                         </View>
                         <View style={styles.providerMetric}>
-                          <Text style={[styles.providerMetricLabel, { color: colors.textMuted }]}>Phải trả</Text>
-                          <Text style={[styles.providerMetricValue, { color: colors.text }]}>
+                          <Text style={styles.providerMetricLabel}>Phải trả</Text>
+                          <Text style={styles.providerMetricValue}>
                             {formatCurrency(row.totalProviderAmount)}
                           </Text>
                         </View>
                       </View>
 
-                      <View style={[styles.providerStatusRow, { borderTopColor: colors.border + '45' }]}>
-                        <Text style={[styles.providerStatusText, { color: colors.textMuted }]}>
+                      <View style={styles.providerStatusRow}>
+                        <Text style={styles.providerStatusText}>
                           Đã trả: {formatCurrency(row.paidOut)} ({row.paidCount})
                         </Text>
                         <Text
@@ -293,9 +354,9 @@ export default function ManagerDashboardScreen({ onLogout }: Props) {
               )}
             </View>
 
-            <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border + '55' }]}>
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>Trọng tâm vận hành</Text>
-              <Text style={[styles.sectionSubtitle, { color: colors.textMuted }]}>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Trọng tâm vận hành</Text>
+              <Text style={styles.sectionSubtitle}>
                 Tour chờ duyệt, booking, thanh toán và người dùng đang là các nhóm dữ liệu chính của hệ thống.
               </Text>
             </View>
@@ -316,27 +377,31 @@ export default function ManagerDashboardScreen({ onLogout }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: DASHBOARD_COLORS.canvas,
   },
   scrollContent: {
-    padding: 18,
-    paddingBottom: 34,
+    paddingHorizontal: 18,
+    paddingTop: 16,
+    paddingBottom: 36,
   },
   header: {
     borderRadius: 8,
-    padding: 18,
-    marginBottom: 16,
+    paddingHorizontal: 18,
+    paddingVertical: 18,
+    marginBottom: 14,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     flexWrap: 'wrap',
     gap: 14,
     borderWidth: 1,
-    borderColor: '#dfe5ef',
-    elevation: 2,
-    shadowColor: '#0f172a',
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
+    borderColor: DASHBOARD_COLORS.line,
+    backgroundColor: DASHBOARD_COLORS.panel,
+    elevation: 1,
+    shadowColor: DASHBOARD_COLORS.ink,
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
   },
   headerTextBlock: {
     flex: 1,
@@ -346,17 +411,21 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: 0,
     marginBottom: 6,
+    color: DASHBOARD_COLORS.blue,
   },
   title: {
-    fontSize: 26,
-    fontWeight: '800',
-    lineHeight: 32,
+    fontSize: 28,
+    fontWeight: '900',
+    lineHeight: 34,
+    color: DASHBOARD_COLORS.ink,
   },
   subtitle: {
     marginTop: 6,
     fontSize: 14,
     lineHeight: 20,
     maxWidth: 620,
+    color: DASHBOARD_COLORS.muted,
+    fontWeight: '600',
   },
   headerActions: {
     flexDirection: 'row',
@@ -369,18 +438,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 8,
     borderWidth: 1,
+    borderColor: DASHBOARD_COLORS.line,
+    backgroundColor: '#f8fafc',
     alignItems: 'center',
     justifyContent: 'center',
   },
   secondaryButtonText: {
     fontSize: 13,
     fontWeight: '800',
+    color: DASHBOARD_COLORS.ink,
   },
   logoutButton: {
     minHeight: 40,
     paddingHorizontal: 14,
     borderRadius: 8,
-    backgroundColor: '#ba1a1a',
+    backgroundColor: DASHBOARD_COLORS.danger,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -400,17 +472,20 @@ const styles = StyleSheet.create({
   },
   kpiGrid: {
     gap: 12,
+    marginBottom: 14,
   },
   kpiGridWide: {
     flexDirection: 'row',
     flexWrap: 'wrap',
   },
   kpiCard: {
+    backgroundColor: DASHBOARD_COLORS.panel,
     borderRadius: 8,
-    padding: 16,
+    padding: 15,
     borderWidth: 1,
+    borderColor: DASHBOARD_COLORS.line,
     elevation: 1,
-    shadowColor: '#0f172a',
+    shadowColor: DASHBOARD_COLORS.ink,
     shadowOpacity: 0.04,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
@@ -419,40 +494,110 @@ const styles = StyleSheet.create({
     flexBasis: '23.5%',
     flexGrow: 1,
   },
+  kpiTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
   kpiMark: {
-    width: 36,
-    height: 36,
+    width: 40,
+    height: 40,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 14,
   },
-  kpiMarkDot: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+  kpiIcon: {
+    fontSize: 18,
+  },
+  kpiAccentLine: {
+    width: 34,
+    height: 3,
+    borderRadius: 2,
   },
   kpiLabel: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '800',
+    color: DASHBOARD_COLORS.muted,
   },
   kpiValue: {
     marginTop: 6,
     fontSize: 28,
-    fontWeight: '800',
+    fontWeight: '900',
     lineHeight: 34,
+    color: DASHBOARD_COLORS.ink,
   },
   kpiDetail: {
     marginTop: 6,
     fontSize: 12,
     fontWeight: '600',
     lineHeight: 17,
+    color: DASHBOARD_COLORS.muted,
+  },
+  financeGrid: {
+    gap: 12,
+    marginBottom: 14,
+  },
+  financeGridWide: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  financeCard: {
+    backgroundColor: DASHBOARD_COLORS.panel,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: DASHBOARD_COLORS.line,
+    padding: 16,
+  },
+  financeCardWide: {
+    flexBasis: '31%',
+    flexGrow: 1,
+  },
+  financeMarker: {
+    width: 30,
+    height: 30,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  financeMarkerDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  financeLabel: {
+    color: DASHBOARD_COLORS.muted,
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  financeValue: {
+    marginTop: 6,
+    color: DASHBOARD_COLORS.ink,
+    fontSize: 22,
+    fontWeight: '900',
+    lineHeight: 28,
+  },
+  financeDetail: {
+    marginTop: 6,
+    color: DASHBOARD_COLORS.muted,
+    fontSize: 12,
+    fontWeight: '600',
+    lineHeight: 17,
   },
   section: {
-    marginTop: 14,
+    backgroundColor: DASHBOARD_COLORS.panel,
+    marginTop: 0,
+    marginBottom: 14,
     borderRadius: 8,
     padding: 16,
     borderWidth: 1,
+    borderColor: DASHBOARD_COLORS.line,
+    elevation: 1,
+    shadowColor: DASHBOARD_COLORS.ink,
+    shadowOpacity: 0.03,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -463,22 +608,26 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 17,
-    fontWeight: '800',
+    fontWeight: '900',
+    color: DASHBOARD_COLORS.ink,
   },
   sectionSubtitle: {
     marginTop: 4,
     fontSize: 13,
     lineHeight: 19,
     fontWeight: '600',
+    color: DASHBOARD_COLORS.muted,
   },
   statusBadge: {
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 6,
+    backgroundColor: DASHBOARD_COLORS.blueSoft,
   },
   statusBadgeText: {
     fontSize: 12,
     fontWeight: '800',
+    color: DASHBOARD_COLORS.blue,
   },
   providerFinanceList: {
     gap: 12,
@@ -486,7 +635,9 @@ const styles = StyleSheet.create({
   providerFinanceCard: {
     borderRadius: 8,
     borderWidth: 1,
+    borderColor: DASHBOARD_COLORS.line,
     padding: 14,
+    backgroundColor: '#fbfdff',
   },
   providerFinanceHeader: {
     flexDirection: 'row',
@@ -501,21 +652,25 @@ const styles = StyleSheet.create({
   },
   providerName: {
     fontSize: 15,
-    fontWeight: '800',
+    fontWeight: '900',
+    color: DASHBOARD_COLORS.ink,
   },
   providerEmail: {
     marginTop: 3,
     fontSize: 12,
     fontWeight: '600',
+    color: DASHBOARD_COLORS.muted,
   },
   providerBadge: {
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 6,
+    backgroundColor: '#eef2f7',
   },
   providerBadgeText: {
     fontSize: 12,
     fontWeight: '800',
+    color: DASHBOARD_COLORS.muted,
   },
   providerMetricGrid: {
     flexDirection: 'row',
@@ -530,16 +685,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     marginBottom: 4,
+    color: DASHBOARD_COLORS.muted,
   },
   providerMetricValue: {
     fontSize: 14,
-    fontWeight: '800',
+    fontWeight: '900',
     lineHeight: 19,
+    color: DASHBOARD_COLORS.ink,
   },
   providerStatusRow: {
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
+    borderTopColor: '#e5ebf2',
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
@@ -548,6 +706,7 @@ const styles = StyleSheet.create({
   providerStatusText: {
     fontSize: 12,
     fontWeight: '700',
+    color: DASHBOARD_COLORS.muted,
   },
   providerStatusTextStrong: {
     fontSize: 12,
@@ -556,16 +715,19 @@ const styles = StyleSheet.create({
   providerEmpty: {
     borderRadius: 8,
     padding: 16,
+    backgroundColor: '#f8fafc',
   },
   providerEmptyTitle: {
     fontSize: 15,
-    fontWeight: '800',
+    fontWeight: '900',
     marginBottom: 4,
+    color: DASHBOARD_COLORS.ink,
   },
   providerEmptyText: {
     fontSize: 13,
     fontWeight: '600',
     lineHeight: 19,
+    color: DASHBOARD_COLORS.muted,
   },
   emptyCard: {
     borderRadius: 8,

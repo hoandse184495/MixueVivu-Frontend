@@ -3,9 +3,12 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Modal,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -25,10 +28,40 @@ const COLORS = {
   success: '#006c4b',
 };
 
+type UserForm = {
+  fullName: string;
+  email: string;
+  password: string;
+  phone: string;
+  role: 'user' | 'provider' | 'manager';
+  providerStatus: 'pending' | 'approved' | 'rejected';
+  companyName: string;
+  companyAddress: string;
+  businessLicense: string;
+  description: string;
+};
+
+const emptyForm: UserForm = {
+  fullName: '',
+  email: '',
+  password: '',
+  phone: '',
+  role: 'user',
+  providerStatus: 'approved',
+  companyName: '',
+  companyAddress: '',
+  businessLicense: '',
+  description: '',
+};
+
 export default function ManagerUsersScreen() {
   const { colors } = useAppTheme();
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [editingUser, setEditingUser] = useState<any | null>(null);
+  const [form, setForm] = useState<UserForm>(emptyForm);
+  const [saving, setSaving] = useState(false);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -108,6 +141,125 @@ export default function ManagerUsersScreen() {
     );
   };
 
+  const openCreateModal = () => {
+    setEditingUser(null);
+    setForm(emptyForm);
+    setModalVisible(true);
+  };
+
+  const openEditModal = (user: any) => {
+    setEditingUser(user);
+    setForm({
+      fullName: user.fullName || '',
+      email: user.email || '',
+      password: '',
+      phone: user.phone || '',
+      role: user.role || 'user',
+      providerStatus: user.providerStatus || 'approved',
+      companyName: user.companyName || '',
+      companyAddress: user.companyAddress || '',
+      businessLicense: user.businessLicense || '',
+      description: user.description || '',
+    });
+    setModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+    setEditingUser(null);
+    setForm(emptyForm);
+  };
+
+  const updateForm = (key: keyof UserForm, value: string) => {
+    setForm((current) => ({
+      ...current,
+      [key]: value,
+      ...(key === 'role' && value !== 'provider'
+        ? { providerStatus: 'approved' as const }
+        : {}),
+    }));
+  };
+
+  const validateForm = () => {
+    if (!form.fullName.trim() || !form.email.trim()) {
+      Alert.alert('Lỗi', 'Vui lòng nhập họ tên và email');
+      return false;
+    }
+
+    if (!editingUser && !form.password) {
+      Alert.alert('Lỗi', 'Vui lòng nhập mật khẩu cho người dùng mới');
+      return false;
+    }
+
+    if (form.password && (form.password.length < 8 || !/[A-Za-z]/.test(form.password) || !/\d/.test(form.password))) {
+      Alert.alert('Lỗi', 'Mật khẩu phải có ít nhất 8 ký tự, gồm chữ và số');
+      return false;
+    }
+
+    if (form.role === 'provider' && !form.companyName.trim()) {
+      Alert.alert('Lỗi', 'Provider cần có tên công ty');
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSaveUser = async () => {
+    if (!validateForm()) return;
+
+    const payload = {
+      ...form,
+      fullName: form.fullName.trim(),
+      email: form.email.trim(),
+      phone: form.phone.trim(),
+      companyName: form.companyName.trim(),
+      companyAddress: form.companyAddress.trim(),
+      businessLicense: form.businessLicense.trim(),
+      description: form.description.trim(),
+      ...(editingUser && !form.password ? { password: undefined } : {}),
+    };
+
+    try {
+      setSaving(true);
+      if (editingUser) {
+        await adminService.updateUser(editingUser.id, payload);
+        Alert.alert('Thành công', 'Đã cập nhật người dùng.');
+      } else {
+        await adminService.createUser(payload);
+        Alert.alert('Thành công', 'Đã thêm người dùng mới.');
+      }
+      closeModal();
+      fetchUsers();
+    } catch (error: any) {
+      Alert.alert('Lỗi', error.response?.data?.message || 'Không thể lưu người dùng');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteUser = (id: number) => {
+    Alert.alert(
+      'Xóa người dùng',
+      'Bạn có chắc chắn muốn xóa người dùng này không? Nếu tài khoản đã có dữ liệu liên quan, hệ thống sẽ yêu cầu khóa tài khoản thay vì xóa.',
+      [
+        { text: 'Hủy', style: 'cancel' },
+        {
+          text: 'Xóa',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await adminService.deleteUser(id);
+              Alert.alert('Thành công', 'Đã xóa người dùng.');
+              fetchUsers();
+            } catch (error: any) {
+              Alert.alert('Lỗi', error.response?.data?.message || 'Không thể xóa người dùng');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const renderUserCard = ({ item }: { item: any }) => {
     const initials = item.fullName ? item.fullName.split(' ').pop()?.charAt(0).toUpperCase() : '👤';
 
@@ -135,6 +287,14 @@ export default function ManagerUsersScreen() {
 
         <View style={styles.actionRow}>
           <TouchableOpacity
+            style={[styles.actionBtn, { backgroundColor: COLORS.primaryLight }]}
+            onPress={() => openEditModal(item)}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.actionBtnText, { color: COLORS.primary }]}>Sửa</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
             style={[styles.actionBtn, { backgroundColor: !item.isActive ? COLORS.primaryLight : COLORS.errorLight }]}
             onPress={() => handleToggleBlock(item.id, !item.isActive)}
             activeOpacity={0.8}
@@ -161,6 +321,13 @@ export default function ManagerUsersScreen() {
               </TouchableOpacity>
             </>
           ) : null}
+          <TouchableOpacity
+            style={[styles.actionBtn, { backgroundColor: '#fff7ed' }]}
+            onPress={() => handleDeleteUser(item.id)}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.actionBtnText, { color: '#c2410c' }]}>Xóa</Text>
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -173,6 +340,9 @@ export default function ManagerUsersScreen() {
           <Text style={styles.headerTitle}>Người Dùng</Text>
           <Text style={styles.headerSubtitle}>Quản lý tài khoản hệ thống</Text>
         </View>
+        <TouchableOpacity style={styles.addButton} onPress={openCreateModal} activeOpacity={0.85}>
+          <Text style={styles.addButtonText}>Thêm</Text>
+        </TouchableOpacity>
       </View>
 
       {loading && users.length === 0 ? (
@@ -197,6 +367,128 @@ export default function ManagerUsersScreen() {
           }
         />
       )}
+
+      <Modal
+        visible={modalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={closeModal}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <Text style={styles.modalTitle}>
+                {editingUser ? 'Cập nhật người dùng' : 'Thêm người dùng'}
+              </Text>
+
+              <TextInput
+                style={styles.input}
+                placeholder="Họ tên"
+                placeholderTextColor={COLORS.textMuted}
+                value={form.fullName}
+                onChangeText={(value) => updateForm('fullName', value)}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Email"
+                placeholderTextColor={COLORS.textMuted}
+                value={form.email}
+                onChangeText={(value) => updateForm('email', value)}
+                autoCapitalize="none"
+                keyboardType="email-address"
+              />
+              <TextInput
+                style={styles.input}
+                placeholder={editingUser ? 'Mật khẩu mới (bỏ trống nếu không đổi)' : 'Mật khẩu'}
+                placeholderTextColor={COLORS.textMuted}
+                value={form.password}
+                onChangeText={(value) => updateForm('password', value)}
+                secureTextEntry
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Số điện thoại"
+                placeholderTextColor={COLORS.textMuted}
+                value={form.phone}
+                onChangeText={(value) => updateForm('phone', value)}
+                keyboardType="phone-pad"
+              />
+
+              <Text style={styles.fieldLabel}>Vai trò</Text>
+              <View style={styles.segmentRow}>
+                {(['user', 'provider', 'manager'] as UserForm['role'][]).map((role) => (
+                  <TouchableOpacity
+                    key={role}
+                    style={[styles.segmentBtn, form.role === role && styles.segmentBtnActive]}
+                    onPress={() => updateForm('role', role)}
+                  >
+                    <Text style={[styles.segmentText, form.role === role && styles.segmentTextActive]}>
+                      {role}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {form.role === 'provider' ? (
+                <>
+                  <Text style={styles.fieldLabel}>Trạng thái provider</Text>
+                  <View style={styles.segmentRow}>
+                    {(['pending', 'approved', 'rejected'] as UserForm['providerStatus'][]).map((status) => (
+                      <TouchableOpacity
+                        key={status}
+                        style={[styles.segmentBtn, form.providerStatus === status && styles.segmentBtnActive]}
+                        onPress={() => updateForm('providerStatus', status)}
+                      >
+                        <Text style={[styles.segmentText, form.providerStatus === status && styles.segmentTextActive]}>
+                          {status}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Tên công ty"
+                    placeholderTextColor={COLORS.textMuted}
+                    value={form.companyName}
+                    onChangeText={(value) => updateForm('companyName', value)}
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Địa chỉ công ty"
+                    placeholderTextColor={COLORS.textMuted}
+                    value={form.companyAddress}
+                    onChangeText={(value) => updateForm('companyAddress', value)}
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Giấy phép kinh doanh"
+                    placeholderTextColor={COLORS.textMuted}
+                    value={form.businessLicense}
+                    onChangeText={(value) => updateForm('businessLicense', value)}
+                  />
+                  <TextInput
+                    style={[styles.input, styles.textArea]}
+                    placeholder="Mô tả"
+                    placeholderTextColor={COLORS.textMuted}
+                    value={form.description}
+                    onChangeText={(value) => updateForm('description', value)}
+                    multiline
+                  />
+                </>
+              ) : null}
+
+              <View style={styles.modalActions}>
+                <TouchableOpacity style={styles.modalCancelBtn} onPress={closeModal} disabled={saving}>
+                  <Text style={styles.modalCancelText}>Hủy</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.modalSaveBtn} onPress={handleSaveUser} disabled={saving}>
+                  <Text style={styles.modalSaveText}>{saving ? 'Đang lưu' : 'Lưu'}</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -228,6 +520,19 @@ const styles = StyleSheet.create({
     marginTop: 4,
     maxWidth: 220,
     lineHeight: 16,
+  },
+  addButton: {
+    minHeight: 40,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '800',
   },
   listContent: {
     padding: 16,
@@ -288,6 +593,7 @@ const styles = StyleSheet.create({
   },
   actionRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     marginTop: 14,
     borderTopWidth: 1,
     borderTopColor: '#eceef0',
@@ -295,8 +601,10 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   actionBtn: {
-    flex: 1,
+    flexGrow: 1,
+    flexBasis: 96,
     paddingVertical: 10,
+    paddingHorizontal: 10,
     borderRadius: 12,
     alignItems: 'center',
   },
@@ -319,5 +627,116 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: COLORS.text,
     marginBottom: 6,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.48)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 18,
+  },
+  modalContent: {
+    width: '100%',
+    maxWidth: 460,
+    maxHeight: '88%',
+    borderRadius: 18,
+    backgroundColor: COLORS.surface,
+    padding: 18,
+    elevation: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.16,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: COLORS.text,
+    marginBottom: 14,
+  },
+  input: {
+    minHeight: 46,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: '#f8fafc',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    color: COLORS.text,
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 10,
+  },
+  textArea: {
+    minHeight: 84,
+    textAlignVertical: 'top',
+  },
+  fieldLabel: {
+    color: COLORS.textMuted,
+    fontSize: 13,
+    fontWeight: '800',
+    marginBottom: 8,
+    marginTop: 2,
+  },
+  segmentRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 12,
+  },
+  segmentBtn: {
+    flexGrow: 1,
+    minHeight: 38,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: '#f8fafc',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 10,
+  },
+  segmentBtnActive: {
+    backgroundColor: COLORS.primaryLight,
+    borderColor: COLORS.primary,
+  },
+  segmentText: {
+    color: COLORS.textMuted,
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  segmentTextActive: {
+    color: COLORS.primary,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 6,
+  },
+  modalCancelBtn: {
+    flex: 1,
+    minHeight: 44,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalCancelText: {
+    color: COLORS.textMuted,
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  modalSaveBtn: {
+    flex: 1,
+    minHeight: 44,
+    borderRadius: 12,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalSaveText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '800',
   },
 });

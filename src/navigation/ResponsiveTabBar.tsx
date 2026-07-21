@@ -68,7 +68,7 @@ export default function ResponsiveTabBar({
     if (lower.includes('favorites')) return 'Yêu Thích';
     if (lower.includes('friends')) return 'Bạn Bè';
     if (lower.includes('payments')) return 'Thanh Toán';
-    if (lower.includes('payouts')) return 'Đối Soát';
+    if (lower.includes('payouts')) return 'Doanh Thu';
     if (lower.includes('categories')) return 'Danh Mục';
     if (lower.includes('users')) return 'Người Dùng';
     if (lower.includes('add')) return 'Thêm Tour';

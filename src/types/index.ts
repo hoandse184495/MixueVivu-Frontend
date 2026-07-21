@@ -62,6 +62,20 @@ export type Booking = {
   userEmail?: string;
 };
 
+export type Notification = {
+  id: number;
+  userId: number;
+  bookingId?: number;
+  tourId?: number;
+  paymentId?: number;
+  type: 'booking_confirmed' | 'booking_rejected' | string;
+  title: string;
+  message: string;
+  status?: string;
+  isRead: boolean;
+  createdAt?: string;
+};
+
 export type Review = {
   id: number;
   tourId: number;

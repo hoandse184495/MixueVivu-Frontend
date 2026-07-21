@@ -87,6 +87,9 @@ const normalizeBooking = (booking: any) => ({
   tourLocation: booking.tourLocation ?? booking.location,
   tourDuration: booking.tourDuration ?? booking.duration,
   tourPrice: booking.tourPrice ?? booking.price,
+  providerId: booking.providerId ?? booking.Tours?.providerId,
+  providerName: booking.providerName ?? booking.Tours?.Users?.companyName ?? booking.Tours?.Users?.fullName,
+  providerEmail: booking.providerEmail ?? booking.Tours?.Users?.email,
   tourAvailableSlots:
     booking.tourAvailableSlots ?? booking.Tours?.availableSlots,
 });
@@ -102,9 +105,12 @@ const normalizeBookingResponse = (response: any) => {
 
 const normalizePayment = (payment: any) => ({
   ...payment,
+  bookingId: payment.bookingId ?? payment.booking_id ?? payment.Bookings?.id,
   userFullName: payment.userFullName ?? payment.Users?.fullName,
   userEmail: payment.userEmail ?? payment.Users?.email,
   bookingFullName: payment.bookingFullName ?? payment.Bookings?.fullName,
+  bookingStatus: payment.bookingStatus ?? payment.Bookings?.status,
+  paidAt: payment.paidAt ?? payment.paid_at,
   tourTitle:
     payment.tourTitle ??
     payment.Bookings?.Tours?.title ??
@@ -126,6 +132,7 @@ const normalizePayout = (payout: any) => {
 
   return {
     ...payout,
+    providerId: payout.providerId ?? payout.Users?.id,
     providerName: payout.providerName ?? payout.Users?.fullName,
     providerEmail: payout.providerEmail ?? payout.Users?.email,
     bookingFullName: payout.bookingFullName ?? payout.Bookings?.fullName,
@@ -144,6 +151,30 @@ const normalizePayoutResponse = (response: any) => {
 
   return response;
 };
+
+const normalizeNotification = (notification: any) => ({
+  ...notification,
+  id: notification.id ?? notification.notificationId,
+  userId: notification.userId ?? notification.user_id,
+  bookingId: notification.bookingId ?? notification.booking_id,
+  tourId: notification.tourId ?? notification.tour_id,
+  paymentId: notification.paymentId ?? notification.payment_id,
+  status: notification.status ?? notification.notificationStatus,
+  isRead: Boolean(notification.isRead ?? notification.is_read),
+  createdAt: notification.createdAt ?? notification.created_at,
+});
+
+const normalizeNotificationResponse = (response: any) => {
+  const data = response.data.data;
+  response.data.data = Array.isArray(data)
+    ? data.map(normalizeNotification)
+    : normalizeNotification(data);
+
+  return response;
+};
+
+const getUnreadCountValue = (data: any) =>
+  Number(data?.count ?? data?.unreadCount ?? data?.unread_count ?? data ?? 0) || 0;
 
 const normalizeFriendRequest = (request: any) => ({
   ...request,
@@ -242,6 +273,8 @@ export const bookingService = {
     normalizeBookingResponse(await api.put(`/bookings/${id}/confirm`)),
   providerRejectBooking: async (id: number) =>
     normalizeBookingResponse(await api.put(`/bookings/${id}/reject`)),
+  complete: async (id: number) =>
+    normalizeBookingResponse(await api.put(`/bookings/${id}/complete`)),
   providerCompleteBooking: async (id: number) =>
     normalizeBookingResponse(await api.put(`/bookings/${id}/complete`)),
 };
@@ -319,6 +352,22 @@ export const paymentService = {
     normalizePaymentResponse(await api.put(`/payments/${id}/refund`)),
 };
 
+export const notificationService = {
+  getAll: async () => normalizeNotificationResponse(await api.get('/notifications')),
+  getUnreadCount: async () => {
+    const response = await api.get('/notifications/unread-count');
+    response.data.data = {
+      ...(typeof response.data.data === 'object' ? response.data.data : {}),
+      count: getUnreadCountValue(response.data.data),
+    };
+
+    return response;
+  },
+  markAsRead: async (id: number) =>
+    normalizeNotificationResponse(await api.put(`/notifications/${id}/read`)),
+  markAllAsRead: () => api.put('/notifications/read-all'),
+};
+
 export const payoutService = {
   getMyPayouts: async () =>
     normalizePayoutResponse(await api.get('/payouts/my-payouts')),
@@ -339,6 +388,9 @@ export const providerService = {
 export const adminService = {
   getAllUsers: () => api.get('/admin/users'),
   getUserById: (id: number) => api.get(`/admin/users/${id}`),
+  createUser: (data: any) => api.post('/admin/users', data),
+  updateUser: (id: number, data: any) => api.put(`/admin/users/${id}`, data),
+  deleteUser: (id: number) => api.delete(`/admin/users/${id}`),
   blockUser: (id: number) => api.put(`/admin/users/${id}/block`),
   unblockUser: (id: number) => api.put(`/admin/users/${id}/unblock`),
   approveProvider: (id: number) => api.put(`/admin/providers/${id}/approve`),

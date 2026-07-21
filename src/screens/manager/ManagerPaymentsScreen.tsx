@@ -30,6 +30,7 @@ const COLORS = {
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string; emoji: string }> = {
   pending: { label: 'Chờ xử lý', bg: COLORS.warningLight, color: COLORS.warning, emoji: '⏳' },
+  submitted: { label: 'Chờ xác nhận', bg: COLORS.primaryLight, color: COLORS.primary, emoji: '📨' },
   paid: { label: 'Đã thanh toán', bg: COLORS.successLight, color: COLORS.success, emoji: '✅' },
   refunded: { label: 'Đã hoàn tiền', bg: COLORS.errorLight, color: COLORS.error, emoji: '💵' },
   failed: { label: 'Thất bại', bg: COLORS.errorLight, color: COLORS.error, emoji: '!' },
@@ -81,10 +82,10 @@ export default function ManagerPaymentsScreen() {
     );
   };
 
-  const handleRefund = (id: number) => {
+  const handleRefund = (item: any) => {
     Alert.alert(
       'Xác nhận hoàn tiền',
-      'Bạn có chắc chắn muốn hoàn tiền cho giao dịch này không?',
+      'Bạn có chắc chắn muốn hoàn tiền giao dịch này không? Hệ thống chỉ đổi trạng thái thanh toán, không hủy booking và không hoàn slot.',
       [
         { text: 'Hủy', style: 'cancel' },
         {
@@ -92,7 +93,7 @@ export default function ManagerPaymentsScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await paymentService.refundPayment(id);
+              await paymentService.refundPayment(item.id);
               Alert.alert('Thành công', 'Đã hoàn tiền.');
               fetchPayments();
             } catch (error: any) {
@@ -131,6 +132,12 @@ export default function ManagerPaymentsScreen() {
             <Text style={[styles.label, { color: colors.textMuted }]}>Mã Booking:</Text>
             <Text style={[styles.value, { color: colors.text }]}>#{item.bookingId}</Text>
           </View>
+          {item.bookingStatus ? (
+            <View style={styles.row}>
+              <Text style={[styles.label, { color: colors.textMuted }]}>Trạng thái booking:</Text>
+              <Text style={[styles.value, { color: colors.text }]}>{item.bookingStatus}</Text>
+            </View>
+          ) : null}
           <View style={styles.row}>
             <Text style={[styles.label, { color: colors.textMuted }]}>Phương thức:</Text>
             <Text style={[styles.value, { color: colors.text }]}>{item.method === 'bank_transfer' ? 'Chuyển khoản' : item.method}</Text>
@@ -146,13 +153,15 @@ export default function ManagerPaymentsScreen() {
           </Text>
         </View>
 
-        {item.status === 'pending' && (
+        {(item.status === 'pending' || item.status === 'submitted') && (
           <View style={styles.actionRow}>
             <TouchableOpacity
               style={styles.confirmBtn}
               onPress={() => handleConfirm(item.id)}
             >
-              <Text style={styles.confirmBtnText}>Xác nhận đã nhận tiền</Text>
+              <Text style={styles.confirmBtnText}>
+                {item.status === 'submitted' ? 'Xác nhận đã nhận tiền' : 'Xác nhận thanh toán'}
+              </Text>
             </TouchableOpacity>
           </View>
         )}
@@ -161,7 +170,7 @@ export default function ManagerPaymentsScreen() {
           <View style={styles.actionRow}>
             <TouchableOpacity
               style={styles.refundBtn}
-              onPress={() => handleRefund(item.id)}
+              onPress={() => handleRefund(item)}
             >
               <Text style={styles.refundBtnText}>Hoàn tiền</Text>
             </TouchableOpacity>
