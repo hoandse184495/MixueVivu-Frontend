@@ -5,8 +5,9 @@ import { Text, View } from 'react-native';
 import ManagerDashboardScreen from '../screens/manager/ManagerDashboardScreen';
 import ManagerPendingToursScreen from '../screens/manager/ManagerPendingToursScreen';
 import ManagerBookingsScreen from '../screens/manager/ManagerBookingsScreen';
-import ManagerGuidesScreen from '../screens/manager/ManagerGuidesScreen';
-import ManagerContactsScreen from '../screens/manager/ManagerContactsScreen';
+import ManagerUsersScreen from '../screens/manager/ManagerUsersScreen';
+import ManagerPaymentsScreen from '../screens/manager/ManagerPaymentsScreen';
+import ManagerPayoutsScreen from '../screens/manager/ManagerPayoutsScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -22,8 +23,9 @@ function TabIcon({ name, focused }: { name: string; focused: boolean }) {
     Dashboard: '🏛️',
     'Pending Tours': '⏳',
     Bookings: '🎫',
-    Guides: '🧭',
-    Contacts: '📩',
+    Users: '👥',
+    Payments: '💳',
+    Revenue: '💰',
   };
   return (
     <View style={{ alignItems: 'center' }}>
@@ -113,24 +115,35 @@ export default function ManagerNavigator({
       />
 
       <Tab.Screen
-        name="GuidesTab"
-        component={ManagerGuidesScreen}
+        name="UsersTab"
+        component={ManagerUsersScreen}
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon name="Guides" focused={focused} />
+            <TabIcon name="Users" focused={focused} />
           ),
         }}
       />
 
       <Tab.Screen
-        name="ContactsTab"
-        component={ManagerContactsScreen}
+        name="PaymentsTab"
+        component={ManagerPaymentsScreen}
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon name="Contacts" focused={focused} />
+            <TabIcon name="Payments" focused={focused} />
           ),
         }}
       />
+
+      <Tab.Screen
+        name="PayoutsTab"
+        component={ManagerPayoutsScreen}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon name="Revenue" focused={focused} />
+          ),
+        }}
+      />
+
     </Tab.Navigator>
   );
 }

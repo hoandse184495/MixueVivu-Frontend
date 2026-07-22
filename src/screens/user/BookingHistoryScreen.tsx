@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
-  Image,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -11,7 +10,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { bookingService } from '../../api/services';
+import { bookingService, paymentService } from '../../api/services';
+import { useAppTheme } from '../../theme/ThemeContext';
+import { prefetchTourImages, TourImage } from '../../components/TourImage';
 import { Booking } from '../../types';
 
 const COLORS = {
@@ -34,11 +35,13 @@ const COLORS = {
 };
 
 type TabType = 'all' | 'pending' | 'confirmed' | 'completed' | 'cancelled';
+type PaymentStatus = 'pending' | 'submitted' | 'paid' | 'refunded' | 'failed' | string;
+type PaymentByBookingId = Record<number, { id: number; status: PaymentStatus }>;
 
 const TABS: { key: TabType; label: string; emoji: string }[] = [
   { key: 'all', label: 'Tất cả', emoji: '📋' },
   { key: 'pending', label: 'Chờ duyệt', emoji: '⏳' },
-  { key: 'confirmed', label: 'Sắp đến', emoji: '✅' },
+  { key: 'confirmed', label: 'Đã xác nhận', emoji: '✅' },
   { key: 'completed', label: 'Hoàn thành', emoji: '🎉' },
   { key: 'cancelled', label: 'Đã hủy', emoji: '❌' },
 ];
@@ -51,15 +54,36 @@ const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string; 
 };
 
 export default function BookingHistoryScreen({ navigation }: { navigation?: any }) {
+  const { colors } = useAppTheme();
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [paymentsByBookingId, setPaymentsByBookingId] = useState<PaymentByBookingId>({});
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('all');
 
   const fetchBookings = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await bookingService.getMyBookings();
-      setBookings(res.data.data || []);
+      const [bookingRes, paymentRes] = await Promise.all([
+        bookingService.getMyBookings(),
+        paymentService.getMyPayments(),
+      ]);
+      const nextBookings = (bookingRes.data.data || []).filter((booking: Booking) =>
+        ['pending', 'confirmed', 'completed', 'cancelled'].includes(booking.status)
+      );
+      setBookings(nextBookings);
+      setPaymentsByBookingId(
+        (paymentRes.data.data || []).reduce((acc: PaymentByBookingId, payment: any) => {
+          if (payment.bookingId) {
+            acc[Number(payment.bookingId)] = {
+              id: payment.id,
+              status: payment.status,
+            };
+          }
+
+          return acc;
+        }, {})
+      );
+      prefetchTourImages(nextBookings.map((booking: Booking) => booking.tourImage));
     } catch (e: any) {
       Alert.alert('Lỗi', e.response?.data?.message || 'Không thể tải lịch sử');
     } finally {
@@ -67,11 +91,23 @@ export default function BookingHistoryScreen({ navigation }: { navigation?: any 
     }
   }, []);
 
-  useEffect(() => { fetchBookings(); }, []);
+  useEffect(() => { fetchBookings(); }, [fetchBookings]);
 
   const filteredBookings = activeTab === 'all'
     ? bookings
     : bookings.filter((b) => b.status === activeTab);
+
+  const getPaymentStatusStyle = (status?: PaymentStatus) => {
+    switch (status) {
+      case 'paid':
+        return { bg: COLORS.successLight, text: COLORS.success, label: 'Đã thanh toán' };
+      case 'submitted':
+        return { bg: COLORS.primaryLight, text: COLORS.primary, label: 'Chờ manager xác nhận' };
+      case 'pending':
+      default:
+        return { bg: COLORS.warningLight, text: COLORS.warning, label: 'Chưa thanh toán' };
+    }
+  };
 
   const handleCancel = (bookingId: number) => {
     Alert.alert(
@@ -98,18 +134,14 @@ export default function BookingHistoryScreen({ navigation }: { navigation?: any 
 
   const renderBookingCard = ({ item }: { item: Booking }) => {
     const statusCfg = STATUS_CONFIG[item.status] || STATUS_CONFIG.pending;
+    const payment = paymentsByBookingId[item.id];
+    const paymentStatusStyle = getPaymentStatusStyle(payment?.status);
     return (
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border + '30' }]}>
         <View style={styles.cardTop}>
           {/* Thumbnail */}
           <View style={styles.thumbContainer}>
-            {item.tourImage ? (
-              <Image source={{ uri: item.tourImage }} style={styles.thumb} />
-            ) : (
-              <View style={[styles.thumb, styles.thumbPlaceholder]}>
-                <Text style={{ fontSize: 28 }}>🏔️</Text>
-              </View>
-            )}
+            <TourImage uri={item.tourImage} style={styles.thumb} fallbackIconSize={28} />
           </View>
 
           <View style={styles.cardInfo}>
@@ -119,14 +151,21 @@ export default function BookingHistoryScreen({ navigation }: { navigation?: any 
                   {statusCfg.emoji} {statusCfg.label}
                 </Text>
               </View>
+              {item.status === 'confirmed' && (
+                <View style={[styles.paymentBadge, { backgroundColor: paymentStatusStyle.bg }]}>
+                  <Text style={[styles.paymentBadgeText, { color: paymentStatusStyle.text }]}>
+                    {paymentStatusStyle.label}
+                  </Text>
+                </View>
+              )}
             </View>
 
-            <Text style={styles.tourName} numberOfLines={2}>
+            <Text style={[styles.tourName, { color: colors.text }]} numberOfLines={2}>
               {item.tourTitle || `Tour #${item.tourId}`}
             </Text>
 
             {item.tourLocation && (
-              <Text style={styles.locationText}>📍 {item.tourLocation}</Text>
+              <Text style={[styles.locationText, { color: colors.textMuted }]}>📍 {item.tourLocation}</Text>
             )}
 
             {item.tourStartDate && (
@@ -148,7 +187,7 @@ export default function BookingHistoryScreen({ navigation }: { navigation?: any 
             <Text style={styles.guestText}>{item.numPeople} người</Text>
           </View>
           <View style={styles.priceInfo}>
-            <Text style={styles.priceLabel}>Tổng tiền</Text>
+            <Text style={[styles.priceLabel, { color: colors.textMuted }]}>Tổng tiền</Text>
             <Text style={styles.priceValue}>
               {Number(item.totalPrice).toLocaleString('vi-VN')}₫
             </Text>
@@ -168,20 +207,17 @@ export default function BookingHistoryScreen({ navigation }: { navigation?: any 
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.bg }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border + '40' }]}>
         <View>
-          <Text style={styles.headerTitle}>Lịch sử đặt tour</Text>
-          <Text style={styles.headerSubtitle}>Quản lý chuyến đi của bạn</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Lịch sử đặt tour</Text>
+          <Text style={[styles.headerSubtitle, { color: colors.textMuted }]}>Quản lý chuyến đi của bạn</Text>
         </View>
-        <TouchableOpacity style={styles.refreshBtn} onPress={fetchBookings}>
-          <Text style={{ fontSize: 20 }}>🔄</Text>
-        </TouchableOpacity>
       </View>
 
       {/* Tab Bar */}
-      <View style={styles.tabBarContainer}>
+      <View style={[styles.tabBarContainer, { backgroundColor: colors.surface, borderBottomColor: colors.border + '50' }]}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -219,19 +255,29 @@ export default function BookingHistoryScreen({ navigation }: { navigation?: any 
           renderItem={renderBookingCard}
           contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
           showsVerticalScrollIndicator={false}
+          onRefresh={fetchBookings}
+          refreshing={loading}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <View style={styles.emptyIconCircle}>
                 <Text style={{ fontSize: 40 }}>🎫</Text>
               </View>
-              <Text style={styles.emptyTitle}>Chưa có booking nào</Text>
-              <Text style={styles.emptySubtitle}>
+              <Text style={[styles.emptyTitle, { color: colors.text }]}>Chưa có booking nào</Text>
+              <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>
                 {activeTab === 'all'
                   ? 'Hãy khám phá và đặt tour ngay!'
                   : `Không có tour ${TABS.find(t => t.key === activeTab)?.label?.toLowerCase()}`}
               </Text>
               {activeTab === 'all' && (
-                <TouchableOpacity style={styles.exploreBtn}>
+                <TouchableOpacity
+                  style={styles.exploreBtn}
+                  onPress={() => {
+                    navigation?.navigate('HomeTab', {
+                      screen: 'UserHome',
+                    });
+                  }}
+                  activeOpacity={0.85}
+                >
                   <Text style={styles.exploreBtnText}>Khám phá tour →</Text>
                 </TouchableOpacity>
               )}
@@ -268,15 +314,6 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     marginTop: 2,
   },
-  refreshBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: COLORS.surfaceContainerLow,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
   // Tab Bar
   tabBarContainer: {
     backgroundColor: COLORS.surface,
@@ -357,6 +394,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cardInfoTop: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 6,
     marginBottom: 6,
   },
   statusBadge: {
@@ -369,7 +410,19 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
     textTransform: 'uppercase',
-    letterSpacing: 0.3,
+    letterSpacing: 0,
+  },
+  paymentBadge: {
+    alignSelf: 'flex-start',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  paymentBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0,
   },
   tourName: {
     fontSize: 15,

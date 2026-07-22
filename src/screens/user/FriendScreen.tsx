@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Image,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -11,7 +12,9 @@ import {
   View,
 } from 'react-native';
 import { friendService } from '../../api/services';
+import { useAppTheme } from '../../theme/ThemeContext';
 import { FriendRequest } from '../../types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const COLORS = {
   primary: '#0058bc',
@@ -31,12 +34,16 @@ const COLORS = {
 type TabType = 'friends' | 'requests' | 'search';
 
 export default function FriendScreen({ navigation }: { navigation?: any }) {
+  const { colors } = useAppTheme();
   const [friends, setFriends] = useState<any[]>([]);
   const [requests, setRequests] = useState<any[]>([]);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('friends');
   const [keyword, setKeyword] = useState('');
+  const [hasSearched, setHasSearched] = useState(false);
+  const [sentRequestIds, setSentRequestIds] = useState<number[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 
   const fetchFriends = useCallback(async () => {
     try {
@@ -54,12 +61,27 @@ export default function FriendScreen({ navigation }: { navigation?: any }) {
     }
   }, []);
 
-  useEffect(() => { fetchFriends(); }, []);
+  useEffect(() => {
+    const loadCurrentUser = async () => {
+      const storedUser = await AsyncStorage.getItem('user');
+      if (storedUser) {
+        setCurrentUserId(JSON.parse(storedUser).id);
+      }
+    };
+
+    loadCurrentUser();
+    fetchFriends();
+  }, []);
 
   const handleSearch = async () => {
-    if (!keyword.trim()) return;
+    if (!keyword.trim()) {
+      setHasSearched(false);
+      setSearchResults([]);
+      return;
+    }
     try {
       setLoading(true);
+      setHasSearched(true);
       const res = await friendService.search(keyword);
       setSearchResults(res.data.data || []);
     } catch {
@@ -91,6 +113,9 @@ export default function FriendScreen({ navigation }: { navigation?: any }) {
   const handleSendRequest = async (receiverId: number) => {
     try {
       await friendService.sendRequest(receiverId);
+      setSentRequestIds((current) =>
+        current.includes(receiverId) ? current : [...current, receiverId]
+      );
       Alert.alert('Đã gửi', 'Lời mời kết bạn đã được gửi!');
     } catch (e: any) {
       Alert.alert('Lỗi', e.response?.data?.message || 'Không thể gửi lời mời');
@@ -99,34 +124,49 @@ export default function FriendScreen({ navigation }: { navigation?: any }) {
 
   const getInitial = (name?: string) => (name ? name[0].toUpperCase() : 'U');
 
-  const renderFriend = ({ item }: { item: any }) => (
-    <View style={styles.card}>
-      <View style={styles.avatar}>
-        <Text style={styles.avatarText}>{getInitial(item.friendName || item.senderName)}</Text>
-      </View>
-      <View style={styles.cardInfo}>
-        <Text style={styles.cardName}>{item.friendName || item.senderName || 'Người dùng'}</Text>
-        <Text style={styles.cardEmail}>{item.friendEmail || item.senderEmail || ''}</Text>
-      </View>
-      <TouchableOpacity style={styles.removeBtn} onPress={() => {
-        Alert.alert('Xóa bạn bè', 'Bạn muốn xóa người này khỏi danh sách bạn bè?', [
-          { text: 'Hủy', style: 'cancel' },
-          { text: 'Xóa', style: 'destructive', onPress: () => friendService.remove(item.id).then(fetchFriends) },
-        ]);
-      }}>
-        <Text style={{ color: COLORS.error, fontSize: 12, fontWeight: '700' }}>Xóa</Text>
-      </TouchableOpacity>
+  const renderAvatar = (
+    avatar?: string,
+    name?: string,
+    backgroundColor = COLORS.primary
+  ) => (
+    <View style={[styles.avatar, { backgroundColor }]}>
+      {avatar ? (
+        <Image source={{ uri: avatar }} style={styles.avatarImage} />
+      ) : (
+        <Text style={styles.avatarText}>{getInitial(name)}</Text>
+      )}
     </View>
   );
 
-  const renderRequest = ({ item }: { item: any }) => (
-    <View style={styles.card}>
-      <View style={[styles.avatar, { backgroundColor: '#894d00' }]}>
-        <Text style={styles.avatarText}>{getInitial(item.senderName)}</Text>
+  const renderFriend = ({ item }: { item: any }) => {
+    const name = item.friendName || item.fullName || item.senderName;
+    const email = item.friendEmail || item.email || item.senderEmail;
+
+    return (
+      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border + '30' }]}>
+        {renderAvatar(item.avatar, name)}
+        <View style={styles.cardInfo}>
+          <Text style={[styles.cardName, { color: colors.text }]}>{name || 'Người dùng'}</Text>
+          <Text style={[styles.cardEmail, { color: colors.textMuted }]}>{email || ''}</Text>
+        </View>
+        <TouchableOpacity style={styles.removeBtn} onPress={() => {
+          Alert.alert('Xóa bạn bè', 'Bạn muốn xóa người này khỏi danh sách bạn bè?', [
+            { text: 'Hủy', style: 'cancel' },
+            { text: 'Xóa', style: 'destructive', onPress: () => friendService.remove(item.id).then(fetchFriends) },
+          ]);
+        }}>
+          <Text style={{ color: COLORS.error, fontSize: 12, fontWeight: '700' }}>Xóa</Text>
+        </TouchableOpacity>
       </View>
+    );
+  };
+
+  const renderRequest = ({ item }: { item: any }) => (
+    <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border + '30' }]}>
+      {renderAvatar(item.avatar, item.senderName, '#894d00')}
       <View style={styles.cardInfo}>
-        <Text style={styles.cardName}>{item.senderName || 'Người dùng'}</Text>
-        <Text style={styles.cardEmail}>{item.senderEmail || ''}</Text>
+        <Text style={[styles.cardName, { color: colors.text }]}>{item.senderName || 'Người dùng'}</Text>
+        <Text style={[styles.cardEmail, { color: colors.textMuted }]}>{item.senderEmail || ''}</Text>
       </View>
       <View style={styles.requestActions}>
         <TouchableOpacity style={styles.acceptBtn} onPress={() => handleAccept(item.id)}>
@@ -139,20 +179,42 @@ export default function FriendScreen({ navigation }: { navigation?: any }) {
     </View>
   );
 
-  const renderSearchResult = ({ item }: { item: any }) => (
-    <View style={styles.card}>
-      <View style={[styles.avatar, { backgroundColor: COLORS.success }]}>
-        <Text style={styles.avatarText}>{getInitial(item.fullName)}</Text>
+  const renderSearchResult = ({ item }: { item: any }) => {
+    const isFriend = item.friendStatus === 'accepted';
+    const isPending = item.friendStatus === 'pending';
+    const isSent =
+      sentRequestIds.includes(item.id) ||
+      (isPending && Number(item.friendSenderId) === Number(currentUserId));
+    const isIncoming =
+      isPending && Number(item.friendReceiverId) === Number(currentUserId);
+    const disabled = isFriend || isSent || isIncoming;
+    const buttonLabel = isFriend
+      ? 'Bạn bè'
+      : isSent
+        ? 'Đã gửi'
+        : isIncoming
+          ? 'Đang chờ'
+          : '+ Kết bạn';
+
+    return (
+      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border + '30' }]}>
+        {renderAvatar(item.avatar, item.fullName, COLORS.success)}
+        <View style={styles.cardInfo}>
+          <Text style={[styles.cardName, { color: colors.text }]}>{item.fullName || 'Người dùng'}</Text>
+          <Text style={[styles.cardEmail, { color: colors.textMuted }]}>{item.email || ''}</Text>
+        </View>
+        <TouchableOpacity
+          style={[styles.addBtn, disabled && styles.addBtnSent]}
+          onPress={() => handleSendRequest(item.id)}
+          disabled={disabled}
+        >
+          <Text style={[styles.addBtnText, disabled && styles.addBtnSentText]}>
+            {buttonLabel}
+          </Text>
+        </TouchableOpacity>
       </View>
-      <View style={styles.cardInfo}>
-        <Text style={styles.cardName}>{item.fullName || 'Người dùng'}</Text>
-        <Text style={styles.cardEmail}>{item.email || ''}</Text>
-      </View>
-      <TouchableOpacity style={styles.addBtn} onPress={() => handleSendRequest(item.id)}>
-        <Text style={styles.addBtnText}>+ Kết bạn</Text>
-      </TouchableOpacity>
-    </View>
-  );
+    );
+  };
 
   const TABS = [
     { key: 'friends' as TabType, label: `Bạn bè (${friends.length})` },
@@ -160,16 +222,29 @@ export default function FriendScreen({ navigation }: { navigation?: any }) {
     { key: 'search' as TabType, label: 'Tìm kiếm' },
   ];
 
+  const listData =
+    activeTab === 'friends' ? friends :
+    activeTab === 'requests' ? requests :
+    searchResults;
+
+  const refreshCurrentTab = () => {
+    if (activeTab === 'search') {
+      if (hasSearched) {
+        handleSearch();
+      }
+      return;
+    }
+
+    fetchFriends();
+  };
+
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>👥 Bạn bè</Text>
-        <TouchableOpacity style={styles.refreshBtn} onPress={fetchFriends}>
-          <Text style={{ fontSize: 18 }}>🔄</Text>
-        </TouchableOpacity>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.bg }]}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border + '40' }]}>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>👥 Bạn bè</Text>
       </View>
 
-      <View style={styles.tabBar}>
+      <View style={[styles.tabBar, { backgroundColor: colors.surface, borderBottomColor: colors.border + '50' }]}>
         {TABS.map((tab) => (
           <TouchableOpacity
             key={tab.key}
@@ -185,13 +260,17 @@ export default function FriendScreen({ navigation }: { navigation?: any }) {
       </View>
 
       {activeTab === 'search' && (
-        <View style={styles.searchBox}>
+        <View style={[styles.searchBox, { backgroundColor: colors.surface }]}>
           <TextInput
             style={styles.searchInput}
             placeholder="Tìm kiếm bạn bè..."
             placeholderTextColor={COLORS.textMuted}
             value={keyword}
-            onChangeText={setKeyword}
+            onChangeText={(value) => {
+              setKeyword(value);
+              setHasSearched(false);
+              setSearchResults([]);
+            }}
             onSubmitEditing={handleSearch}
             returnKeyType="search"
           />
@@ -201,15 +280,11 @@ export default function FriendScreen({ navigation }: { navigation?: any }) {
         </View>
       )}
 
-      {loading ? (
+      {loading && listData.length === 0 ? (
         <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: 50 }} />
       ) : (
         <FlatList
-          data={
-            activeTab === 'friends' ? friends :
-            activeTab === 'requests' ? requests :
-            searchResults
-          }
+          data={listData}
           keyExtractor={(item) => item.id?.toString()}
           renderItem={
             activeTab === 'friends' ? renderFriend :
@@ -218,13 +293,15 @@ export default function FriendScreen({ navigation }: { navigation?: any }) {
           }
           contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
           showsVerticalScrollIndicator={false}
+          onRefresh={refreshCurrentTab}
+          refreshing={loading}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Text style={{ fontSize: 40 }}>👥</Text>
-              <Text style={styles.emptyText}>
+              <Text style={[styles.emptyText, { color: colors.textMuted }]}>
                 {activeTab === 'friends' ? 'Chưa có bạn bè' :
                  activeTab === 'requests' ? 'Không có lời mời nào' :
-                 'Tìm kiếm để kết bạn'}
+                 hasSearched ? 'Không tìm thấy người dùng phù hợp' : 'Nhập từ khóa rồi bấm Tìm để kết bạn'}
               </Text>
             </View>
           }
@@ -243,11 +320,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1, borderBottomColor: COLORS.border + '40',
   },
   headerTitle: { fontSize: 20, fontWeight: '800', color: COLORS.text },
-  refreshBtn: {
-    width: 40, height: 40, borderRadius: 20,
-    backgroundColor: COLORS.surfaceContainerLow,
-    alignItems: 'center', justifyContent: 'center',
-  },
   tabBar: {
     flexDirection: 'row', backgroundColor: COLORS.surface,
     borderBottomWidth: 1, borderBottomColor: COLORS.border + '50',
@@ -286,6 +358,7 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   avatarText: { fontSize: 18, fontWeight: '800', color: '#fff' },
+  avatarImage: { width: '100%', height: '100%' },
   cardInfo: { flex: 1 },
   cardName: { fontSize: 15, fontWeight: '700', color: COLORS.text, marginBottom: 2 },
   cardEmail: { fontSize: 12, color: COLORS.textMuted },
@@ -309,6 +382,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10, paddingVertical: 8,
   },
   addBtnText: { color: COLORS.primary, fontWeight: '700', fontSize: 12 },
+  addBtnSent: { backgroundColor: COLORS.successLight },
+  addBtnSentText: { color: COLORS.success },
   emptyContainer: { alignItems: 'center', paddingTop: 60 },
   emptyText: { fontSize: 16, color: COLORS.textMuted, marginTop: 12, fontWeight: '600' },
 });

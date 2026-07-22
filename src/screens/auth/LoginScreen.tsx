@@ -13,7 +13,8 @@ import {
   View,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import api from '../../api/api';
+import axios from 'axios';
+import api, { API_URL } from '../../api/api';
 
 const COLORS = {
   primary: '#0058bc',
@@ -35,12 +36,25 @@ type Props = {
 };
 
 export default function LoginScreen({ navigation, onLoginSuccess }: Props) {
-  const [email, setEmail] = useState('hoa@gmail.com');
-  const [password, setPassword] = useState('123456');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [emailFocused, setEmailFocused] = useState(false);
   const [passFocused, setPassFocused] = useState(false);
+
+  const saveSession = async (data: any) => {
+    const { token, accessToken, refreshToken, user } = data;
+    if (!(accessToken || token) || !refreshToken || !user) {
+      throw new Error('Invalid login response from server');
+    }
+
+    await AsyncStorage.multiSet([
+      ['token', accessToken || token],
+      ['refreshToken', refreshToken],
+      ['user', JSON.stringify(user)],
+    ]);
+  };
 
   const handleLogin = async () => {
     try {
@@ -51,38 +65,22 @@ export default function LoginScreen({ navigation, onLoginSuccess }: Props) {
 
       setLoading(true);
 
-      let mockUserObj = null;
-      const mockToken = 'mock-session-token';
-      const emailLower = email.toLowerCase();
-
-      if (emailLower.includes('manager') || emailLower.includes('admin')) {
-        mockUserObj = {
-          id: 1,
-          fullName: 'MixueVivu Manager',
-          email: email,
-          role: 'manager',
-        };
-      } else if (emailLower.includes('provider')) {
-        mockUserObj = {
-          id: 2,
-          fullName: 'MixueVivu Provider',
-          email: email,
-          role: 'provider',
-        };
-      } else {
-        mockUserObj = {
-          id: 3,
-          fullName: 'MixueVivu User',
-          email: email,
-          role: 'user',
-        };
-      }
-
-      await AsyncStorage.setItem('token', mockToken);
-      await AsyncStorage.setItem('user', JSON.stringify(mockUserObj));
+      const response = await api.post('/auth/login', {
+        email: email.trim(),
+        password,
+      });
+      await saveSession(response.data.data);
 
       onLoginSuccess();
     } catch (error: any) {
+      if (axios.isAxiosError(error)) {
+        const message = error.response?.data?.message || error.message;
+        const detail = error.message === 'Network Error' ? `${message}\nAPI URL: ${API_URL}` : message;
+
+        Alert.alert('Đăng nhập thất bại', detail);
+        return;
+      }
+
       Alert.alert(
         'Đăng nhập thất bại',
         'Có lỗi xảy ra khi xử lý thông tin đăng nhập'

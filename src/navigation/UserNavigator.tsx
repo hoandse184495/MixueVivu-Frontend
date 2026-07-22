@@ -10,6 +10,8 @@ import FavoriteScreen from '../screens/user/FavoriteScreen';
 import FriendScreen from '../screens/user/FriendScreen';
 import ContactScreen from '../screens/user/ContactScreen';
 import UserProfileScreen from '../screens/user/UserProfileScreen';
+import SettingsScreen from '../screens/user/SettingsScreen';
+import UserPaymentsScreen from '../screens/user/UserPaymentsScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -21,7 +23,7 @@ const COLORS = {
   primaryLight: '#e8f0fe',
 };
 
-type TabName = 'Trang chủ' | 'Yêu thích' | 'Booking' | 'Bạn bè' | 'Hồ sơ';
+type TabName = 'Trang chủ' | 'Yêu thích' | 'Booking' | 'Thanh toán' | 'Bạn bè' | 'Hồ sơ';
 
 interface TabIconProps {
   name: TabName;
@@ -32,6 +34,7 @@ const TAB_ICONS: Record<TabName, { icon: string; activeIcon: string }> = {
   'Trang chủ': { icon: '🏠', activeIcon: '🏡' },
   'Yêu thích': { icon: '🤍', activeIcon: '❤️' },
   'Booking': { icon: '📋', activeIcon: '🎫' },
+  'Thanh toán': { icon: '💳', activeIcon: '💸' },
   'Bạn bè': { icon: '👥', activeIcon: '🫂' },
   'Hồ sơ': { icon: '👤', activeIcon: '🙋' },
 };
@@ -78,6 +81,7 @@ function ProfileStack({ onLogout }: { onLogout: () => void }) {
       <Stack.Screen name="UserProfile">
         {(props) => <UserProfileScreen {...props} onLogout={onLogout} />}
       </Stack.Screen>
+      <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
       <Stack.Screen name="ContactScreen" component={ContactScreen} />
     </Stack.Navigator>
   );
@@ -135,6 +139,16 @@ export default function UserNavigator({ onLogout }: { onLogout: () => void }) {
         options={{
           tabBarIcon: ({ focused }) => (
             <TabIcon name="Booking" focused={focused} />
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="PaymentsTab"
+        component={UserPaymentsScreen}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon name="Thanh toán" focused={focused} />
           ),
         }}
       />

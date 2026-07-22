@@ -2,6 +2,7 @@ import { useWindowDimensions, StyleSheet, View, Text, TouchableOpacity } from 'r
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { User } from '../types';
+import { useAppTheme } from '../theme/ThemeContext';
 
 interface ResponsiveTabBarProps {
   state: any;
@@ -23,6 +24,7 @@ export default function ResponsiveTabBar({
   primaryColorLight,
 }: ResponsiveTabBarProps) {
   const { width } = useWindowDimensions();
+  const { colors } = useAppTheme();
   const isLargeScreen = width >= 1024;
   const [user, setUser] = useState<User | null>(null);
 
@@ -46,8 +48,12 @@ export default function ResponsiveTabBar({
     if (lower.includes('profile')) return '👤';
     if (lower.includes('favorites')) return '❤️';
     if (lower.includes('friends')) return '👥';
+    if (lower.includes('payments')) return '💳';
+    if (lower.includes('payouts')) return '💰';
+    if (lower.includes('categories')) return '🏷️';
+    if (lower.includes('users')) return '👥';
     if (lower.includes('add')) return '➕';
-    return '●';
+    if (lower.includes('contacts')) return '📩';
   };
 
   const getLabel = (name: string) => {
@@ -61,13 +67,17 @@ export default function ResponsiveTabBar({
     if (lower.includes('profile')) return 'Tài Khoản';
     if (lower.includes('favorites')) return 'Yêu Thích';
     if (lower.includes('friends')) return 'Bạn Bè';
+    if (lower.includes('payments')) return 'Thanh Toán';
+    if (lower.includes('payouts')) return 'Doanh Thu';
+    if (lower.includes('categories')) return 'Danh Mục';
+    if (lower.includes('users')) return 'Người Dùng';
     if (lower.includes('add')) return 'Thêm Tour';
-    return name;
+    if (lower.includes('contacts')) return 'Liên Hệ';
   };
 
   if (isLargeScreen) {
     return (
-      <View style={styles.sidebar}>
+      <View style={[styles.sidebar, { backgroundColor: colors.surface, borderRightColor: colors.border }]}>
         <View style={styles.sidebarHeader}>
           <Text style={[styles.logoText, { color: primaryColor }]}>MixueVivu</Text>
           <View style={[styles.roleBadge, { backgroundColor: primaryColorLight }]}>
@@ -89,7 +99,7 @@ export default function ResponsiveTabBar({
               });
 
               if (!isFocused && !event.defaultPrevented) {
-                navigation.navigate({ name: route.name, merge: true });
+                navigation.navigate(route.name, undefined, { merge: true });
               }
             };
 
@@ -107,6 +117,7 @@ export default function ResponsiveTabBar({
                 <Text
                   style={[
                     styles.menuLabel,
+                    { color: colors.textMuted },
                     isFocused && { color: primaryColor, fontWeight: '700' },
                   ]}
                 >
@@ -117,7 +128,7 @@ export default function ResponsiveTabBar({
           })}
         </View>
 
-        <View style={styles.sidebarFooter}>
+        <View style={[styles.sidebarFooter, { borderTopColor: colors.border }]}>
           <View style={styles.userCard}>
             <View style={[styles.avatar, { backgroundColor: primaryColorLight }]}>
               <Text style={[styles.avatarText, { color: primaryColor }]}>
@@ -125,17 +136,17 @@ export default function ResponsiveTabBar({
               </Text>
             </View>
             <View style={styles.userInfo}>
-              <Text style={styles.userFullName} numberOfLines={1}>
+              <Text style={[styles.userFullName, { color: colors.text }]} numberOfLines={1}>
                 {user?.fullName || 'Người dùng'}
               </Text>
-              <Text style={styles.userRole} numberOfLines={1}>
+              <Text style={[styles.userRole, { color: colors.textMuted }]} numberOfLines={1}>
                 {user?.email || 'email@address.com'}
               </Text>
             </View>
           </View>
 
-          <TouchableOpacity style={styles.logoutBtn} onPress={onLogout} activeOpacity={0.8}>
-            <Text style={styles.logoutBtnText}>Đăng xuất ➔</Text>
+          <TouchableOpacity style={[styles.logoutBtn, { backgroundColor: colors.errorLight }]} onPress={onLogout} activeOpacity={0.8}>
+            <Text style={[styles.logoutBtnText, { color: colors.error }]}>Đăng xuất ➔</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -144,7 +155,7 @@ export default function ResponsiveTabBar({
 
   // Mobile Bottom Tabs
   return (
-    <View style={styles.bottomTabBar}>
+    <View style={[styles.bottomTabBar, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
       {state.routes.map((route: any, index: number) => {
         const isFocused = state.index === index;
 
@@ -156,7 +167,7 @@ export default function ResponsiveTabBar({
           });
 
           if (!isFocused && !event.defaultPrevented) {
-            navigation.navigate({ name: route.name, merge: true });
+            navigation.navigate(route.name, undefined, { merge: true });
           }
         };
 
@@ -174,6 +185,7 @@ export default function ResponsiveTabBar({
             <Text
               style={[
                 styles.bottomTabLabel,
+                { color: colors.textMuted },
                 isFocused && { color: primaryColor, fontWeight: '700' },
               ]}
               numberOfLines={1}

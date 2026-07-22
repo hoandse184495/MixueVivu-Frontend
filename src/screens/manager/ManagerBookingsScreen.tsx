@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { bookingService } from '../../api/services';
+import { bookingService, paymentService } from '../../api/services';
 import { Booking } from '../../types';
 
 const COLORS = {
@@ -23,18 +23,36 @@ const COLORS = {
 };
 
 type StatusType = 'all' | 'pending' | 'confirmed' | 'cancelled' | 'completed';
+type PaymentStatus = 'pending' | 'submitted' | 'paid' | 'refunded' | 'failed' | string;
+type PaymentByBookingId = Record<number, { id: number; status: PaymentStatus }>;
 
 export default function ManagerBookingsScreen() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
+  const [paymentsByBookingId, setPaymentsByBookingId] = useState<PaymentByBookingId>({});
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<StatusType>('all');
 
   const fetchBookings = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await bookingService.getAllBookings();
-      setBookings(response.data.data || []);
+      const [bookingResponse, paymentResponse] = await Promise.all([
+        bookingService.getAllBookings(),
+        paymentService.getAllPayments(),
+      ]);
+      setBookings(bookingResponse.data.data || []);
+      setPaymentsByBookingId(
+        (paymentResponse.data.data || []).reduce((acc: PaymentByBookingId, payment: any) => {
+          if (payment.bookingId) {
+            acc[Number(payment.bookingId)] = {
+              id: payment.id,
+              status: payment.status,
+            };
+          }
+
+          return acc;
+        }, {})
+      );
     } catch (error: any) {
       Alert.alert(
         'Lỗi',
@@ -57,35 +75,56 @@ export default function ManagerBookingsScreen() {
     }
   }, [bookings, activeTab]);
 
-  const handleUpdateStatus = async (id: number, status: 'confirmed' | 'cancelled' | 'completed') => {
-    const statusTextMap = {
-      confirmed: 'xác nhận',
-      cancelled: 'hủy',
-      completed: 'hoàn thành',
-    };
+  const handleCompleteBooking = async (item: Booking) => {
+    const payment = paymentsByBookingId[item.id];
+
+    if (item.status !== 'confirmed' || payment?.status !== 'paid') {
+      Alert.alert(
+        'Chưa thể hoàn thành',
+        'Chỉ hoàn thành tour sau khi provider đã xác nhận booking và manager đã xác nhận khách chuyển khoản.'
+      );
+      return;
+    }
 
     Alert.alert(
-      'Xác nhận thay đổi',
-      `Bạn có chắc chắn muốn ${statusTextMap[status]} đơn đặt tour này không?`,
+      'Hoàn thành tour',
+      'Bạn đã xác nhận khách chuyển khoản và muốn hoàn thành tour này?',
       [
         { text: 'Hủy', style: 'cancel' },
         {
-          text: 'Đồng ý',
+          text: 'Hoàn thành',
           onPress: async () => {
             try {
-              await bookingService.updateStatus(id, status);
-              Alert.alert('Thành công', 'Cập nhật trạng thái thành công.');
+              await bookingService.complete(item.id);
+              Alert.alert('Thành công', 'Tour đã được đánh dấu hoàn thành.');
               fetchBookings();
             } catch (error: any) {
               Alert.alert(
                 'Lỗi',
-                error.response?.data?.message || 'Không thể cập nhật trạng thái'
+                error.response?.data?.message || 'Không thể hoàn thành tour'
               );
             }
           },
         },
       ]
     );
+  };
+
+  const getPaymentStatusStyle = (status?: PaymentStatus) => {
+    switch (status) {
+      case 'paid':
+        return { bg: '#e6f4ea', text: '#137333', label: 'Đã nhận tiền' };
+      case 'submitted':
+        return { bg: '#e8f0fe', text: '#1a73e8', label: 'Khách báo đã chuyển' };
+      case 'refunded':
+        return { bg: '#fce8e6', text: '#c5221f', label: 'Đã hoàn tiền' };
+      case 'failed':
+        return { bg: '#fce8e6', text: '#c5221f', label: 'Thanh toán lỗi' };
+      case 'pending':
+        return { bg: '#fff4e5', text: '#b25e00', label: 'Chờ khách chuyển' };
+      default:
+        return { bg: '#eceef0', text: '#555', label: 'Chưa có thanh toán' };
+    }
   };
 
   const getStatusStyle = (status: string) => {
@@ -105,6 +144,9 @@ export default function ManagerBookingsScreen() {
 
   const renderBookingCard = ({ item }: { item: Booking }) => {
     const statusStyle = getStatusStyle(item.status);
+    const payment = paymentsByBookingId[item.id];
+    const paymentStatusStyle = getPaymentStatusStyle(payment?.status);
+    const canComplete = item.status === 'confirmed' && payment?.status === 'paid';
     const bookingDate = item.createdAt ? new Date(item.createdAt).toLocaleDateString('vi-VN') : 'N/A';
 
     return (
@@ -128,9 +170,25 @@ export default function ManagerBookingsScreen() {
           <Text style={styles.value}>{item.numPeople} người</Text>
         </View>
 
+        {item.tourAvailableSlots !== undefined && (
+          <View style={styles.row}>
+            <Text style={styles.label}>Chỗ còn lại:</Text>
+            <Text style={styles.value}>{item.tourAvailableSlots} chỗ</Text>
+          </View>
+        )}
+
         <View style={styles.row}>
           <Text style={styles.label}>Tổng chi phí:</Text>
           <Text style={styles.priceValue}>{Number(item.totalPrice).toLocaleString('vi-VN')} VNĐ</Text>
+        </View>
+
+        <View style={styles.row}>
+          <Text style={styles.label}>Thanh toán:</Text>
+          <View style={[styles.paymentBadge, { backgroundColor: paymentStatusStyle.bg }]}>
+            <Text style={[styles.paymentBadgeText, { color: paymentStatusStyle.text }]}>
+              {paymentStatusStyle.label}
+            </Text>
+          </View>
         </View>
 
         <View style={styles.row}>
@@ -138,43 +196,24 @@ export default function ManagerBookingsScreen() {
           <Text style={styles.value}>{bookingDate}</Text>
         </View>
 
-        {/* Action buttons based on status */}
         {item.status === 'pending' && (
-          <View style={styles.actionRow}>
-            <TouchableOpacity
-              style={styles.cancelBtn}
-              onPress={() => handleUpdateStatus(item.id, 'cancelled')}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.cancelBtnText}>Hủy đơn</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.confirmBtn}
-              onPress={() => handleUpdateStatus(item.id, 'confirmed')}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.confirmBtnText}>Xác nhận</Text>
-            </TouchableOpacity>
+          <View style={styles.infoBox}>
+            <Text style={styles.infoText}>
+              Đang chờ provider chấp nhận booking.
+            </Text>
           </View>
         )}
 
         {item.status === 'confirmed' && (
           <View style={styles.actionRow}>
             <TouchableOpacity
-              style={styles.cancelBtn}
-              onPress={() => handleUpdateStatus(item.id, 'cancelled')}
+              style={[styles.completeBtn, !canComplete && styles.completeBtnDisabled]}
+              onPress={() => handleCompleteBooking(item)}
               activeOpacity={0.8}
             >
-              <Text style={styles.cancelBtnText}>Hủy đơn</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.completeBtn}
-              onPress={() => handleUpdateStatus(item.id, 'completed')}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.completeBtnText}>Hoàn thành</Text>
+              <Text style={[styles.completeBtnText, !canComplete && styles.completeBtnTextDisabled]}>
+                {canComplete ? 'Hoàn thành tour' : 'Chưa nhận tiền'}
+              </Text>
             </TouchableOpacity>
           </View>
         )}
@@ -366,6 +405,30 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontWeight: '700',
   },
+  paymentBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+    alignSelf: 'flex-start',
+  },
+  paymentBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  infoBox: {
+    marginTop: 14,
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: COLORS.primaryLight,
+    borderWidth: 1,
+    borderColor: '#c8dafc',
+  },
+  infoText: {
+    color: COLORS.primary,
+    fontSize: 13,
+    fontWeight: '600',
+    lineHeight: 18,
+  },
   actionRow: {
     flexDirection: 'row',
     marginTop: 16,
@@ -402,10 +465,18 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
   },
+  completeBtnDisabled: {
+    backgroundColor: '#eef1f5',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
   completeBtnText: {
     color: '#ffffff',
     fontWeight: '700',
     fontSize: 13,
+  },
+  completeBtnTextDisabled: {
+    color: COLORS.textMuted,
   },
   emptyContainer: {
     paddingTop: 80,

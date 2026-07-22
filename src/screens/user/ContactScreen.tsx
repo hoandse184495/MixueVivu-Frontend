@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useAppTheme } from '../../theme/ThemeContext';
 
 const COLORS = {
   primary: '#0058bc',
@@ -27,14 +28,15 @@ const FAQS = [
 ];
 
 export default function ContactScreen({ navigation }: { navigation: any }) {
+  const { colors } = useAppTheme();
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.bg }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border + '40' }]}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <Text style={styles.backText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Trung tâm hỗ trợ</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Trung tâm hỗ trợ</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -50,7 +52,7 @@ export default function ContactScreen({ navigation }: { navigation: any }) {
         </View>
 
         {/* Contact Options */}
-        <Text style={styles.sectionTitle}>Liên hệ nhanh</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Liên hệ nhanh</Text>
         <View style={styles.contactGrid}>
           <TouchableOpacity style={[styles.contactCard, { backgroundColor: '#e8f5e9' }]}>
             <Text style={styles.contactEmoji}>📞</Text>
@@ -75,9 +77,9 @@ export default function ContactScreen({ navigation }: { navigation: any }) {
         </View>
 
         {/* FAQ */}
-        <Text style={styles.sectionTitle}>Câu hỏi thường gặp</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Câu hỏi thường gặp</Text>
         {FAQS.map((faq, idx) => (
-          <View key={idx} style={styles.faqCard}>
+          <View key={idx} style={[styles.faqCard, { backgroundColor: colors.surface }]}>
             <View style={styles.faqQuestion}>
               <View style={styles.faqQIcon}>
                 <Text style={{ color: COLORS.primary, fontWeight: '800', fontSize: 13 }}>Q</Text>
@@ -89,7 +91,7 @@ export default function ContactScreen({ navigation }: { navigation: any }) {
         ))}
 
         {/* Working Hours */}
-        <View style={styles.hoursCard}>
+        <View style={[styles.hoursCard, { backgroundColor: colors.surface }]}>
           <Text style={styles.hoursTitle}>🕐 Giờ làm việc</Text>
           <View style={styles.hoursRow}>
             <Text style={styles.hoursDay}>Thứ 2 - Thứ 6</Text>

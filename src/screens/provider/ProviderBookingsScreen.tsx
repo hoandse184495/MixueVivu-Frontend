@@ -62,11 +62,10 @@ export default function ProviderBookingsScreen() {
     }
   }, [bookings, activeTab]);
 
-  const handleUpdateStatus = async (id: number, status: 'confirmed' | 'cancelled' | 'completed') => {
+  const handleUpdateStatus = async (id: number, status: 'confirmed' | 'cancelled') => {
     const statusTextMap = {
       confirmed: 'xác nhận',
       cancelled: 'hủy',
-      completed: 'hoàn thành',
     };
 
     Alert.alert(
@@ -78,7 +77,11 @@ export default function ProviderBookingsScreen() {
           text: 'Đồng ý',
           onPress: async () => {
             try {
-              await bookingService.updateStatus(id, status);
+              if (status === 'confirmed') {
+                await bookingService.providerConfirmBooking(id);
+              } else {
+                await bookingService.providerRejectBooking(id);
+              }
               Alert.alert('Thành công', 'Cập nhật trạng thái thành công.');
               fetchBookings();
             } catch (error: any) {
@@ -133,6 +136,13 @@ export default function ProviderBookingsScreen() {
           <Text style={styles.value}>{item.numPeople} khách</Text>
         </View>
 
+        {item.tourAvailableSlots !== undefined && (
+          <View style={styles.row}>
+            <Text style={styles.label}>Chỗ còn lại:</Text>
+            <Text style={styles.value}>{item.tourAvailableSlots} chỗ</Text>
+          </View>
+        )}
+
         <View style={styles.row}>
           <Text style={styles.label}>Thành tiền:</Text>
           <Text style={styles.priceValue}>{Number(item.totalPrice).toLocaleString('vi-VN')} VNĐ</Text>
@@ -165,22 +175,10 @@ export default function ProviderBookingsScreen() {
         )}
 
         {item.status === 'confirmed' && (
-          <View style={styles.actionRow}>
-            <TouchableOpacity
-              style={styles.cancelBtn}
-              onPress={() => handleUpdateStatus(item.id, 'cancelled')}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.cancelBtnText}>Hủy đơn</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.completeBtn}
-              onPress={() => handleUpdateStatus(item.id, 'completed')}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.completeBtnText}>Hoàn tất Tour</Text>
-            </TouchableOpacity>
+          <View style={styles.infoBox}>
+            <Text style={styles.infoText}>
+              Đơn đã được provider xác nhận. Manager sẽ hoàn thành tour sau khi xác nhận khách đã chuyển khoản.
+            </Text>
           </View>
         )}
       </View>
@@ -400,17 +398,19 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 13,
   },
-  completeBtn: {
-    flex: 1,
-    backgroundColor: COLORS.primary,
-    paddingVertical: 10,
+  infoBox: {
+    marginTop: 14,
+    padding: 12,
     borderRadius: 12,
-    alignItems: 'center',
+    backgroundColor: COLORS.primaryLight,
+    borderWidth: 1,
+    borderColor: '#cde8d8',
   },
-  completeBtnText: {
-    color: '#ffffff',
-    fontWeight: '700',
+  infoText: {
+    color: COLORS.primary,
     fontSize: 13,
+    fontWeight: '600',
+    lineHeight: 18,
   },
   emptyContainer: {
     paddingTop: 80,

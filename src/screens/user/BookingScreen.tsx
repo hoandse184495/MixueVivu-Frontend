@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import {
   Alert,
-  Image,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -10,6 +9,8 @@ import {
   View,
 } from 'react-native';
 import { bookingService } from '../../api/services';
+import { useAppTheme } from '../../theme/ThemeContext';
+import { TourImage } from '../../components/TourImage';
 import { Tour } from '../../types';
 
 const COLORS = {
@@ -34,14 +35,13 @@ type Props = {
 };
 
 export default function BookingScreen({ navigation, route }: Props) {
+  const { colors } = useAppTheme();
   const { tour } = route.params as { tour: Tour };
   const [numPeople, setNumPeople] = useState(1);
   const [loading, setLoading] = useState(false);
 
   const pricePerPerson = Number(tour.price);
-  const subtotal = numPeople * pricePerPerson;
-  const serviceFee = Math.round(subtotal * 0.05);
-  const totalPrice = subtotal + serviceFee;
+  const totalPrice = numPeople * pricePerPerson;
 
   const handleBook = async () => {
     if (numPeople < 1) {
@@ -85,27 +85,21 @@ export default function BookingScreen({ navigation, route }: Props) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.bg }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border + '40' }]}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <Text style={styles.backIcon}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Đặt tour</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Đặt tour</Text>
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 140 }} showsVerticalScrollIndicator={false}>
 
         {/* ── Tour Info Card ── */}
-        <View style={styles.tourCard}>
-          {tour.image ? (
-            <Image source={{ uri: tour.image }} style={styles.tourThumb} />
-          ) : (
-            <View style={[styles.tourThumb, styles.tourThumbPlaceholder]}>
-              <Text style={{ fontSize: 32 }}>🏔️</Text>
-            </View>
-          )}
+        <View style={[styles.tourCard, { backgroundColor: colors.surface, borderColor: colors.border + '30' }]}> 
+          <TourImage uri={tour.image} style={styles.tourThumb} fallbackIconSize={32} />
           <View style={styles.tourInfo}>
             {/* Rating */}
             <View style={styles.ratingRow}>
@@ -114,7 +108,7 @@ export default function BookingScreen({ navigation, route }: Props) {
               </View>
               <Text style={styles.tourLocation}>📍 {tour.location}</Text>
             </View>
-            <Text style={styles.tourTitle} numberOfLines={2}>{tour.title}</Text>
+            <Text style={[styles.tourTitle, { color: colors.text }]} numberOfLines={2}>{tour.title}</Text>
             <View style={styles.tourMetas}>
               <Text style={styles.tourMeta}>⏱ {tour.duration}</Text>
               <Text style={styles.tourMeta}>👥 {tour.availableSlots} chỗ trống</Text>
@@ -124,8 +118,8 @@ export default function BookingScreen({ navigation, route }: Props) {
 
         {/* ── Guest Counter ── */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>👥 Số người tham gia</Text>
-          <View style={styles.counterCard}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>👥 Số người tham gia</Text>
+          <View style={[styles.counterCard, { backgroundColor: colors.surface }]}>
             <View>
               <Text style={styles.counterLabel}>Số khách</Text>
               <Text style={styles.counterNote}>Còn {tour.availableSlots} chỗ trống</Text>
@@ -152,8 +146,8 @@ export default function BookingScreen({ navigation, route }: Props) {
 
         {/* ── Tour Dates ── */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📅 Thông tin tour</Text>
-          <View style={styles.infoList}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>📅 Thông tin tour</Text>
+          <View style={[styles.infoList, { backgroundColor: colors.surface }]}>
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Ngày bắt đầu</Text>
               <Text style={styles.infoValue}>
@@ -181,17 +175,13 @@ export default function BookingScreen({ navigation, route }: Props) {
 
         {/* ── Price Summary ── */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>💰 Tóm tắt thanh toán</Text>
-          <View style={styles.summaryCard}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>💰 Tóm tắt thanh toán</Text>
+          <View style={[styles.summaryCard, { backgroundColor: colors.surface }]}>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>
                 {pricePerPerson.toLocaleString('vi-VN')}₫ × {numPeople} người
               </Text>
-              <Text style={styles.summaryValue}>{subtotal.toLocaleString('vi-VN')}₫</Text>
-            </View>
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Phí dịch vụ (5%)</Text>
-              <Text style={styles.summaryValue}>{serviceFee.toLocaleString('vi-VN')}₫</Text>
+              <Text style={styles.summaryValue}>{totalPrice.toLocaleString('vi-VN')}₫</Text>
             </View>
             <View style={styles.summaryDivider} />
             <View style={styles.summaryRow}>
@@ -204,7 +194,7 @@ export default function BookingScreen({ navigation, route }: Props) {
           <View style={styles.guaranteeCard}>
             <Text style={styles.guaranteeIcon}>🛡️</Text>
             <Text style={styles.guaranteeText}>
-              Đảm bảo giá tốt nhất. Không có phí ẩn khi thanh toán.
+              Thanh toán đúng giá tour. Hoa hồng nền tảng được hệ thống khấu trừ từ doanh thu provider.
             </Text>
           </View>
         </View>
@@ -212,7 +202,7 @@ export default function BookingScreen({ navigation, route }: Props) {
       </ScrollView>
 
       {/* ── Bottom Action Bar ── */}
-      <View style={styles.bottomBar}>
+      <View style={[styles.bottomBar, { backgroundColor: colors.surface, borderTopColor: colors.border }]}> 
         <View>
           <Text style={styles.totalLabel}>Tổng tiền</Text>
           <Text style={styles.totalAmount}>{totalPrice.toLocaleString('vi-VN')}₫</Text>
