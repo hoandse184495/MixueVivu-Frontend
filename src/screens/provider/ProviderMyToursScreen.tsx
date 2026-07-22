@@ -28,9 +28,12 @@ const COLORS = {
   errorLight: '#fce8e6',
 };
 
+type TourListTab = 'all' | 'active';
+
 export default function ProviderMyToursScreen() {
   const [tours, setTours] = useState<Tour[]>([]);
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<TourListTab>('all');
   const [activityModalVisible, setActivityModalVisible] = useState(false);
   const [selectedTour, setSelectedTour] = useState<Tour | null>(null);
   const [activities, setActivities] = useState<any[]>([]);
@@ -107,6 +110,20 @@ export default function ProviderMyToursScreen() {
     }
   };
 
+  const isTourActive = (tour: Tour) => {
+    if (tour.status !== 'approved') return false;
+    if (!tour.endDate) return true;
+
+    const endDate = new Date(tour.endDate);
+    if (Number.isNaN(endDate.getTime())) return true;
+    endDate.setHours(23, 59, 59, 999);
+
+    return endDate >= new Date();
+  };
+
+  const activeTours = tours.filter(isTourActive);
+  const visibleTours = activeTab === 'all' ? tours : activeTours;
+
   const resetActivityForm = () => {
     setActivityTitle('');
     setActivityTime('');
@@ -162,6 +179,7 @@ export default function ProviderMyToursScreen() {
         <View style={styles.detailsContainer}>
           <Text style={styles.infoText}>📍 <Text style={styles.bold}>Điểm đến:</Text> {item.location}</Text>
           <Text style={styles.infoText}>⏱️ <Text style={styles.bold}>Thời lượng:</Text> {item.duration}</Text>
+          <Text style={styles.infoText}>👥 <Text style={styles.bold}>Còn trống:</Text> {item.availableSlots} chỗ</Text>
           <Text style={styles.infoText}>💰 <Text style={styles.bold}>Mức giá:</Text> {Number(item.price).toLocaleString('vi-VN')} VNĐ</Text>
         </View>
 
@@ -206,7 +224,7 @@ export default function ProviderMyToursScreen() {
       <View style={styles.header}>
         <View>
           <Text style={styles.headerTitle}>Tour Đã Đăng</Text>
-          <Text style={styles.headerSubtitle}>Quản lý và theo dõi trạng thái các tour du lịch của bạn</Text>
+          <Text style={styles.headerSubtitle}>Xem tất cả tour và các tour đã duyệt còn hoạt động</Text>
         </View>
         <TouchableOpacity
           style={styles.addBtn}
@@ -217,14 +235,35 @@ export default function ProviderMyToursScreen() {
         </TouchableOpacity>
       </View>
 
-      {loading && tours.length === 0 ? (
+      <View style={styles.tabBar}>
+        <TouchableOpacity
+          style={[styles.tabButton, activeTab === 'all' && styles.tabButtonActive]}
+          onPress={() => setActiveTab('all')}
+          activeOpacity={0.85}
+        >
+          <Text style={[styles.tabButtonText, activeTab === 'all' && styles.tabButtonTextActive]}>
+            Tour đã đăng ({tours.length})
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tabButton, activeTab === 'active' && styles.tabButtonActive]}
+          onPress={() => setActiveTab('active')}
+          activeOpacity={0.85}
+        >
+          <Text style={[styles.tabButtonText, activeTab === 'active' && styles.tabButtonTextActive]}>
+            Đang hoạt động ({activeTours.length})
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {loading && visibleTours.length === 0 ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.primary} />
           <Text style={styles.loadingText}>Đang tải danh sách tour...</Text>
         </View>
       ) : (
         <FlatList
-          data={tours}
+          data={visibleTours}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderTourCard}
           contentContainerStyle={styles.listContent}
@@ -234,8 +273,14 @@ export default function ProviderMyToursScreen() {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyIcon}>🗺️</Text>
-              <Text style={styles.emptyTitle}>Chưa đăng tour nào</Text>
-              <Text style={styles.emptySubtitle}>Hãy bắt đầu đăng bán những tour du lịch thú vị đầu tiên của bạn.</Text>
+              <Text style={styles.emptyTitle}>
+                {activeTab === 'all' ? 'Chưa đăng tour nào' : 'Chưa có tour hoạt động'}
+              </Text>
+              <Text style={styles.emptySubtitle}>
+                {activeTab === 'all'
+                  ? 'Hãy bắt đầu đăng bán những tour du lịch thú vị đầu tiên của bạn.'
+                  : 'Tour đã được duyệt và chưa hết hạn sẽ hiển thị tại đây.'}
+              </Text>
             </View>
           }
         />
@@ -331,6 +376,39 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: '700',
     fontSize: 13,
+  },
+  tabBar: {
+    flexDirection: 'row',
+    gap: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: COLORS.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eceef0',
+  },
+  tabButton: {
+    flex: 1,
+    minHeight: 42,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: '#f8fafc',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 10,
+  },
+  tabButtonActive: {
+    backgroundColor: COLORS.primaryLight,
+    borderColor: COLORS.primary,
+  },
+  tabButtonText: {
+    color: COLORS.textMuted,
+    fontSize: 13,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  tabButtonTextActive: {
+    color: COLORS.primary,
   },
   listContent: {
     padding: 16,

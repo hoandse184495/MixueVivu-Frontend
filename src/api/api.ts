@@ -4,7 +4,7 @@ import { NativeModules, Platform } from 'react-native';
 
 const API_PORT = '5000';
 const API_PATH = '/api';
-const DEV_MACHINE_HOST = process.env.EXPO_PUBLIC_DEV_HOST || '192.168.100.231';
+const DEV_MACHINE_HOST = process.env.EXPO_PUBLIC_DEV_HOST || '192.168.137.1';
 
 const normalizeHost = (value?: string | null) => {
   if (!value) return undefined;

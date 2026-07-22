@@ -26,10 +26,8 @@ const COLORS = {
 
 type ItineraryItem = {
   day: string;
-  time: string;
   title: string;
   location: string;
-  description: string;
   image: string;
 };
 
@@ -43,10 +41,8 @@ const MAX_IMAGE_URL_LENGTH = 2048;
 
 const createEmptyItineraryItem = (day = '1'): ItineraryItem => ({
   day,
-  time: '',
   title: '',
   location: '',
-  description: '',
   image: '',
 });
 
@@ -84,7 +80,12 @@ export default function ProviderAddTourScreen() {
 
       try {
         const catRes = await categoryService.getAll();
-        const catList = catRes.data.data || [];
+        const catList = (catRes.data.data || []).map((cat: any) => ({
+          ...cat,
+          id: Number(cat.id ?? cat.categoryId ?? cat.category_id),
+          name: cat.name || cat.categoryName,
+          slug: cat.slug || cat.name || cat.categoryName,
+        }));
         if (catList.length > 0) {
           setCategoryOptions(catList);
           setCategory(catList[0].name);
@@ -179,10 +180,11 @@ export default function ProviderAddTourScreen() {
     for (const item of validItems) {
       await activityService.create({
         tourId,
-        title: `Ngày ${item.day || '1'} - ${item.title.trim()}`,
-        activityTime: item.time.trim(),
+        day: Number(item.day) || 1,
+        title: item.title.trim(),
+        activityTime: '',
         location: item.location.trim(),
-        description: item.description.trim(),
+        description: '',
         image: item.image.trim(),
       });
     }
@@ -190,8 +192,16 @@ export default function ProviderAddTourScreen() {
 
   const handleCreateTour = async () => {
     if (submitLockRef.current) return;
+    submitLockRef.current = true;
+    setSubmitting(true);
+
+    const releaseSubmitLock = () => {
+      setSubmitting(false);
+      submitLockRef.current = false;
+    };
 
     if (!title.trim() || !location.trim() || !price.trim() || !duration.trim() || !description.trim()) {
+      releaseSubmitLock();
       Alert.alert('Lỗi', 'Vui lòng điền đầy đủ các thông tin bắt buộc (*)');
       return;
     }
@@ -200,11 +210,13 @@ export default function ProviderAddTourScreen() {
     const numericSlots = Number(availableSlots);
 
     if (isNaN(numericPrice) || numericPrice <= 0) {
+      releaseSubmitLock();
       Alert.alert('Lỗi', 'Giá tiền phải là số lớn hơn 0');
       return;
     }
 
     if (isNaN(numericSlots) || numericSlots <= 0) {
+      releaseSubmitLock();
       Alert.alert('Lỗi', 'Số chỗ trống phải là số lớn hơn 0');
       return;
     }
@@ -214,23 +226,27 @@ export default function ProviderAddTourScreen() {
       !Number.isNaN(new Date(`${value}T00:00:00.000Z`).getTime());
 
     if (!isValidDate(startDate) || !isValidDate(endDate)) {
+      releaseSubmitLock();
       Alert.alert('Lỗi', 'Ngày bắt đầu và ngày kết thúc phải có định dạng YYYY-MM-DD');
       return;
     }
 
     if (new Date(startDate) > new Date(endDate)) {
+      releaseSubmitLock();
       Alert.alert('Lỗi', 'Ngày bắt đầu không được sau ngày kết thúc');
       return;
     }
 
     const validItineraryItems = itineraryItems.filter((item) => item.title.trim());
     if (validItineraryItems.length === 0) {
+      releaseSubmitLock();
       Alert.alert('Lỗi', 'Vui lòng thêm ít nhất một hoạt động trong lịch trình.');
       return;
     }
 
     const tourImageError = getImageInputError(image, 'Ảnh nền tour');
     if (tourImageError) {
+      releaseSubmitLock();
       Alert.alert('Lỗi', tourImageError);
       return;
     }
@@ -239,6 +255,7 @@ export default function ProviderAddTourScreen() {
       getImageInputError(item.image, 'Ảnh hoạt động')
     );
     if (invalidActivityImage) {
+      releaseSubmitLock();
       Alert.alert('Lỗi', getImageInputError(invalidActivityImage.image, 'Ảnh hoạt động'));
       return;
     }
@@ -259,10 +276,8 @@ export default function ProviderAddTourScreen() {
     };
 
     try {
-      submitLockRef.current = true;
-      setSubmitting(true);
       let savedTourId = editingTour?.id;
-      let createdTourId: number | null = null;
+      let activityWarning = false;
       if (editingTour) {
         const response = await tourService.update(editingTour.id, data);
         savedTourId = response.data.data?.id || editingTour.id;
@@ -272,7 +287,6 @@ export default function ProviderAddTourScreen() {
       } else {
         const response = await tourService.create(data);
         savedTourId = response.data.data?.id;
-        createdTourId = savedTourId || null;
       }
 
       try {
@@ -280,13 +294,18 @@ export default function ProviderAddTourScreen() {
           await createItineraryActivities(savedTourId);
         }
       } catch (activityError) {
-        if (createdTourId) {
-          await tourService.delete(createdTourId);
-        }
-        throw activityError;
+        console.log('Unable to create itinerary activities:', activityError);
+        activityWarning = true;
       }
 
-      Alert.alert('Thành công', editingTour ? 'Đã cập nhật tour và gửi lại cho quản lý duyệt.' : 'Đăng tour du lịch mới thành công! Đang chờ quản trị viên duyệt.', [
+      Alert.alert(
+        'Thành công',
+        activityWarning
+          ? 'Tour đã được lưu thành công. Một vài hoạt động lịch trình chưa lưu được, bạn có thể bổ sung lại trong phần Lịch trình.'
+          : editingTour
+            ? 'Đã cập nhật tour và gửi lại cho quản lý duyệt.'
+            : 'Đăng tour du lịch mới thành công! Đang chờ quản trị viên duyệt.',
+        [
         {
           text: 'OK',
           onPress: () => {
@@ -311,8 +330,7 @@ export default function ProviderAddTourScreen() {
     } catch (error: any) {
       Alert.alert('Lỗi', error.response?.data?.message || 'Không thể tạo tour mới');
     } finally {
-      setSubmitting(false);
-      submitLockRef.current = false;
+      releaseSubmitLock();
     }
   };
 
@@ -509,7 +527,7 @@ export default function ProviderAddTourScreen() {
             <View style={styles.itineraryHeader}>
               <View>
                 <Text style={styles.sectionTitle}>Lịch trình chi tiết</Text>
-                <Text style={styles.sectionSubtitle}>Nhập hoạt động theo ngày, giờ và ảnh minh họa</Text>
+                <Text style={styles.sectionSubtitle}>Nhập ngày, hoạt động, địa điểm và ảnh minh họa</Text>
               </View>
               <TouchableOpacity style={styles.addActivityBtn} onPress={addItineraryItem}>
                 <Text style={styles.addActivityText}>+ Thêm</Text>
@@ -525,28 +543,16 @@ export default function ProviderAddTourScreen() {
                   </TouchableOpacity>
                 </View>
 
-                <View style={styles.row}>
-                  <View style={[styles.inputGroup, { flex: 1, marginBottom: 12 }]}>
-                    <Text style={styles.inputLabel}>Ngày</Text>
-                    <TextInput
-                      style={styles.textInput}
-                      placeholder="1"
-                      placeholderTextColor={COLORS.textMuted}
-                      keyboardType="numeric"
-                      value={item.day}
-                      onChangeText={(value) => updateItineraryItem(index, 'day', value)}
-                    />
-                  </View>
-                  <View style={[styles.inputGroup, { flex: 1, marginBottom: 12 }]}>
-                    <Text style={styles.inputLabel}>Giờ</Text>
-                    <TextInput
-                      style={styles.textInput}
-                      placeholder="08:00"
-                      placeholderTextColor={COLORS.textMuted}
-                      value={item.time}
-                      onChangeText={(value) => updateItineraryItem(index, 'time', value)}
-                    />
-                  </View>
+                <View style={[styles.inputGroup, { marginBottom: 12 }]}>
+                  <Text style={styles.inputLabel}>Ngày</Text>
+                  <TextInput
+                    style={styles.textInput}
+                    placeholder="1"
+                    placeholderTextColor={COLORS.textMuted}
+                    keyboardType="numeric"
+                    value={item.day}
+                    onChangeText={(value) => updateItineraryItem(index, 'day', value)}
+                  />
                 </View>
 
                 <View style={[styles.inputGroup, { marginBottom: 12 }]}>
@@ -568,19 +574,6 @@ export default function ProviderAddTourScreen() {
                     placeholderTextColor={COLORS.textMuted}
                     value={item.location}
                     onChangeText={(value) => updateItineraryItem(index, 'location', value)}
-                  />
-                </View>
-
-                <View style={[styles.inputGroup, { marginBottom: 12 }]}>
-                  <Text style={styles.inputLabel}>Mô tả hoạt động</Text>
-                  <TextInput
-                    style={[styles.textInput, styles.activityTextArea]}
-                    placeholder="Mô tả trải nghiệm, dịch vụ, lưu ý..."
-                    placeholderTextColor={COLORS.textMuted}
-                    value={item.description}
-                    onChangeText={(value) => updateItineraryItem(index, 'description', value)}
-                    multiline
-                    numberOfLines={3}
                   />
                 </View>
 
@@ -798,11 +791,6 @@ const styles = StyleSheet.create({
     color: '#ba1a1a',
     fontSize: 12,
     fontWeight: '800',
-  },
-  activityTextArea: {
-    height: 86,
-    textAlignVertical: 'top',
-    paddingVertical: 10,
   },
   submitBtn: {
     backgroundColor: COLORS.primary,

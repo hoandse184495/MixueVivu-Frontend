@@ -67,8 +67,10 @@ export default function TourDetailScreen({ navigation, route }: Props) {
 
       const nextTour = detailRes.value.data.data;
       const detailActivities = nextTour?.activities || nextTour?.TourActivities || [];
+      const activityResponseData =
+        actRes.status === 'fulfilled' ? actRes.value.data.data || [] : [];
       const loadedActivities =
-        actRes.status === 'fulfilled' ? actRes.value.data.data || [] : detailActivities;
+        activityResponseData.length > 0 ? activityResponseData : detailActivities;
 
       setTour(nextTour);
       setActivities(loadedActivities.map(normalizeActivity));

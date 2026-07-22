@@ -8,9 +8,6 @@ import ManagerBookingsScreen from '../screens/manager/ManagerBookingsScreen';
 import ManagerUsersScreen from '../screens/manager/ManagerUsersScreen';
 import ManagerPaymentsScreen from '../screens/manager/ManagerPaymentsScreen';
 import ManagerPayoutsScreen from '../screens/manager/ManagerPayoutsScreen';
-import ManagerCategoriesScreen from '../screens/manager/ManagerCategoriesScreen';
-import ManagerContactsScreen from '../screens/manager/ManagerContactsScreen';
-import ManagerGuidesScreen from '../screens/manager/ManagerGuidesScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -29,8 +26,6 @@ function TabIcon({ name, focused }: { name: string; focused: boolean }) {
     Users: '👥',
     Payments: '💳',
     Revenue: '💰',
-    Categories: '🏷️',
-    Contacts: '📩',
   };
   return (
     <View style={{ alignItems: 'center' }}>
@@ -149,35 +144,6 @@ export default function ManagerNavigator({
         }}
       />
 
-      <Tab.Screen
-        name="CategoriesTab"
-        component={ManagerCategoriesScreen}
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon name="Categories" focused={focused} />
-          ),
-        }}
-      />
-
-      <Tab.Screen
-        name="GuidesTab"
-        component={ManagerGuidesScreen}
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon name="Guides" focused={focused} />
-          ),
-        }}
-      />
-
-      <Tab.Screen
-        name="ContactsTab"
-        component={ManagerContactsScreen}
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon name="Contacts" focused={focused} />
-          ),
-        }}
-      />
     </Tab.Navigator>
   );
 }

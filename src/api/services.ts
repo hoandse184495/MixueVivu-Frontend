@@ -56,6 +56,31 @@ const normalizeGuideResponse = (response: any) => {
   return response;
 };
 
+const normalizeTour = (tour: any) => ({
+  ...tour,
+  category:
+    tour.category ??
+    tour.categoryName ??
+    tour.Categories?.name ??
+    tour.Category?.name ??
+    tour.categoryInfo?.name,
+  categoryId:
+    tour.categoryId ??
+    tour.category_id ??
+    tour.Categories?.id ??
+    tour.Category?.id ??
+    tour.categoryInfo?.id,
+});
+
+const normalizeTourResponse = (response: any) => {
+  const data = response.data.data;
+  response.data.data = Array.isArray(data)
+    ? data.map(normalizeTour)
+    : normalizeTour(data);
+
+  return response;
+};
+
 const getActivityDay = (activity: any) => {
   if (activity.day) return Number(activity.day) || 1;
 
@@ -65,6 +90,7 @@ const getActivityDay = (activity: any) => {
 
 export const normalizeActivity = (activity: any, index = 0) => ({
   ...activity,
+  tourId: activity.tourId ?? activity.tour_id,
   day: getActivityDay(activity),
   time: activity.time || activity.activityTime,
   order: activity.order || index + 1,
@@ -213,6 +239,17 @@ const mapGuidePayload = (data: any) => ({
   fullName: data.fullName || data.name,
 });
 
+const mapTourPayload = (data: any) => ({
+  ...data,
+  category_id: data.category_id ?? data.categoryId,
+});
+
+const mapActivityPayload = (data: any) => ({
+  ...data,
+  tour_id: data.tour_id ?? data.tourId,
+  activity_time: data.activity_time ?? data.activityTime,
+});
+
 const getStoredUser = async () => {
   const user = await AsyncStorage.getItem('user');
   return user ? JSON.parse(user) : null;
@@ -229,14 +266,16 @@ export const authService = {
 
 export const tourService = {
   getAll: (filters: TourFilters = {}) =>
-    api.get('/tours', {
-      params: cleanParams(filters),
-    }),
-  getById: (id: number) => api.get(`/tours/${id}`),
-  getPending: () => api.get('/tours/pending'),
-  getMyTours: () => api.get('/tours/my-tours'),
-  create: (data: any) => api.post('/tours', data),
-  update: (id: number, data: any) => api.put(`/tours/${id}`, data),
+    api
+      .get('/tours', {
+        params: cleanParams(filters),
+      })
+      .then(normalizeTourResponse),
+  getById: async (id: number) => normalizeTourResponse(await api.get(`/tours/${id}`)),
+  getPending: async () => normalizeTourResponse(await api.get('/tours/pending')),
+  getMyTours: async () => normalizeTourResponse(await api.get('/tours/my-tours')),
+  create: (data: any) => api.post('/tours', mapTourPayload(data)),
+  update: (id: number, data: any) => api.put(`/tours/${id}`, mapTourPayload(data)),
   delete: (id: number) => api.delete(`/tours/${id}`),
   approve: (id: number) => api.put(`/tours/${id}/approve`),
   reject: (id: number, rejectReason: string) =>
@@ -292,8 +331,8 @@ export const activityService = {
     normalizeActivityResponse(await api.get(`/activities/tour/${tourId}`)),
   getById: async (id: number) =>
     normalizeActivityResponse(await api.get(`/activities/${id}`)),
-  create: (data: any) => api.post('/activities', data),
-  update: (id: number, data: any) => api.put(`/activities/${id}`, data),
+  create: (data: any) => api.post('/activities', mapActivityPayload(data)),
+  update: (id: number, data: any) => api.put(`/activities/${id}`, mapActivityPayload(data)),
   delete: (id: number) => api.delete(`/activities/${id}`),
 };
 
