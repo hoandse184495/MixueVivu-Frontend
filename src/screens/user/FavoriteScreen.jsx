@@ -1,0 +1,362 @@
+import { useEffect, useState, useCallback } from 'react';
+import { ActivityIndicator, Alert, FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View, } from 'react-native';
+import { favoriteService } from '../../services';
+import { useAppTheme } from '../../theme/ThemeContext';
+import { prefetchTourImages, TourImage } from '../../components/TourImage';
+const COLORS = {
+    primary: '#0058bc',
+    primaryLight: '#e8f0fe',
+    bg: '#f7f9fb',
+    surface: '#ffffff',
+    surfaceContainer: '#eceef0',
+    surfaceContainerLow: '#f2f4f6',
+    text: '#191c1e',
+    textMuted: '#717786',
+    border: '#c1c6d7',
+    success: '#006c4b',
+    tertiary: '#894d00',
+    tertiaryFixed: '#ffdcbf',
+    error: '#ba1a1a',
+    errorLight: '#fdecea',
+};
+export default function FavoriteScreen({ navigation }) {
+    const { colors } = useAppTheme();
+    const [favorites, setFavorites] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const fetchFavorites = useCallback(async () => {
+        var _a, _b;
+        try {
+            setLoading(true);
+            const res = await favoriteService.getAll();
+            const nextFavorites = res.data.data || [];
+            setFavorites(nextFavorites);
+            prefetchTourImages(nextFavorites.map((item) => { var _a; return (_a = item.tour) === null || _a === void 0 ? void 0 : _a.image; }));
+        }
+        catch (e) {
+            Alert.alert('Lỗi', ((_b = (_a = e.response) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.message) || 'Không thể tải danh sách');
+        }
+        finally {
+            setLoading(false);
+        }
+    }, []);
+    useEffect(() => { fetchFavorites(); }, []);
+    const handleRemove = (tourId, tourTitle) => {
+        Alert.alert('Xóa yêu thích', `Bỏ tour "${tourTitle}" khỏi danh sách yêu thích?`, [
+            { text: 'Không', style: 'cancel' },
+            {
+                text: 'Xóa',
+                style: 'destructive',
+                onPress: async () => {
+                    var _a, _b;
+                    try {
+                        await favoriteService.remove(tourId);
+                        fetchFavorites();
+                    }
+                    catch (e) {
+                        Alert.alert('Lỗi', ((_b = (_a = e.response) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.message) || 'Không thể xóa');
+                    }
+                },
+            },
+        ]);
+    };
+    const handleRemoveAll = () => {
+        if (favorites.length === 0)
+            return;
+        Alert.alert('Xóa tất cả yêu thích', 'Bạn có chắc muốn xóa toàn bộ tour khỏi danh sách yêu thích không?', [
+            { text: 'Không', style: 'cancel' },
+            {
+                text: 'Xóa tất cả',
+                style: 'destructive',
+                onPress: async () => {
+                    var _a, _b;
+                    try {
+                        setLoading(true);
+                        const tourIds = favorites
+                            .map((item) => { var _a; return (_a = item.tour) === null || _a === void 0 ? void 0 : _a.id; })
+                            .filter(Boolean);
+                        await Promise.all(tourIds.map((tourId) => favoriteService.remove(tourId)));
+                        setFavorites([]);
+                    }
+                    catch (e) {
+                        Alert.alert('Lỗi', ((_b = (_a = e.response) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.message) || 'Không thể xóa tất cả yêu thích');
+                    }
+                    finally {
+                        setLoading(false);
+                    }
+                },
+            },
+        ]);
+    };
+    const renderItem = ({ item }) => {
+        var _a;
+        const tour = item.tour;
+        if (!tour)
+            return null;
+        return (<TouchableOpacity style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border + '30' }]} onPress={() => {
+                if (navigation)
+                    navigation.navigate('TourDetail', { tour, initialIsFavorited: true });
+            }} activeOpacity={0.85}>
+        {/* Image Section */}
+        <View style={styles.imageContainer}>
+          <TourImage uri={tour.image} style={styles.image}/>
+          {/* Rating Badge */}
+          <View style={styles.ratingBadge}>
+            <Text style={styles.ratingText}>⭐ {((_a = tour.averageRating) === null || _a === void 0 ? void 0 : _a.toFixed(1)) || '0.0'}</Text>
+          </View>
+        </View>
+
+        {/* Content Section */}
+        <View style={styles.content}>
+          <View style={styles.contentTop}>
+            <Text style={[styles.tourTitle, { color: colors.text }]} numberOfLines={2}>{tour.title}</Text>
+            <TouchableOpacity style={styles.removeBtn} onPress={() => handleRemove(tour.id, tour.title)}>
+              <Text style={styles.removeBtnIcon}>🗑️</Text>
+            </TouchableOpacity>
+          </View>
+
+          <Text style={[styles.location, { color: colors.textMuted }]}>📍 {tour.location}</Text>
+          <Text style={[styles.duration, { color: colors.textMuted }]}>⏱ {tour.duration}</Text>
+
+          <View style={styles.footer}>
+            <View>
+              <Text style={[styles.priceLabel, { color: colors.textMuted }]}>Từ</Text>
+              <Text style={styles.price}>
+                {Number(tour.price).toLocaleString('vi-VN')}₫
+              </Text>
+            </View>
+            <TouchableOpacity style={styles.bookBtn} onPress={() => navigation === null || navigation === void 0 ? void 0 : navigation.navigate('Booking', { tour })}>
+              <Text style={styles.bookBtnText}>Đặt nhanh</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </TouchableOpacity>);
+    };
+    return (<SafeAreaView style={[styles.container, { backgroundColor: colors.bg }]}>
+      {/* Header */}
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border + '40' }]}>
+        <View>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Tour yêu thích</Text>
+          <Text style={[styles.headerSubtitle, { color: colors.textMuted }]}>Quản lý danh sách tour đã lưu</Text>
+        </View>
+        {favorites.length > 0 ? (<TouchableOpacity style={styles.clearAllBtn} onPress={handleRemoveAll} activeOpacity={0.85}>
+            <Text style={styles.clearAllText}>Xóa tất cả</Text>
+          </TouchableOpacity>) : null}
+      </View>
+
+      {loading && favorites.length === 0 ? (<ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: 50 }}/>) : (<FlatList data={favorites} keyExtractor={(item) => item.id.toString()} renderItem={renderItem} contentContainerStyle={{ padding: 16, paddingBottom: 100 }} showsVerticalScrollIndicator={false} onRefresh={fetchFavorites} refreshing={loading} ListEmptyComponent={<View style={styles.emptyContainer}>
+              <View style={styles.emptyIconCircle}>
+                <Text style={{ fontSize: 40 }}>❤️</Text>
+              </View>
+              <Text style={[styles.emptyTitle, { color: colors.text }]}>Chưa có tour yêu thích</Text>
+              <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>
+                Nhấn ❤️ trên tour để lưu vào đây và lên kế hoạch chuyến đi
+              </Text>
+              <TouchableOpacity style={styles.exploreBtn} onPress={() => {
+                    navigation.navigate('HomeTab', {
+                        screen: 'UserHome',
+                    });
+                }} activeOpacity={0.85}>
+                <Text style={styles.exploreBtnText}>Khám phá tour ngay →</Text>
+              </TouchableOpacity>
+            </View>}/>)}
+    </SafeAreaView>);
+}
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: COLORS.bg,
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        backgroundColor: COLORS.surface,
+        borderBottomWidth: 1,
+        borderBottomColor: COLORS.border + '40',
+    },
+    headerTitle: {
+        fontSize: 20,
+        fontWeight: '800',
+        color: COLORS.text,
+    },
+    headerSubtitle: {
+        fontSize: 13,
+        color: COLORS.textMuted,
+        marginTop: 2,
+    },
+    clearAllBtn: {
+        minHeight: 38,
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: COLORS.errorLight,
+        borderWidth: 1,
+        borderColor: COLORS.error + '30',
+    },
+    clearAllText: {
+        color: COLORS.error,
+        fontSize: 12,
+        fontWeight: '900',
+    },
+    // Card
+    card: {
+        backgroundColor: COLORS.surface,
+        borderRadius: 20,
+        marginBottom: 14,
+        overflow: 'hidden',
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOpacity: 0.07,
+        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 3 },
+        borderWidth: 1,
+        borderColor: COLORS.border + '30',
+        flexDirection: 'row',
+    },
+    // Image
+    imageContainer: {
+        width: 110,
+        position: 'relative',
+        flexShrink: 0,
+    },
+    image: {
+        width: '100%',
+        height: '100%',
+        minHeight: 120,
+    },
+    imagePlaceholder: {
+        backgroundColor: COLORS.primaryLight,
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: 120,
+    },
+    ratingBadge: {
+        position: 'absolute',
+        top: 8,
+        left: 8,
+        backgroundColor: COLORS.tertiaryFixed,
+        borderRadius: 8,
+        paddingHorizontal: 6,
+        paddingVertical: 3,
+    },
+    ratingText: {
+        fontSize: 10,
+        fontWeight: '700',
+        color: COLORS.tertiary,
+    },
+    // Content
+    content: {
+        flex: 1,
+        padding: 12,
+    },
+    contentTop: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: 6,
+    },
+    tourTitle: {
+        fontSize: 14,
+        fontWeight: '800',
+        color: COLORS.text,
+        flex: 1,
+        marginRight: 8,
+        lineHeight: 20,
+    },
+    removeBtn: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: COLORS.errorLight,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    removeBtnIcon: {
+        fontSize: 14,
+    },
+    location: {
+        fontSize: 12,
+        color: COLORS.textMuted,
+        marginBottom: 4,
+        fontWeight: '500',
+    },
+    duration: {
+        fontSize: 12,
+        color: COLORS.textMuted,
+        marginBottom: 10,
+        fontWeight: '500',
+    },
+    footer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-end',
+    },
+    priceLabel: {
+        fontSize: 10,
+        color: COLORS.textMuted,
+        marginBottom: 2,
+    },
+    price: {
+        fontSize: 15,
+        fontWeight: '800',
+        color: COLORS.primary,
+    },
+    bookBtn: {
+        backgroundColor: COLORS.primaryLight,
+        borderRadius: 10,
+        paddingHorizontal: 10,
+        paddingVertical: 7,
+    },
+    bookBtnText: {
+        color: COLORS.primary,
+        fontWeight: '700',
+        fontSize: 12,
+    },
+    // Empty State
+    emptyContainer: {
+        alignItems: 'center',
+        paddingTop: 70,
+        paddingBottom: 40,
+        paddingHorizontal: 32,
+    },
+    emptyIconCircle: {
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        backgroundColor: COLORS.surfaceContainer,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 16,
+    },
+    emptyTitle: {
+        fontSize: 18,
+        fontWeight: '800',
+        color: COLORS.text,
+        marginBottom: 8,
+    },
+    emptySubtitle: {
+        fontSize: 14,
+        color: COLORS.textMuted,
+        textAlign: 'center',
+        marginBottom: 24,
+        lineHeight: 20,
+    },
+    exploreBtn: {
+        backgroundColor: COLORS.primary,
+        borderRadius: 20,
+        paddingHorizontal: 24,
+        paddingVertical: 12,
+        elevation: 2,
+        shadowColor: COLORS.primary,
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+    },
+    exploreBtnText: {
+        color: '#fff',
+        fontWeight: '700',
+        fontSize: 14,
+    },
+});

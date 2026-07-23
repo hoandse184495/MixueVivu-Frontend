@@ -1,0 +1,15 @@
+export const tourFromBooking = (booking) => ({
+    id: booking.tourId,
+    title: booking.tourTitle || `Tour #${booking.tourId}`,
+    image: booking.tourImage || '',
+    location: booking.tourLocation || '',
+    duration: booking.tourDuration || '',
+    price: booking.tourPrice || 0,
+    description: '',
+    category: '',
+    availableSlots: booking.tourAvailableSlots || 0,
+    startDate: booking.tourStartDate || '',
+    endDate: booking.tourEndDate || '',
+    guideId: 0,
+    averageRating: 0,
+});
